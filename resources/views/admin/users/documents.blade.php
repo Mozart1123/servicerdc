@@ -47,43 +47,43 @@
     }
 }">
     <!-- Verification Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div class="bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all">
             <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">En Attente</p>
-                <h3 class="text-3xl font-black text-slate-900">{{ $stats['pending'] }}</h3>
+                <p class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2">En Attente</p>
+                <h3 class="text-xl sm:text-3xl font-black text-slate-900">{{ $stats['pending'] }}</h3>
             </div>
-            <div class="w-14 h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+            <div class="w-10 h-10 sm:w-14 sm:h-14 bg-amber-50 text-amber-500 rounded-lg sm:rounded-2xl flex items-center justify-center text-lg sm:text-2xl group-hover:scale-110 transition-transform shrink-0">
                 <i class="fas fa-clock-rotate-left"></i>
             </div>
         </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all">
+        <div class="bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all">
             <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Validés (30j)</p>
-                <h3 class="text-3xl font-black text-slate-900">{{ $stats['verified_30d'] }}</h3>
+                <p class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 text-nowrap">Validés (30j)</p>
+                <h3 class="text-xl sm:text-3xl font-black text-slate-900">{{ $stats['verified_30d'] }}</h3>
             </div>
-            <div class="w-14 h-14 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+            <div class="w-10 h-10 sm:w-14 sm:h-14 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-2xl flex items-center justify-center text-lg sm:text-2xl group-hover:scale-110 transition-transform shrink-0">
                 <i class="fas fa-circle-check"></i>
             </div>
         </div>
-        <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl flex items-center justify-between group text-white">
+        <div class="bg-slate-900 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl flex items-center justify-between group text-white">
             <div>
-                <p class="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Taux Rejet</p>
-                <h3 class="text-3xl font-black">{{ $stats['rejected_rate'] }}%</h3>
+                <p class="text-[8px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest mb-1 sm:mb-2">Taux Rejet</p>
+                <h3 class="text-xl sm:text-3xl font-black">{{ $stats['rejected_rate'] }}%</h3>
             </div>
-            <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+            <div class="w-10 h-10 sm:w-14 sm:h-14 bg-white/10 rounded-lg sm:rounded-2xl flex items-center justify-center text-lg sm:text-2xl group-hover:scale-110 transition-transform shrink-0">
                 <i class="fas fa-chart-pie"></i>
             </div>
         </div>
     </div>
 
     <!-- Documents Table -->
-    <div class="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div class="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/20">
-            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Flux de Vérification</h3>
+    <div class="bg-white rounded-[2rem] sm:rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="px-5 sm:px-10 py-5 sm:py-8 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/20">
+            <h3 class="text-sm sm:text-lg font-black text-slate-900 uppercase tracking-tight">Flux de Vérification</h3>
             <div class="flex items-center gap-3">
-                <form action="{{ route('admin.users-mgmt.docs') }}" method="GET" class="flex gap-3">
-                    <select name="type" onchange="this.form.submit()" class="px-6 py-3 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm outline-none">
+                <form action="{{ route('admin.users-mgmt.docs') }}" method="GET" class="w-full">
+                    <select name="type" onchange="this.form.submit()" class="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-white border border-slate-100 rounded-lg sm:rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-widest shadow-sm outline-none">
                         <option value="">Tous les types</option>
                         <option value="identity" {{ request('type') == 'identity' ? 'selected' : '' }}>Pièce d'Identité</option>
                         <option value="diploma" {{ request('type') == 'diploma' ? 'selected' : '' }}>Diplôme / Certificat</option>
@@ -93,62 +93,56 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
+        <div class="overflow-x-auto sm:overflow-x-visible">
+            <table class="w-full text-left table-fixed sm:table-auto">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type de Document</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date d'Envoi</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</th>
-                        <th class="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions HQ</th>
+                        <th class="w-1/3 sm:w-auto px-4 sm:px-10 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest">Utilisateur</th>
+                        <th class="w-1/4 sm:w-auto px-2 sm:px-8 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest">Type</th>
+                        <th class="hidden lg:table-cell px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Envoi</th>
+                        <th class="w-1/6 sm:w-auto px-2 sm:px-8 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center">Statut</th>
+                        <th class="w-1/4 sm:w-auto px-4 sm:px-10 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-right">HQ Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse($documents as $doc)
                     <tr class="group hover:bg-slate-50/30 transition-colors">
-                        <td class="px-10 py-8">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-slate-100 overflow-hidden shadow-sm">
+                        <td class="px-4 sm:px-10 py-4 sm:py-8">
+                            <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
+                                <div class="w-7 h-7 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-slate-100 overflow-hidden shadow-sm shrink-0">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($doc->user->name) }}&background=random&color=fff" class="w-full h-full object-cover">
                                 </div>
-                                <div>
-                                    <p class="text-sm font-black text-slate-900">{{ $doc->user->name }}</p>
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">ID: #USR-{{ $doc->user->id }}</p>
+                                <div class="overflow-hidden">
+                                    <p class="text-[9px] sm:text-sm font-black text-slate-900 truncate">{{ $doc->user->name }}</p>
+                                    <p class="text-[7px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate">#USR-{{ $doc->user->id }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-8 py-8">
-                            <div class="flex items-center gap-3">
-                                <span class="w-8 h-8 rounded-lg bg-blue-50 text-rdc-blue flex items-center justify-center text-xs">
+                        <td class="px-2 sm:px-8 py-4 sm:py-8">
+                            <div class="flex items-center gap-1.5 sm:gap-3 overflow-hidden">
+                                <span class="hidden sm:inline-flex w-8 h-8 rounded-lg bg-blue-50 text-rdc-blue items-center justify-center text-xs shrink-0">
                                     <i class="fas fa-file-alt"></i>
                                 </span>
-                                <span class="text-xs font-black text-slate-700 uppercase">{{ ucfirst($doc->type) }}</span>
+                                <span class="text-[8px] sm:text-xs font-black text-slate-700 uppercase truncate leading-tight">{{ ucfirst($doc->type) }}</span>
                             </div>
                         </td>
-                        <td class="px-8 py-8">
+                        <td class="hidden lg:table-cell px-8 py-8">
                             <span class="text-xs font-bold text-slate-500 italic">{{ $doc->created_at->diffForHumans() }}</span>
                         </td>
-                        <td class="px-8 py-8">
-                            @if($doc->status == 'pending')
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                    <span class="text-[10px] font-black text-amber-600 uppercase">En Attente</span>
-                                </div>
-                            @elseif($doc->status == 'verified')
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span class="text-[10px] font-black text-emerald-600 uppercase">Validé</span>
-                                </div>
-                            @else
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                                    <span class="text-[10px] font-black text-red-600 uppercase">Rejeté</span>
-                                </div>
-                            @endif
+                        <td class="px-2 sm:px-8 py-4 sm:py-8 text-center sm:text-left">
+                            <div class="flex items-center justify-center sm:justify-start gap-1">
+                                @if($doc->status == 'pending')
+                                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                @elseif($doc->status == 'verified')
+                                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500"></span>
+                                @else
+                                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-500"></span>
+                                @endif
+                                <span class="hidden sm:inline text-[10px] font-black uppercase opacity-60">Status</span>
+                            </div>
                         </td>
-                        <td class="px-10 py-8 text-right">
-                            <div class="flex items-center justify-end gap-3">
+                        <td class="px-4 sm:px-10 py-4 sm:py-8 text-right">
+                            <div class="flex items-center justify-end gap-1 sm:gap-3">
                                 <button @click="openModal({
                                     id: {{ $doc->id }},
                                     name: '{{ addslashes($doc->user->name) }}',
@@ -160,19 +154,19 @@
                                     confidence: '{{ $doc->ai_confidence ?? 'low' }}',
                                     avatar: 'https://ui-avatars.com/api/?name={{ urlencode($doc->user->name) }}&background=random&color=fff',
                                     docImage: '{{ asset($doc->file_path) }}'
-                                })" class="px-4 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-rdc-blue transition-all">
-                                    Visualiser
+                                })" class="px-2 sm:px-4 py-1.5 sm:py-2 bg-slate-900 text-white text-[7px] sm:text-[9px] font-black uppercase tracking-tighter sm:tracking-widest rounded-lg sm:rounded-xl hover:bg-rdc-blue transition-all">
+                                    Voir
                                 </button>
                                 
                                 @if($doc->status === 'pending')
-                                    <form id="verify-form-{{ $doc->id }}" action="{{ route('admin.users-mgmt.docs.verify', $doc->id) }}" method="POST" class="inline">
+                                    <form id="verify-form-{{ $doc->id }}" action="{{ route('admin.users-mgmt.docs.verify', $doc->id) }}" method="POST" class="hidden sm:inline">
                                         @csrf
                                         <button type="submit" class="w-10 h-10 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all" title="Valider">
                                             <i class="fas fa-check"></i>
                                         </button>
                                     </form>
 
-                                    <form id="reject-form-{{ $doc->id }}" action="{{ route('admin.users-mgmt.docs.reject', $doc->id) }}" method="POST" class="inline">
+                                    <form id="reject-form-{{ $doc->id }}" action="{{ route('admin.users-mgmt.docs.reject', $doc->id) }}" method="POST" class="hidden sm:inline">
                                         @csrf
                                         <input type="hidden" name="reason" id="reject-reason-{{ $doc->id }}">
                                         <button type="button" onclick="let reason = prompt('Raison du rejet:'); if(reason) { document.getElementById('reject-reason-{{ $doc->id }}').value = reason; this.form.submit(); }" class="w-10 h-10 flex items-center justify-center bg-red-50 text-rdc-red rounded-xl hover:bg-rdc-red hover:text-white transition-all" title="Rejeter">
@@ -185,7 +179,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-10 py-8 text-center text-slate-500 font-medium">Aucun document à vérifier.</td>
+                        <td colspan="5" class="px-10 py-12 sm:py-20 text-center text-slate-500 font-medium">Aucun document à vérifier.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -193,7 +187,7 @@
         </div>
         
         <!-- Pagination -->
-        <div class="px-10 py-6 bg-slate-50/30 border-t border-slate-50">
+        <div class="px-4 sm:px-10 py-4 sm:py-6 bg-slate-50/30 border-t border-slate-50">
             {{ $documents->links() }}
         </div>
     </div>

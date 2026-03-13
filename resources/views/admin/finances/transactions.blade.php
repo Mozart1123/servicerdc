@@ -25,43 +25,63 @@
     </div>
 
     <!-- Transactions List -->
-    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div class="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Historique des Transactions</h3>
-            <div class="flex gap-2">
-                <button class="px-5 py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl">Exporter CSV</button>
+    <div class="bg-white rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="p-5 sm:p-8 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 bg-slate-50/30">
+            <h3 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">Historique des Transactions</h3>
+            <div class="flex select-none">
+                <button class="px-5 py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl w-full sm:w-auto">Exporter CSV</button>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
+        <div class="overflow-hidden w-full">
+            <table class="w-full text-left table-fixed sm:table-auto">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Référence</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Client / Artisan</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Méthode</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</th>
+                        <th class="w-1/5 sm:w-auto px-2 sm:px-8 py-3 sm:py-6 text-[7px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center sm:text-left">Réf.</th>
+                        <th class="w-1/4 sm:w-auto px-2 sm:px-8 py-3 sm:py-6 text-[7px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center sm:text-left">Client/Artisan</th>
+                        <th class="w-[15%] sm:w-auto px-2 sm:px-8 py-3 sm:py-6 text-[7px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center sm:text-left">Montant</th>
+                        <th class="w-1/5 sm:w-auto px-2 sm:px-8 py-3 sm:py-6 text-[7px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center sm:text-left">Méthode</th>
+                        <th class="w-1/5 sm:w-auto px-2 sm:px-8 py-3 sm:py-6 text-[7px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center sm:text-left">Statut</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     <tr class="group hover:bg-slate-50/50 transition-colors">
-                        <td class="px-8 py-6 font-mono text-xs font-black text-slate-400 uppercase">#TRX-88219</td>
-                        <td class="px-8 py-6">
-                            <p class="text-sm font-black text-slate-900">Jean Mukendi</p>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Vers: Artisan Plombier</p>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 font-mono text-[8px] sm:text-xs font-black text-slate-400 uppercase text-center sm:text-left truncate">#TRX-88219</td>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center sm:text-left">
+                            <p class="text-[9px] sm:text-sm font-black text-slate-900 leading-tight truncate">Jean Mukendi</p>
+                            <p class="text-[7px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate mt-0.5 sm:mt-0">Artisan Plombier</p>
                         </td>
-                        <td class="px-8 py-6 font-black text-slate-900">125.00$</td>
-                        <td class="px-8 py-6 flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center p-1.5 grayscale shrink-0">
-                                <i class="fas fa-mobile-screen-button text-slate-400"></i>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 font-black text-[10px] sm:text-base text-slate-900 text-center sm:text-left">125$</td>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center sm:text-left">
+                            <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 justify-center sm:justify-start">
+                                <div class="hidden sm:flex w-8 h-8 rounded-lg bg-slate-100 items-center justify-center p-1.5 grayscale shrink-0">
+                                    <i class="fas fa-mobile-screen-button text-slate-400"></i>
+                                </div>
+                                <span class="text-[8px] sm:text-[10px] font-black text-slate-900 uppercase">M-Pesa</span>
                             </div>
-                            <span class="text-[10px] font-black text-slate-900 uppercase">M-Pesa</span>
                         </td>
-                        <td class="px-8 py-6">
-                            <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-lg">Succès</span>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center sm:text-left">
+                            <span class="inline-block px-1.5 sm:px-3 py-1 bg-emerald-50 text-emerald-600 text-[7px] sm:text-[9px] font-black uppercase rounded-md sm:rounded-lg">Succès</span>
                         </td>
                     </tr>
-                    <!-- Add a few more mock rows if needed -->
+                    <tr class="group hover:bg-slate-50/50 transition-colors">
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 font-mono text-[8px] sm:text-xs font-black text-slate-400 uppercase text-center sm:text-left truncate">#TRX-88220</td>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center sm:text-left">
+                            <p class="text-[9px] sm:text-sm font-black text-slate-900 leading-tight truncate">Marie Kalala</p>
+                            <p class="text-[7px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate mt-0.5 sm:mt-0">Électricien</p>
+                        </td>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 font-black text-[10px] sm:text-base text-slate-900 text-center sm:text-left">45.50$</td>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center sm:text-left">
+                            <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 justify-center sm:justify-start">
+                                <div class="hidden sm:flex w-8 h-8 rounded-lg bg-slate-100 items-center justify-center p-1.5 grayscale shrink-0">
+                                    <i class="fas fa-credit-card text-slate-400"></i>
+                                </div>
+                                <span class="text-[8px] sm:text-[10px] font-black text-slate-900 uppercase">Airtel</span>
+                            </div>
+                        </td>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center sm:text-left">
+                            <span class="inline-block px-1.5 sm:px-3 py-1 bg-amber-50 text-amber-600 text-[7px] sm:text-[9px] font-black uppercase rounded-md sm:rounded-lg">Attente</span>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

@@ -114,9 +114,9 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/report', [UserDashboardController::class, 'report'])->name('report');
 
         // Service Requests (Custom service requests from users)
-        Route::get('/service-requests', [ServiceRequestController::class, 'index'])->name('service-requests.index');
-        Route::get('/service-requests/{serviceRequest}', [ServiceRequestController::class, 'show'])->name('service-requests.show');
-        Route::post('/service-requests', [ServiceRequestController::class, 'store'])->name('service-requests.store');
+        Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
+        Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
+        Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
     });
 
 // Admin Routes

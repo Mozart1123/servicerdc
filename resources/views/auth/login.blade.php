@@ -3,16 +3,16 @@
 @section('title', 'Connexion')
 
 @section('content')
-<div class="glass-panel p-8 md:p-10 rounded-3xl relative overflow-hidden backdrop-blur-3xl shadow-2xl border border-white/60">
+<div class="glass-panel p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl relative overflow-hidden backdrop-blur-3xl shadow-2xl border border-white/60">
     
     <!-- Background Gradient Blob -->
     <div class="absolute top-0 right-0 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
     <div class="absolute bottom-0 left-0 w-64 h-64 bg-yellow-100/30 rounded-full blur-3xl -z-10 -translate-x-1/2 translate-y-1/2"></div>
 
     <!-- Header -->
-    <div class="mb-10 text-center lg:text-left">
-        <h2 class="text-3xl font-bold text-slate-900 mb-2 font-heading">Bon retour !</h2>
-        <p class="text-slate-500 text-sm">Entrez vos identifiants pour accéder à votre espace.</p>
+    <div class="mb-6 sm:mb-10 text-center lg:text-left">
+        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-1.5 sm:mb-2 font-heading">Bon retour !</h2>
+        <p class="text-slate-500 text-xs sm:text-sm">Entrez vos identifiants pour accéder.</p>
     </div>
 
     <!-- Error Messages -->
@@ -27,32 +27,32 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('login') }}" class="space-y-6">
+    <form method="POST" action="{{ route('login') }}" class="space-y-4 sm:space-y-6">
         @csrf
 
         <!-- Email Field -->
         <div class="premium-input-group">
-            <div class="absolute left-4 top-3.5 text-slate-400 pointer-events-none">
+            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                 <i class="fas fa-envelope"></i>
             </div>
             <input type="email" id="email" name="email" class="premium-input placeholder-transparent peer focus:ring-4 focus:ring-blue-100" 
                    placeholder="Email" value="{{ old('email') }}" required autofocus>
-            <label for="email" class="premium-label ml-5 peer-placeholder-shown:text-slate-400 peer-focus:text-rdc-blue">
+            <label for="email" class="premium-label">
                 Adresse Email
             </label>
         </div>
 
         <!-- Password Field -->
         <div class="premium-input-group">
-            <div class="absolute left-4 top-3.5 text-slate-400 pointer-events-none">
+            <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                 <i class="fas fa-lock"></i>
             </div>
             <input type="password" id="password" name="password" class="premium-input placeholder-transparent peer focus:ring-4 focus:ring-blue-100" 
                    placeholder="Mot de passe" required>
-            <label for="password" class="premium-label ml-5 peer-placeholder-shown:text-slate-400 peer-focus:text-rdc-blue">
+            <label for="password" class="premium-label">
                 Mot de passe
             </label>
-            <button type="button" class="toggle-password absolute right-4 top-3.5 text-slate-400 hover:text-rdc-blue transition-colors cursor-pointer z-10">
+            <button type="button" class="toggle-password absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rdc-blue transition-colors cursor-pointer z-10">
                 <i class="fas fa-eye"></i>
             </button>
         </div>
@@ -74,8 +74,8 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="w-full py-4 px-6 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-600/40 transform hover:-translate-y-1 transition-all duration-300 group overflow-hidden relative">
-            <span class="relative z-10 flex items-center justify-center gap-2">
+        <button type="submit" class="w-full py-3.5 sm:py-4 px-6 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-600/40 transform hover:-translate-y-1 transition-all duration-300 group overflow-hidden relative">
+            <span class="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
                 Se connecter
                 <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
             </span>
@@ -84,30 +84,30 @@
         </button>
 
         <!-- Divider -->
-        <div class="relative py-4">
+        <div class="relative py-2 sm:py-4">
             <div class="absolute inset-0 flex items-center">
                 <div class="w-full border-t border-slate-200"></div>
             </div>
-            <div class="relative flex justify-center text-xs uppercase">
-                <span class="bg-white/80 backdrop-blur-sm px-3 text-slate-400 font-semibold tracking-wider">Ou continuer avec</span>
+            <div class="relative flex justify-center text-[10px] uppercase">
+                <span class="bg-white/80 backdrop-blur-sm px-3 text-slate-400 font-semibold tracking-wider">Ou</span>
             </div>
         </div>
 
         <!-- Social Login -->
-        <div class="grid grid-cols-2 gap-4">
-            <a href="{{ url('auth/google') }}" class="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+            <a href="{{ url('auth/google') }}" class="flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                <span class="text-sm font-semibold text-slate-600 group-hover:text-slate-900">Google</span>
+                <span class="text-xs sm:text-sm font-semibold text-slate-600 group-hover:text-slate-900">Google</span>
             </a>
-            <a href="{{ url('auth/facebook') }}" class="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
+            <a href="{{ url('auth/facebook') }}" class="flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
                 <i class="fab fa-facebook text-[#1877F2] text-lg group-hover:scale-110 transition-transform"></i>
-                <span class="text-sm font-semibold text-slate-600 group-hover:text-slate-900">Facebook</span>
+                <span class="text-xs sm:text-sm font-semibold text-slate-600 group-hover:text-slate-900">Facebook</span>
             </a>
         </div>
     </form>
 
     <!-- Footer Register Link -->
-    <div class="mt-8 text-center text-sm text-slate-500">
+    <div class="mt-6 sm:mt-8 text-center text-[13px] sm:text-sm text-slate-500">
         Pas encore inscrit ? 
         <a href="{{ route('register') }}" class="text-rdc-dark-blue font-bold hover:text-rdc-blue transition-colors ml-1 relative inline-block group">
             Créer un compte

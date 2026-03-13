@@ -31,40 +31,37 @@
     </div>
 
     <!-- Users Table Card -->
-    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+    <div class="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto sm:overflow-x-visible">
+            <table class="w-full text-left border-collapse table-fixed sm:table-auto">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Utilisateur & Contact</th>
-                        <th class="px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Type / Rôle</th>
-                        <th class="px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Date d'inscription</th>
-                        <th class="px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Statut</th>
-                        <th class="px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                        <th class="w-1/3 sm:w-auto px-2 sm:px-8 py-3 sm:py-5 text-[7px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-tighter sm:tracking-widest">Utilisateur</th>
+                        <th class="w-1/6 sm:w-auto px-2 sm:px-8 py-3 sm:py-5 text-[7px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center">Rôle</th>
+                        <th class="hidden sm:table-cell px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Inscription</th>
+                        <th class="w-1/5 sm:w-auto px-2 sm:px-8 py-3 sm:py-5 text-[7px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center">Statut</th>
+                        <th class="w-1/4 sm:w-auto px-2 sm:px-8 py-3 sm:py-5 text-[7px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-tighter sm:tracking-widest text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse($users as $user)
                     <tr class="hover:bg-slate-50/30 transition-colors group">
-                        <td class="px-8 py-5">
-                            <div class="flex items-center gap-4">
-                                <div class="relative">
+                        <td class="px-2 sm:px-8 py-3 sm:py-5">
+                            <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
+                                <div class="relative shrink-0">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background={{ $user->isAdmin() ? '007FFF' : 'F1F5F9' }}&color={{ $user->isAdmin() ? 'fff' : '64748B' }}" 
-                                         class="w-12 h-12 rounded-2xl shadow-sm border border-slate-100" alt="">
+                                         class="w-7 h-7 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl shadow-sm border border-slate-100" alt="">
                                     @if($user->status === 'active')
-                                    <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
+                                    <span class="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-2 h-2 sm:w-4 sm:h-4 bg-emerald-500 border border-white rounded-full"></span>
                                     @endif
                                 </div>
-                                <div>
-                                    <p class="text-sm font-bold text-slate-900 group-hover:text-rdc-blue transition-colors">{{ $user->name }}</p>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        <i class="fas fa-envelope text-[10px] text-slate-400"></i>
-                                        <p class="text-[11px] text-slate-500 font-medium">{{ $user->email }}</p>
-                                    </div>
+                                <div class="overflow-hidden">
+                                    <p class="text-[9px] sm:text-sm font-bold text-slate-900 group-hover:text-rdc-blue transition-colors truncate leading-tight">{{ $user->name }}</p>
+                                    <p class="text-[7px] sm:text-[11px] text-slate-500 font-medium truncate mt-0.5">{{ $user->email }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-8 py-5">
+                        <td class="px-2 sm:px-8 py-3 sm:py-5 text-center sm:text-left">
                             @php
                                 $roleClass = match($user->role) {
                                     'super_admin' => 'bg-slate-900 text-white',
@@ -72,45 +69,44 @@
                                     default => 'bg-slate-100 text-slate-600'
                                 };
                             @endphp
-                            <span class="px-3 py-1.5 {{ $roleClass }} text-[10px] font-bold rounded-xl uppercase tracking-wider">
-                                {{ $user->role === 'super_admin' ? 'Super Admin' : ($user->role === 'admin' ? 'Admin' : 'Utilisateur') }}
+                            <span class="inline-block px-1.5 sm:px-3 py-1 sm:py-1.5 {{ $roleClass }} text-[6px] sm:text-[10px] font-bold rounded-md sm:rounded-xl uppercase tracking-tighter sm:tracking-wider">
+                                {{ $user->role === 'super_admin' ? 'S.Admin' : ($user->role === 'admin' ? 'Admin' : 'User') }}
                             </span>
                         </td>
-                        <td class="px-8 py-5">
+                        <td class="hidden sm:table-cell px-8 py-5">
                             <p class="text-xs font-bold text-slate-600">{{ $user->created_at->format('d M Y') }}</p>
                             <p class="text-[10px] text-slate-400 mt-1 uppercase">{{ $user->created_at->diffForHumans() }}</p>
                         </td>
-                        <td class="px-8 py-5">
+                        <td class="px-2 sm:px-8 py-3 sm:py-5 text-center">
                             @if($user->status === 'active')
-                            <span class="flex items-center gap-1.5 text-[10px] font-extrabold text-emerald-500 uppercase bg-emerald-50 px-3 py-1.5 rounded-xl w-fit">
-                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse-soft"></span> Actif
+                            <span class="inline-flex items-center gap-1 text-[6px] sm:text-[10px] font-extrabold text-emerald-500 uppercase bg-emerald-50 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-xl">
+                                Actif
                             </span>
                             @else
-                            <span class="flex items-center gap-1.5 text-[10px] font-extrabold text-rdc-red uppercase bg-red-50 px-3 py-1.5 rounded-xl w-fit">
-                                <span class="w-1.5 h-1.5 bg-rdc-red rounded-full"></span> Suspendu
+                            <span class="inline-flex items-center gap-1 text-[6px] sm:text-[10px] font-extrabold text-rdc-red uppercase bg-red-50 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-xl">
+                                OFF
                             </span>
                             @endif
                         </td>
-                        <td class="px-8 py-5 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-rdc-blue transition-all" title="Modifier">
-                                    <i class="fas fa-edit text-xs"></i>
+                        <td class="px-2 sm:px-8 py-3 sm:py-5 text-right">
+                            <div class="flex items-center justify-end gap-1 sm:gap-2">
+                                <button class="w-6 h-6 sm:w-9 sm:h-9 flex items-center justify-center rounded-md sm:rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-rdc-blue transition-all">
+                                    <i class="fas fa-edit text-[8px] sm:text-xs"></i>
                                 </button>
                                 
                                 @if(!$user->isSuperAdmin() && $user->id !== auth()->id())
                                 <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 {{ $user->status === 'active' ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50' }} transition-all" 
-                                            title="{{ $user->status === 'active' ? 'Suspendre' : 'Activer' }}">
-                                        <i class="fas {{ $user->status === 'active' ? 'fa-user-slash' : 'fa-user-check' }} text-xs"></i>
+                                    <button type="submit" class="w-6 h-6 sm:w-9 sm:h-9 flex items-center justify-center rounded-md sm:rounded-xl bg-slate-50 {{ $user->status === 'active' ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50' }} transition-all">
+                                        <i class="fas {{ $user->status === 'active' ? 'fa-user-slash' : 'fa-user-check' }} text-[8px] sm:text-xs"></i>
                                     </button>
                                 </form>
 
-                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Supprimer ?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-rdc-red hover:bg-red-50 transition-all" title="Supprimer">
-                                        <i class="fas fa-trash-alt text-xs"></i>
+                                    <button type="submit" class="w-6 h-6 sm:w-9 sm:h-9 flex items-center justify-center rounded-md sm:rounded-xl bg-slate-50 text-rdc-red hover:bg-red-50 transition-all">
+                                        <i class="fas fa-trash-alt text-[8px] sm:text-xs"></i>
                                     </button>
                                 </form>
                                 @endif
@@ -124,7 +120,7 @@
                                 <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 text-3xl mb-4">
                                     <i class="fas fa-users-slash"></i>
                                 </div>
-                                <p class="text-slate-500 font-medium">Aucun utilisateur trouvé.</p>
+                                <p class="text-slate-500 font-medium">Aucun utilisateur.</p>
                             </div>
                         </td>
                     </tr>
@@ -134,7 +130,7 @@
         </div>
         
         <!-- Pagination -->
-        <div class="px-8 py-6 bg-slate-50/50 border-t border-slate-50">
+        <div class="px-4 sm:px-8 py-4 sm:py-6 bg-slate-50/50 border-t border-slate-50">
             {{ $users->links() }}
         </div>
     </div>

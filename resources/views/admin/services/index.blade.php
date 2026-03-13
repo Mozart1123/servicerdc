@@ -26,68 +26,68 @@
     </div>
 
     <!-- Services Table Card -->
-    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+    <div class="bg-white rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto sm:overflow-x-visible">
+            <table class="w-full text-left table-fixed sm:table-auto">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Service</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Catégorie</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Prix départ</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Localisation</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</th>
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                        <th class="w-1/2 sm:w-auto px-4 sm:px-8 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest">Service</th>
+                        <th class="hidden lg:table-cell px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Catégorie</th>
+                        <th class="w-1/6 sm:w-auto px-2 sm:px-8 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center sm:text-left">Prix</th>
+                        <th class="hidden sm:table-cell px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Localisation</th>
+                        <th class="w-1/6 sm:w-auto px-2 sm:px-8 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-center">Statut</th>
+                        <th class="w-1/2 sm:w-auto px-4 sm:px-8 py-4 sm:py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse($services as $service)
                     <tr class="group hover:bg-slate-50/50 transition-colors">
-                        <td class="px-8 py-6">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-blue-50 text-rdc-blue flex items-center justify-center font-black shadow-inner">
-                                    <i class="fas fa-screwdriver-wrench"></i>
+                        <td class="px-4 sm:px-8 py-4 sm:py-6">
+                            <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
+                                <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-blue-50 text-rdc-blue flex items-center justify-center font-black shadow-inner shrink-0">
+                                    <i class="fas fa-screwdriver-wrench text-xs sm:text-base"></i>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-black text-slate-900 group-hover:text-rdc-blue transition-colors">{{ $service->title }}</p>
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Artisan ID: #{{ $service->artisan_id }}</p>
+                                <div class="overflow-hidden">
+                                    <p class="text-[10px] sm:text-sm font-black text-slate-900 group-hover:text-rdc-blue transition-colors truncate leading-tight">{{ $service->title }}</p>
+                                    <p class="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate mt-0.5 sm:mt-1">ID: #{{ $service->artisan_id }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-8 py-6">
+                        <td class="hidden lg:table-cell px-8 py-6">
                             <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[9px] font-black uppercase tracking-widest rounded-lg">
                                 {{ $service->category->name ?? 'N/A' }}
                             </span>
                         </td>
-                        <td class="px-8 py-6">
-                            <span class="text-sm font-black text-slate-900">{{ number_format($service->price, 2) }}$</span>
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center sm:text-left">
+                            <span class="text-[9px] sm:text-sm font-black text-slate-900">{{ number_format($service->price, 2) }}$</span>
                         </td>
-                        <td class="px-8 py-6">
+                        <td class="hidden sm:table-cell px-8 py-6">
                             <div class="flex items-center gap-2 text-slate-500 text-xs font-bold">
                                 <i class="fas fa-location-dot opacity-30"></i>
                                 {{ $service->location }}
                             </div>
                         </td>
-                        <td class="px-8 py-6">
-                            <div class="flex items-center gap-2">
+                        <td class="px-2 sm:px-8 py-4 sm:py-6 text-center">
+                            <div class="flex items-center justify-center gap-1">
                                 @if($service->is_verified)
-                                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Vérifié</span>
+                                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    <span class="hidden sm:inline text-[10px] font-black text-emerald-600 uppercase tracking-widest">OK</span>
                                 @else
-                                    <span class="w-2 h-2 bg-slate-300 rounded-full"></span>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Standard</span>
+                                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-slate-300 rounded-full"></span>
+                                    <span class="hidden sm:inline text-[10px] font-black text-slate-400 uppercase tracking-widest">STD</span>
                                 @endif
                             </div>
                         </td>
-                        <td class="px-8 py-6 text-right">
-                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <a href="{{ route('admin.services.edit', $service) }}" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-xl hover:text-rdc-blue hover:border-rdc-blue transition-all shadow-sm">
-                                    <i class="fas fa-pen text-xs"></i>
+                        <td class="px-4 sm:px-8 py-4 sm:py-6 text-right">
+                            <div class="flex items-center justify-end gap-1 sm:gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="{{ route('admin.services.edit', $service) }}" class="w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-lg sm:rounded-xl hover:text-rdc-blue hover:border-rdc-blue transition-all shadow-sm">
+                                    <i class="fas fa-pen text-[8px] sm:text-xs"></i>
                                 </a>
-                                <form action="{{ route('admin.services.destroy', $service) }}" method="POST" onsubmit="return confirm('Supprimer ce service ?')">
+                                <form action="{{ route('admin.services.destroy', $service) }}" method="POST" onsubmit="return confirm('Confirmer ?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-xl hover:text-rdc-red hover:border-rdc-red transition-all shadow-sm">
-                                        <i class="fas fa-trash text-xs"></i>
+                                    <button type="submit" class="w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-lg sm:rounded-xl hover:text-rdc-red hover:border-rdc-red transition-all shadow-sm">
+                                        <i class="fas fa-trash text-[8px] sm:text-xs"></i>
                                     </button>
                                 </form>
                             </div>
@@ -100,9 +100,8 @@
                                 <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 text-4xl mb-4">
                                     <i class="fas fa-search"></i>
                                 </div>
-                                <h4 class="text-lg font-black text-slate-400 uppercase tracking-widest">Aucun service trouvé</h4>
-                                <p class="text-sm text-slate-300 mt-2 font-medium">Commencez par créer le premier service d'élite.</p>
-                                <a href="{{ route('admin.services.create') }}" class="mt-6 px-8 py-3 bg-rdc-blue text-white font-black rounded-xl text-[10px] uppercase tracking-widest">Créer un service</a>
+                                <h4 class="text-lg font-black text-slate-400 uppercase tracking-widest">Aucun service</h4>
+                                <a href="{{ route('admin.services.create') }}" class="mt-6 px-8 py-3 bg-rdc-blue text-white font-black rounded-xl text-[10px] uppercase tracking-widest">Créer</a>
                             </div>
                         </td>
                     </tr>
@@ -111,9 +110,9 @@
             </table>
         </div>
         
-        @if($services->hasPages())
+        @if(optional($services)->hasPages())
         <div class="px-8 py-6 bg-slate-50/50 border-t border-slate-50">
-            {{ $services->links() }}
+            {{ optional($services)->links() }}
         </div>
         @endif
     </div>

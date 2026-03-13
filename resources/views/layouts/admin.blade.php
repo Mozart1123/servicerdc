@@ -13,7 +13,8 @@
     <!-- Icons & Stylings -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -77,7 +78,11 @@
            class="fixed inset-y-0 left-0 w-80 glass-sidebar z-50 transform lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl lg:shadow-none overflow-hidden">
         
         <!-- [ENTÊTE ADMIN] -->
-        <div class="p-8 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50">
+        <div class="p-8 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50 relative">
+            <!-- Close button for mobile -->
+            <button @click="sidebarOpen = false" class="absolute top-4 right-4 lg:hidden p-2 text-slate-400 hover:text-slate-600 bg-white rounded-lg shadow-sm border border-slate-100 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="flex items-center gap-4">
                 <div class="relative">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=007FFF&color=fff&size=128" 
@@ -115,104 +120,63 @@
                     <x-admin-nav-item route="admin.alerts" icon="fas fa-triangle-exclamation" label="Alertes système" badge="5" badgeColor="bg-rdc-red" />
                 </ul>
             </section>
+            
+            <ul class="space-y-1">
+                <!-- [GESTION UTILISATEURS] -->
+                <x-admin-dropdown-nav icon="fas fa-users-gear" label="Utilisateurs" :activePrefixes="['admin.users', 'admin.users-mgmt']">
+                    <x-admin-dropdown-item route="admin.users.index" label="Tous les utilisateurs" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.pending" label="En attente" badge="12" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.flagged" label="Signalés/Suspendus" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.docs" label="Vérification KYC" />
+                </x-admin-dropdown-nav>
+                
+                <!-- [MODÉRATION & RESSOURCES] -->
+                <x-admin-dropdown-nav icon="fas fa-shield-halved" label="Modération & Opérations" :activePrefixes="['admin.moderation', 'admin.categories', 'admin.jobs']">
+                    <x-admin-dropdown-item route="admin.moderation.services" label="Services signalés" />
+                    <x-admin-dropdown-item route="admin.moderation.reviews" label="Évaluations à modérer" />
+                    <x-admin-dropdown-item route="admin.categories.index" label="Catégories système" />
+                    <x-admin-dropdown-item route="admin.jobs.index" label="Offres d'emploi" />
+                </x-admin-dropdown-nav>
 
-            <!-- [GESTION UTILISATEURS] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-users-gear text-[8px]"></i> GESTION UTILISATEURS
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.users.index" icon="fas fa-users" label="Tous les utilisateurs" />
-                    <x-admin-nav-item route="admin.users-mgmt.pending" icon="fas fa-hourglass-start" label="En attente de validation" badge="12" badgeColor="bg-rdc-blue" />
-                    <x-admin-nav-item route="admin.users-mgmt.flagged" icon="fas fa-triangle-exclamation" label="Signalés/Suspendus" />
-                    <x-admin-nav-item route="admin.users-mgmt.docs" icon="fas fa-file-lines" label="Documents à vérifier" />
-                </ul>
-            </section>
+                <!-- [FINANCES] -->
+                <x-admin-dropdown-nav icon="fas fa-wallet" label="Gestion Financière" :activePrefixes="['admin.finances']">
+                    <x-admin-dropdown-item route="admin.finances.transactions" label="Transactions" />
+                    <x-admin-dropdown-item route="admin.finances.commissions" label="Commissions" />
+                    <x-admin-dropdown-item route="admin.finances.invoicing" label="Facturation" />
+                </x-admin-dropdown-nav>
 
-            <!-- [MODÉRATION] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-shield-halved text-[8px]"></i> MODÉRATION
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.moderation.services" icon="fas fa-screwdriver-wrench" label="Services signalés" />
-                    <x-admin-nav-item route="admin.moderation.reviews" icon="fas fa-star" label="Évaluations à modérer" />
-                    <x-admin-nav-item route="admin.categories.index" icon="fas fa-tags" label="Catégories de services" />
-                    <x-admin-nav-item route="admin.jobs.index" icon="fas fa-briefcase" label="Offres d'emploi" />
-                </ul>
-            </section>
+                <!-- [CONTENU & COMMUNICATION] -->
+                <x-admin-dropdown-nav icon="fas fa-bullhorn" label="Communication" :activePrefixes="['admin.content']">
+                    <x-admin-dropdown-item route="admin.content.news" label="Actualités/Blog" />
+                    <x-admin-dropdown-item route="admin.content.newsletter" label="Newsletter" />
+                    <x-admin-dropdown-item route="admin.content.push" label="Alertes Push" />
+                </x-admin-dropdown-nav>
 
-            <!-- [FINANCES] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-wallet text-[8px]"></i> FINANCES
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.finances.transactions" icon="fas fa-credit-card" label="Transactions" />
-                    <x-admin-nav-item route="admin.finances.commissions" icon="fas fa-chart-bar" label="Commissions" />
-                    <x-admin-nav-item route="admin.finances.invoicing" icon="fas fa-file-invoice" label="Facturation" />
-                </ul>
-            </section>
+                <!-- [RAPPORTS & ANALYTICS] -->
+                <x-admin-dropdown-nav icon="fas fa-chart-pie" label="Rapports Data" :activePrefixes="['admin.reports-hq']">
+                    <x-admin-dropdown-item route="admin.reports-hq.analytics" label="Analytics globaux" />
+                    <x-admin-dropdown-item route="admin.reports-hq.financial" label="Rapports financiers" />
+                    <x-admin-dropdown-item route="admin.reports-hq.export" label="Exports massifs" />
+                </x-admin-dropdown-nav>
 
-            <!-- [CONTENU] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-pen-nib text-[8px]"></i> CONTENU
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.content.news" icon="fas fa-bullhorn" label="Actualités/Blog" />
-                    <x-admin-nav-item route="admin.content.newsletter" icon="fas fa-envelope-open-text" label="Newsletter" />
-                    <x-admin-nav-item route="admin.content.push" icon="fas fa-bell" label="Notifications push" />
-                </ul>
-            </section>
+                <!-- [SUPPORT CLIENT] -->
+                <x-admin-dropdown-nav icon="fas fa-headset" label="Support ServiceRDC" :activePrefixes="['admin.support-hq']">
+                    <x-admin-dropdown-item route="admin.support-hq.tickets" label="Tickets ouverts" />
+                    <x-admin-dropdown-item route="admin.support-hq.docs" label="Base de connaissances" />
+                    <x-admin-dropdown-item route="admin.support-hq.suggestions" label="Boîte à idées" />
+                </x-admin-dropdown-nav>
 
-            <!-- [PARAMÈTRES] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-gears text-[8px]"></i> PARAMÈTRES
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.settings.index" icon="fas fa-gear" label="Configuration générale" />
-                    <x-admin-nav-item route="admin.settings-hq.geo" icon="fas fa-location-dot" label="Zones géographiques" />
-                    <x-admin-nav-item route="admin.settings-hq.api" icon="fas fa-plug" label="Intégrations API" />
-                </ul>
-            </section>
-
-            <!-- [RAPPORTS] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-layer-group text-[8px]"></i> RAPPORTS
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.reports-hq.analytics" icon="fas fa-chart-pie" label="Analytics détaillés" />
-                    <x-admin-nav-item route="admin.reports-hq.financial" icon="fas fa-arrow-trend-up" label="Rapports financiers" />
-                    <x-admin-nav-item route="admin.reports-hq.export" icon="fas fa-file-export" label="Exports de données" />
-                </ul>
-            </section>
-
-            <!-- [OUTILS TECHNIQUES] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-microchip text-[8px]"></i> OUTILS TECHNIQUES
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.tools.maintenance" icon="fas fa-screwdriver-wrench" label="Maintenance" />
-                    <x-admin-nav-item route="admin.tools.cache" icon="fas fa-trash" label="Cache" />
-                    <x-admin-nav-item route="admin.tools.logs" icon="fas fa-folder-open" label="Logs système" />
-                </ul>
-            </section>
-
-            <!-- [SUPPORT] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-headset text-[8px]"></i> SUPPORT
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.support-hq.tickets" icon="fas fa-phone" label="Tickets support" />
-                    <x-admin-nav-item route="admin.support-hq.docs" icon="fas fa-book-open" label="Documentation" />
-                    <x-admin-nav-item route="admin.support-hq.suggestions" icon="fas fa-lightbulb" label="Suggestions" />
-                </ul>
-            </section>
+                <!-- [CONFIGURATION TECHNIQUE] -->
+                <x-admin-dropdown-nav icon="fas fa-gears" label="Configuration Core" :activePrefixes="['admin.settings', 'admin.settings-hq', 'admin.tools']">
+                    <x-admin-dropdown-item route="admin.settings.index" label="Paramètres généraux" />
+                    <x-admin-dropdown-item route="admin.settings-hq.geo" label="Zones de service" />
+                    <x-admin-dropdown-item route="admin.settings-hq.api" label="Intégrations (API)" />
+                    <div class="h-px bg-slate-200 my-1 mx-2"></div>
+                    <x-admin-dropdown-item route="admin.tools.maintenance" label="Mode maintenance" badge="OFF" badgeColor="bg-slate-400" />
+                    <x-admin-dropdown-item route="admin.tools.cache" label="Purge cache" />
+                    <x-admin-dropdown-item route="admin.tools.logs" label="Logs erreurs" />
+                </x-admin-dropdown-nav>
+            </ul>
 
             <div class="h-10"></div>
         </nav>

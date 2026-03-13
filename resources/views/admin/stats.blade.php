@@ -9,22 +9,22 @@
 <div class="space-y-8 pb-20" x-data="statPulse()">
     
     <!-- Top Live Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <!-- Metric: Connections -->
-        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Connectés Live</span>
+                <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Connectés</span>
                 <span class="flex h-2 w-2 relative">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
             </div>
             <div class="flex items-baseline gap-2">
-                <h3 class="text-4xl font-heading font-black text-slate-900" x-text="activeUsers">248</h3>
-                <span class="text-xs font-bold text-emerald-500" x-text="'+' + userTrend + '%' ">+5%</span>
+                <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900" x-text="activeUsers">248</h3>
+                <span class="text-[10px] sm:text-xs font-bold text-emerald-500" x-text="'+' + userTrend + '%' ">+5%</span>
             </div>
-            <!-- Mini Sparkline Placeholder -->
-            <div class="mt-4 h-12 flex items-end gap-1">
+            <!-- Mini Sparkline -->
+            <div class="mt-4 h-10 sm:h-12 flex items-end gap-1">
                 <template x-for="height in userSparkline">
                     <div class="flex-1 bg-rdc-blue/10 rounded-full transition-all duration-500" :style="'height: ' + height + '%'"></div>
                 </template>
@@ -32,16 +32,16 @@
         </div>
 
         <!-- Metric: API Requests -->
-        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Requêtes / Min</span>
-                <i class="fas fa-bolt text-amber-500 animate-pulse"></i>
+                <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Requêtes</span>
+                <i class="fas fa-bolt text-amber-500 animate-pulse text-xs"></i>
             </div>
             <div class="flex items-baseline gap-2">
-                <h3 class="text-4xl font-heading font-black text-slate-900" x-text="reqPerMin">1.2k</h3>
-                <span class="text-xs font-bold text-slate-400">Stable</span>
+                <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900" x-text="reqPerMin">1.2k</h3>
+                <span class="text-[10px] sm:text-xs font-bold text-slate-400">Live</span>
             </div>
-            <div class="mt-4 h-12 flex items-end gap-1">
+            <div class="mt-4 h-10 sm:h-12 flex items-end gap-1">
                 <template x-for="height in reqSparkline">
                     <div class="flex-1 bg-amber-500/10 rounded-full transition-all duration-500" :style="'height: ' + height + '%'"></div>
                 </template>
@@ -49,138 +49,130 @@
         </div>
 
         <!-- Metric: Server Load -->
-        <div class="bg-slate-900 p-6 rounded-[2.5rem] shadow-xl relative overflow-hidden group">
+        <div class="bg-slate-900 p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-xl relative overflow-hidden group">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-white/40 uppercase tracking-widest">Charge Serveur</span>
-                <i class="fas fa-microchip text-rdc-blue"></i>
+                <span class="text-[8px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest">Charge</span>
+                <i class="fas fa-microchip text-rdc-blue text-xs"></i>
             </div>
             <div class="flex items-baseline gap-2 relative z-10">
-                <h3 class="text-4xl font-heading font-black text-white" x-text="cpuLoad + '%'">14%</h3>
-                <span class="text-[10px] font-black text-rdc-blue uppercase tracking-widest">Excellent</span>
+                <h3 class="text-3xl sm:text-4xl font-heading font-black text-white" x-text="cpuLoad + '%'">14%</h3>
             </div>
-            <div class="mt-4 bg-white/5 h-2 rounded-full overflow-hidden">
+            <div class="mt-4 bg-white/5 h-1.5 sm:h-2 rounded-full overflow-hidden">
                 <div class="h-full bg-rdc-blue transition-all duration-1000" :style="'width: ' + cpuLoad + '%'"></div>
             </div>
         </div>
 
         <!-- Metric: Conversion -->
-        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Taux de Succès</span>
-                <i class="fas fa-shield-check text-emerald-500"></i>
+                <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Sécurité</span>
+                <i class="fas fa-shield-check text-emerald-500 text-xs"></i>
             </div>
             <div class="flex items-baseline gap-2">
-                <h3 class="text-4xl font-heading font-black text-slate-900">99.9%</h3>
-                <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Active Guard</span>
+                <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">99%</h3>
             </div>
-            <div class="mt-4 h-12 flex items-center justify-center">
-                 <div class="w-full h-1 bg-emerald-500 rounded-full"></div>
+            <div class="mt-4 h-8 sm:h-12 flex items-center justify-center">
+                 <div class="w-full h-0.5 sm:h-1 bg-emerald-500 rounded-full"></div>
             </div>
         </div>
     </div>
 
     <!-- Charts Hub -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         <!-- Live Traffic Chart -->
-        <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-8">
+        <div class="lg:col-span-2 bg-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
                 <div>
-                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Flux de Trafic en Direct</h3>
-                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Requêtes entrantes par seconde</p>
+                    <h3 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">Trafic Live</h3>
+                    <p class="text-[8px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Requêtes par seconde</p>
                 </div>
                 <div class="flex gap-2">
-                    <span class="px-3 py-1 bg-slate-100 text-[10px] font-black uppercase rounded-lg">Last 5 min</span>
+                    <span class="px-2.5 py-1 bg-slate-100 text-[8px] sm:text-[10px] font-black uppercase rounded-lg">Realtime</span>
                 </div>
             </div>
-            <div class="h-80 w-full">
+            <div class="h-60 sm:h-80 w-full">
                 <canvas id="liveTrafficChart"></canvas>
             </div>
         </div>
 
         <!-- Geographic Pulse -->
-        <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col">
-            <div class="mb-8">
-                <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Focus Géographique</h3>
-                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Origine du trafic (Province)</p>
+        <div class="bg-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[3rem] border border-slate-100 shadow-sm flex flex-col">
+            <div class="mb-6 sm:mb-8">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">Géographie</h3>
+                <p class="text-[8px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Origine par Province</p>
             </div>
-            <div class="flex-1 space-y-6">
+            <div class="flex-1 space-y-5 sm:space-y-6">
                 <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <div class="flex justify-between text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
                         <span class="text-slate-900">Kinshasa</span>
                         <span class="text-rdc-blue">64%</span>
                     </div>
-                    <div class="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                    <div class="h-1.5 sm:h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                         <div class="h-full bg-rdc-blue w-[64%]"></div>
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <div class="flex justify-between text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
                         <span class="text-slate-900">Lubumbashi</span>
                         <span class="text-slate-400">18%</span>
                     </div>
-                    <div class="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                    <div class="h-1.5 sm:h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                         <div class="h-full bg-slate-900 w-[18%]"></div>
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <div class="flex justify-between text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
                         <span class="text-slate-900">Goma</span>
                         <span class="text-slate-400">12%</span>
                     </div>
-                    <div class="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                    <div class="h-1.5 sm:h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                         <div class="h-full bg-slate-400 w-[12%]"></div>
                     </div>
                 </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                        <span class="text-slate-900">Autres</span>
-                        <span class="text-slate-400">6%</span>
-                    </div>
-                    <div class="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                        <div class="h-full bg-slate-200 w-[6%]"></div>
-                    </div>
-                </div>
             </div>
-            <!-- World / Region Indicator -->
-            <div class="mt-8 pt-8 border-t border-slate-50 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-rdc-blue flex items-center justify-center">
+            <!-- Region Indicator -->
+            <div class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-50 text-rdc-blue flex items-center justify-center text-xs sm:text-base">
                         <i class="fas fa-globe-africa"></i>
                     </div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Région: AF-RD-CENTRAL</span>
+                    <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">AF-RD-CENTRAL</span>
                 </div>
-                <i class="fas fa-chevron-right text-slate-300"></i>
+                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
             </div>
         </div>
     </div>
 
     <!-- Live Event Log -->
-    <div class="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div class="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-slate-900">
-                    <i class="fas fa-list-ul"></i>
+    <div class="bg-white rounded-[2rem] sm:rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/30">
+            <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm text-slate-900 shrink-0">
+                    <i class="fas fa-list-ul text-sm sm:text-base"></i>
                 </div>
-                <div>
-                    <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Journal d'Événements Live</h3>
-                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest line-clamp-1">Interactions détectées sur les serveurs frontaux</p>
+                <div class="overflow-hidden">
+                    <h3 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight truncate">Journal Live</h3>
+                    <p class="text-[8px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest truncate">Interactions serveurs</p>
                 </div>
             </div>
-            <button class="px-6 py-2.5 bg-white border border-slate-200 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all">Clear Logs</button>
+            <button class="w-full sm:w-auto px-6 py-2.5 bg-white border border-slate-200 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 active:scale-95 transition-all">Clear</button>
         </div>
-        <div class="p-4 overflow-y-auto max-h-96 custom-scrollbar bg-slate-900 font-mono">
+        <div class="p-3 sm:p-4 overflow-y-auto max-h-[300px] sm:max-h-96 custom-scrollbar bg-slate-900 font-mono">
             <div class="space-y-2">
                 <template x-for="event in events" :key="event.id">
-                    <div class="flex gap-4 p-2 rounded hover:bg-white/5 transition-colors border-l-2" :class="event.type === 'error' ? 'border-red-500' : 'border-emerald-500'">
-                        <span class="text-white/30 text-[10px]" x-text="event.time">04:58:34</span>
-                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter" 
-                              :class="event.type === 'error' ? 'bg-red-500/20 text-red-500' : 'bg-emerald-500/20 text-emerald-500'"
-                              x-text="event.label">AUTH</span>
-                        <span class="text-white/70 text-xs" x-text="event.message">Nouvel utilisateur enregistré via Google Auth</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-2 rounded hover:bg-white/5 transition-colors border-l-2" :class="event.type === 'error' ? 'border-red-500' : 'border-emerald-500'">
+                        <div class="flex items-center gap-3">
+                            <span class="text-white/30 text-[9px] sm:text-[10px]" x-text="event.time">04:58:34</span>
+                            <span class="px-2 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-tighter shrink-0" 
+                                  :class="event.type === 'error' ? 'bg-red-500/20 text-red-500' : 'bg-emerald-500/20 text-emerald-500'"
+                                  x-text="event.label">AUTH</span>
+                        </div>
+                        <span class="text-white/70 text-[10px] sm:text-xs break-words" x-text="event.message">Message...</span>
                     </div>
                 </template>
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection
