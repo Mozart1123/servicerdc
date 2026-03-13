@@ -6,8 +6,39 @@
 @section('page_subtitle', 'Monitoring en direct des interactions et des flux de données sur ServiceRDC.')
 
 @section('content')
-<div class="space-y-8 pb-20" x-data="statPulse()">
+<div class="space-y-8 pb-20" x-data="statPulse()" x-init="init()">
     
+    <!-- Top Alert Banner System -->
+    <template x-for="alert in activeAlerts" :key="alert.id">
+        <div class="mb-4 p-4 rounded-2xl flex items-center justify-between border animate-pulse-soft"
+             :class="alert.type === 'critical' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-amber-50 border-amber-200 text-amber-800'">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                     :class="alert.type === 'critical' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'">
+                    <i class="fas" :class="alert.icon"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-black uppercase tracking-tight" x-text="alert.title">ALERTE</h4>
+                    <p class="text-xs opacity-80" x-text="alert.message">Message...</p>
+                </div>
+            </div>
+            <button @click="acknowledgeAlert(alert.id)" class="px-4 py-2 bg-white border rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">Acquitter</button>
+        </div>
+    </template>
+
+    <!-- Banner for Server Load -->
+    <div x-show="cpuLoad > 85" x-transition 
+         class="mb-4 p-4 bg-red-600 text-white rounded-2xl flex items-center justify-between shadow-lg shadow-red-500/20">
+        <div class="flex items-center gap-4">
+            <i class="fas fa-warning text-xl animate-bounce"></i>
+            <div>
+                <p class="font-black uppercase tracking-widest text-xs">Alerte Critique</p>
+                <p class="text-sm font-bold">La charge serveur est critique : <span x-text="cpuLoad"></span>%</p>
+            </div>
+        </div>
+        <button @click="cpuLoad = 14" class="text-xs font-bold border border-white/30 px-3 py-1.5 rounded-lg hover:bg-white/10">Simuler retour normal</button>
+    </div>
+
     <!-- Top Live Metrics -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <!-- Metric: Connections -->
@@ -49,10 +80,11 @@
         </div>
 
         <!-- Metric: Server Load -->
-        <div class="bg-slate-900 p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-xl relative overflow-hidden group">
+        <div :class="cpuLoad > 85 ? 'bg-red-600 border-red-400' : 'bg-slate-900 border-transparent'" 
+             class="p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-xl relative overflow-hidden group border transition-colors duration-500">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[8px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest">Charge</span>
-                <i class="fas fa-microchip text-rdc-blue text-xs"></i>
+                <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest" :class="cpuLoad > 85 ? 'text-white/60' : 'text-white/40'">Charge</span>
+                <i class="fas fa-microchip text-xs" :class="cpuLoad > 85 ? 'text-white animate-spin' : 'text-rdc-blue'"></i>
             </div>
             <div class="flex items-baseline gap-2 relative z-10">
                 <h3 class="text-3xl sm:text-4xl font-heading font-black text-white" x-text="cpuLoad + '%'">14%</h3>
@@ -60,9 +92,10 @@
             <div class="mt-4 bg-white/5 h-1.5 sm:h-2 rounded-full overflow-hidden">
                 <div class="h-full bg-rdc-blue transition-all duration-1000" :style="'width: ' + cpuLoad + '%'"></div>
             </div>
+            <div x-show="cpuLoad > 85" class="absolute inset-0 bg-red-500/10 animate-pulse pointer-events-none"></div>
         </div>
 
-        <!-- Metric: Conversion -->
+        <!-- Metric: Security -->
         <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Sécurité</span>
@@ -131,48 +164,88 @@
                 </div>
             </div>
             <!-- Region Indicator -->
-            <div class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-50 flex items-center justify-between">
+            <div @click="showGeographyModal = true" class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-50 flex items-center justify-between cursor-pointer group/geo">
                 <div class="flex items-center gap-2 sm:gap-3">
-                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-50 text-rdc-blue flex items-center justify-center text-xs sm:text-base">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-50 text-rdc-blue flex items-center justify-center text-xs sm:text-base group-hover/geo:scale-110 transition-transform">
                         <i class="fas fa-globe-africa"></i>
                     </div>
-                    <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">AF-RD-CENTRAL</span>
+                    <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover/geo:text-rdc-blue transition-colors">AF-RD-CENTRAL</span>
                 </div>
-                <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+                <i class="fas fa-chevron-right text-slate-300 text-xs group-hover/geo:translate-x-1 transition-transform"></i>
             </div>
         </div>
     </div>
 
-    <!-- Live Event Log -->
-    <div class="bg-white rounded-[2rem] sm:rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div class="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/30">
-            <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm text-slate-900 shrink-0">
-                    <i class="fas fa-list-ul text-sm sm:text-base"></i>
+    <!-- Geography Modal -->
+    <div x-show="showGeographyModal" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm"
+         style="display: none;">
+        
+        <div @click.away="showGeographyModal = false" 
+             class="bg-white w-full max-w-6xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
+            
+            <!-- Modal Header -->
+            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">🗺️ Géographie — 26 Provinces de la RDC</h2>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Répertoire territorial et activités en direct</p>
                 </div>
-                <div class="overflow-hidden">
-                    <h3 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight truncate">Journal Live</h3>
-                    <p class="text-[8px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest truncate">Interactions serveurs</p>
+                <button @click="showGeographyModal = false" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-all shadow-sm">
+                    <i class="fas fa-times text-slate-400"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <template x-for="province in provinces" :key="province.id">
+                        <div class="p-6 rounded-3xl border border-slate-100 bg-white hover:border-rdc-blue/30 hover:shadow-xl hover:shadow-blue-500/5 transition-all group">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h4 class="text-lg font-black text-slate-900" x-text="province.name">Province</h4>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="flex h-2 w-2 relative">
+                                            <span x-show="province.active" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2 w-2" :class="province.active ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                                        </span>
+                                        <span class="text-[9px] font-black uppercase tracking-widest" :class="province.active ? 'text-emerald-500' : 'text-slate-400'" x-text="province.active ? '● Actif' : '○ Inactif'"></span>
+                                    </div>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-rdc-blue transition-colors">
+                                    <i class="fas fa-map-marker-alt text-sm"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-1">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Villes principales</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="city in province.cities">
+                                        <span class="px-2.5 py-1 bg-slate-50 rounded-lg text-[10px] font-bold text-slate-600 border border-slate-100" x-text="city">Ville</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
-            <button class="w-full sm:w-auto px-6 py-2.5 bg-white border border-slate-200 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 active:scale-95 transition-all">Clear</button>
-        </div>
-        <div class="p-3 sm:p-4 overflow-y-auto max-h-[300px] sm:max-h-96 custom-scrollbar bg-slate-900 font-mono">
-            <div class="space-y-2">
-                <template x-for="event in events" :key="event.id">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-2 rounded hover:bg-white/5 transition-colors border-l-2" :class="event.type === 'error' ? 'border-red-500' : 'border-emerald-500'">
-                        <div class="flex items-center gap-3">
-                            <span class="text-white/30 text-[9px] sm:text-[10px]" x-text="event.time">04:58:34</span>
-                            <span class="px-2 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-tighter shrink-0" 
-                                  :class="event.type === 'error' ? 'bg-red-500/20 text-red-500' : 'bg-emerald-500/20 text-emerald-500'"
-                                  x-text="event.label">AUTH</span>
-                        </div>
-                        <span class="text-white/70 text-[10px] sm:text-xs break-words" x-text="event.message">Message...</span>
-                    </div>
-                </template>
+
+            <!-- Modal Footer -->
+            <div class="px-8 py-4 border-t border-slate-100 bg-slate-50/30 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <span>Données consolidées par province</span>
+                <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 
+                    <span x-text="provinces.filter(p => p.active).length"></span> provinces actives
+                </span>
             </div>
         </div>
     </div>
+
     </div>
 </div>
 @endsection
@@ -185,105 +258,249 @@
             userTrend: 5,
             reqPerMin: 1240,
             cpuLoad: 14,
+            currentFilter: 'ALL',
+            searchQuery: '',
+            authFailures: 0,
+            consecutivePayFailures: 0,
+            lastAuthFailureTime: 0,
+            activeAlerts: [],
+            showGeographyModal: false,
             userSparkline: [20, 35, 50, 40, 60, 45, 80, 55, 70, 90],
             reqSparkline: [40, 45, 42, 48, 50, 45, 52, 55, 50, 48],
-            events: [
-                { id: 1, time: '04:58:01', label: 'AUTH', type: 'info', message: 'Connexion réussie: user_982' },
-                { id: 2, time: '04:58:12', label: 'JOB', type: 'info', message: 'Nouvelle candidature: #JOB-441 par artisan_22' },
-                { id: 3, time: '04:58:15', label: 'SEC', type: 'error', message: 'Tentative de brute-force bloquée (IP: 197.242.xx.xx)' },
-                { id: 4, time: '04:58:22', label: 'SERV', type: 'info', message: 'Service mis à jour: Electricité Gombe' }
+            provinces: [
+                { id: 1, name: 'Kinshasa', active: true, cities: ['Kinshasa', 'Masina', 'Ndjili', 'Kintambo'] },
+                { id: 2, name: 'Kongo-Central', active: false, cities: ['Matadi', 'Boma', 'Mbanza-Ngungu', 'Lukala'] },
+                { id: 3, name: 'Kwango', active: false, cities: ['Kenge', 'Popokabaka', 'Kahemba'] },
+                { id: 4, name: 'Kwilu', active: false, cities: ['Bandundu', 'Kikwit', 'Idiofa', 'Gungu'] },
+                { id: 5, name: 'Mai-Ndombe', active: false, cities: ['Inongo', 'Bolobo', 'Kutu'] },
+                { id: 6, name: 'Kasaï', active: false, cities: ['Tshikapa', 'Ilebo', 'Luebo'] },
+                { id: 7, name: 'Kasaï-Central', active: false, cities: ['Kananga', 'Dibaya', 'Dimbelenge'] },
+                { id: 8, name: 'Kasaï-Oriental', active: false, cities: ['Mbuji-Mayi', 'Miabi', 'Tshilenge'] },
+                { id: 9, name: 'Lomami', active: false, cities: ['Kabinda', 'Ngandajika', 'Kamiji'] },
+                { id: 10, name: 'Sankuru', active: false, cities: ['Lodja', 'Lusambo', 'Katako-Kombe'] },
+                { id: 11, name: 'Maniema', active: false, cities: ['Kindu', 'Kalima', 'Punia', 'Kasongo'] },
+                { id: 12, name: 'Sud-Kivu', active: false, cities: ['Bukavu', 'Uvira', 'Baraka', 'Shabunda'] },
+                { id: 13, name: 'Nord-Kivu', active: true, cities: ['Goma', 'Butembo', 'Beni', 'Rutshuru'] },
+                { id: 14, name: 'Ituri', active: false, cities: ['Bunia', 'Aru', 'Mahagi', 'Irumu'] },
+                { id: 15, name: 'Haut-Uele', active: false, cities: ['Isiro', 'Wamba', 'Dungu'] },
+                { id: 16, name: 'Bas-Uele', active: false, cities: ['Buta', 'Aketi', 'Bondo'] },
+                { id: 17, name: 'Tshopo', active: false, cities: ['Kisangani', 'Ubundu', 'Isangi', 'Basoko'] },
+                { id: 18, name: 'Mongala', active: false, cities: ['Lisala', 'Bumba', 'Bongandanga'] },
+                { id: 19, name: 'Nord-Ubangi', active: false, cities: ['Gbadolite', 'Mobayi-Mbongo', 'Businga'] },
+                { id: 20, name: 'Sud-Ubangi', active: false, cities: ['Gemena', 'Zongo', 'Kungu', 'Libenge'] },
+                { id: 21, name: 'Équateur', active: false, cities: ['Mbandaka', 'Bikoro', 'Ingende'] },
+                { id: 22, name: 'Tshuapa', active: false, cities: ['Boende', 'Befale', 'Monkoto'] },
+                { id: 23, name: 'Tanganyika', active: false, cities: ['Kalemie', 'Kongolo', 'Moba', 'Nyunzu'] },
+                { id: 24, name: 'Haut-Lomami', active: false, cities: ['Kamina', 'Kabalo', 'Malemba-Nkulu'] },
+                { id: 25, name: 'Lualaba', active: true, cities: ['Kolwezi', 'Likasi', 'Fungurume', 'Mutshatsha'] },
+                { id: 26, name: 'Haut-Katanga', active: true, cities: ['Lubumbashi', 'Kipushi', 'Kasenga', 'Sakania'] }
             ],
+            events: [
+                { id: 1, time: '17:20:01', label: 'AUTH', type: 'info', message: 'Connexion réussie: superadmin@servicerdc.com' },
+                { id: 2, time: '17:20:12', label: 'JOB', type: 'info', message: 'Nouvelle offre publiée: Développeur PHP à Gombe' },
+                { id: 3, time: '17:20:15', label: 'SEC', type: 'error', message: 'Tentative d\'injection SQL bloquée (Source: IP 105.x.x.x)' },
+                { id: 4, time: '17:20:22', label: 'SERV', type: 'info', message: 'Service validé: Plomberie Express' }
+            ],
+
             init() {
+                // Initial Chart Render is handled by global script
+                
                 // Simulate Real-time data movement
                 setInterval(() => {
+                    // 1. Simuler fluctuation stats
                     this.activeUsers += Math.floor(Math.random() * 5) - 2;
-                    this.cpuLoad = Math.floor(Math.random() * 10) + 10;
+                    
+                    // Aléatoirement simuler un pic CPU pour tester l'alerte
+                    if (Math.random() > 0.95) {
+                        this.cpuLoad = Math.floor(Math.random() * 15) + 85; 
+                    } else {
+                        this.cpuLoad = Math.floor(Math.random() * 10) + 10;
+                    }
+                    
                     this.reqPerMin = Math.floor(Math.random() * 100) + 1200;
                     
                     // Rotate sparklines
                     this.userSparkline.shift();
                     this.userSparkline.push(Math.floor(Math.random() * 80) + 20);
-                    
                     this.reqSparkline.shift();
                     this.reqSparkline.push(Math.floor(Math.random() * 40) + 30);
                     
                     // Update Chart Data
-                    liveChart.data.datasets[0].data.shift();
-                    liveChart.data.datasets[0].data.push(Math.floor(Math.random() * 50) + 50);
-                    liveChart.update('none');
+                    if (window.liveChart) {
+                        window.liveChart.data.datasets[0].data.shift();
+                        window.liveChart.data.datasets[0].data.push(Math.floor(Math.random() * 50) + 50);
+                        window.liveChart.update('none');
+                    }
                     
-                    // Add Random Events
-                    if (Math.random() > 0.7) {
-                        const types = ['AUTH', 'JOB', 'SERV', 'PAY', 'SEC'];
-                        const type = types[Math.floor(Math.random() * types.length)];
-                        const isError = Math.random() > 0.9;
-                        const now = new Date();
-                        const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
-                        
-                        this.events.unshift({
-                            id: Date.now(),
-                            time: time,
-                            label: type,
-                            type: isError ? 'error' : 'info',
-                            message: this.generateMsg(type, isError)
-                        });
-                        
-                        if (this.events.length > 20) this.events.pop();
+                    // 2. Simuler événements
+                    if (Math.random() > 0.6) {
+                        this.generateRandomEvent();
+                    }
+
+                    // 3. Vérifier seuils pour alertes
+                    this.checkThresholds();
+
+                    // 4. Simuler changement d'activité par province
+                    if (Math.random() > 0.8) {
+                        const idx = Math.floor(Math.random() * 26);
+                        this.provinces[idx].active = !this.provinces[idx].active;
                     }
                 }, 3000);
             },
-            generateMsg(type, isError) {
-                if (isError) return 'Erreur critique détectée sur le module ' + type;
+
+            generateRandomEvent() {
+                const types = ['AUTH', 'JOB', 'SERV', 'PAY', 'SEC'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                // Simuler des échecs pour tester les alertes
+                let isError = Math.random() > 0.85;
+                
+                // Cas spécifique pour forcer les alertes pendant la démo
+                if (type === 'AUTH' && Math.random() > 0.7) isError = true;
+                if (type === 'PAY' && Math.random() > 0.6) isError = true;
+
+                const now = new Date();
+                const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
+                
+                const event = {
+                    id: Date.now(),
+                    time: time,
+                    label: type,
+                    type: isError ? 'error' : 'info',
+                    message: this.getDynamicMsg(type, isError)
+                };
+
+                this.events.unshift(event);
+                if (this.events.length > 50) this.events.pop();
+
+                // Tracker les échecs pour les alertes
+                if (isError) {
+                    if (type === 'AUTH') {
+                        const nowMs = Date.now();
+                        if (nowMs - this.lastAuthFailureTime > 60000) this.authFailures = 0;
+                        this.authFailures++;
+                        this.lastAuthFailureTime = nowMs;
+                    }
+                    if (type === 'PAY') {
+                        this.consecutivePayFailures++;
+                    }
+                } else {
+                    if (type === 'PAY') this.consecutivePayFailures = 0;
+                }
+            },
+
+            getDynamicMsg(type, isError) {
+                if (isError) {
+                    const errors = {
+                        'AUTH': 'Échec de connexion : Mot de passe incorrect (User ID: 442)',
+                        'SEC': 'XSS suspect détecté sur le formulaire de contact',
+                        'PAY': 'Paiement décliné par l\'opérateur (Solde insuffisant)',
+                        'JOB': 'Erreur lors de l\'upload du CV (Format non supporté)',
+                        'SERV': 'Échec de validation d\'image (Fichier corrompu)'
+                    };
+                    return errors[type];
+                }
                 const msgs = {
-                    'AUTH': 'Utilisateur connecté avec succès',
-                    'JOB': 'Profil consulté par un employeur',
-                    'SERV': 'Nouveau service premium activé',
-                    'PAY': 'Transaction confirmée via M-Pesa',
-                    'SEC': 'Contrôle de sécurité terminé (Clean)'
+                    'AUTH': 'Session utilisateur initialisée avec succès',
+                    'JOB': 'Nouveau candidat pour: Responsable IT',
+                    'SERV': 'Mise à jour tariffaire pour "Maintenance Froid"',
+                    'PAY': 'Transaction 45,000 FC acceptée via Orange Money',
+                    'SEC': 'Scan d\'intégrité des fichiers terminé'
                 };
                 return msgs[type];
+            },
+
+            filteredEvents() {
+                return this.events.filter(event => {
+                    const matchesFilter = this.currentFilter === 'ALL' || 
+                                        (this.currentFilter === 'ERRORS' ? event.type === 'error' : event.label === this.currentFilter);
+                    const matchesSearch = this.searchQuery === '' || 
+                                        event.message.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                                        event.label.toLowerCase().includes(this.searchQuery.toLowerCase());
+                    return matchesFilter && matchesSearch;
+                });
+            },
+
+            checkThresholds() {
+                // Brute-force detection
+                if (this.authFailures >= 5 && !this.hasAlert('brute-force')) {
+                    this.triggerAlert('critical', 'fa-user-shield', '🚨 ATTAQUE BRUTE-FORCE DÉTECTÉE', `Plus de 5 échecs de connexion en moins de 60s.`, 'brute-force');
+                }
+
+                // Payment issues
+                if (this.consecutivePayFailures >= 3 && !this.hasAlert('pay-fail')) {
+                    this.triggerAlert('warning', 'fa-credit-card', '⚠️ PROBLÈME PAIEMENT DÉTECTÉ', '3 transactions consécutives ont échoué.', 'pay-fail');
+                }
+            },
+
+            triggerAlert(type, icon, title, message, ref) {
+                this.activeAlerts.unshift({ id: Date.now(), ref: ref, type, icon, title, message });
+                this.updateBellCounter(1);
+            },
+
+            hasAlert(ref) {
+                return this.activeAlerts.some(a => a.ref === ref);
+            },
+
+            acknowledgeAlert(id) {
+                this.activeAlerts = this.activeAlerts.filter(a => a.id !== id);
+                this.updateBellCounter(-1);
+            },
+
+            updateBellCounter(val) {
+                const bell = document.querySelector('.fa-bell + span');
+                if (bell) {
+                    let current = parseInt(bell.innerText) || 0;
+                    bell.innerText = Math.max(0, current + val);
+                    bell.classList.add('animate-bounce');
+                    setTimeout(() => bell.classList.remove('animate-bounce'), 1000);
+                }
             }
         }
     }
 
     // Chart.js Live Traffic
-    const ctxLive = document.getElementById('liveTrafficChart');
-    const liveChart = new Chart(ctxLive, {
-        type: 'line',
-        data: {
-            labels: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-            datasets: [{
-                label: 'Requêtes / sec',
-                data: [65, 59, 80, 81, 56, 55, 40, 60, 75, 80, 70, 65, 85, 90, 80],
-                borderColor: '#007FFF',
-                borderWidth: 4,
-                pointRadius: 0,
-                tension: 0.4,
-                fill: true,
-                backgroundColor: (context) => {
-                    const chart = context.chart;
-                    const {ctx, chartArea} = chart;
-                    if (!chartArea) return null;
-                    const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                    gradient.addColorStop(0, 'rgba(0, 127, 255, 0)');
-                    gradient.addColorStop(1, 'rgba(0, 127, 255, 0.1)');
-                    return gradient;
+    window.onload = function() {
+        const ctxLive = document.getElementById('liveTrafficChart');
+        if (ctxLive) {
+            window.liveChart = new Chart(ctxLive, {
+                type: 'line',
+                data: {
+                    labels: ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+                    datasets: [{
+                        label: 'Requêtes / sec',
+                        data: [65, 59, 80, 81, 56, 55, 40, 60, 75, 80, 70, 65, 85, 90, 80],
+                        borderColor: '#007FFF',
+                        borderWidth: 4,
+                        pointRadius: 0,
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: (context) => {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) return null;
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            gradient.addColorStop(0, 'rgba(0, 127, 255, 0)');
+                            gradient.addColorStop(1, 'rgba(0, 127, 255, 0.1)');
+                            return gradient;
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [5, 5], color: '#F1F5F9' },
+                            ticks: { font: { size: 10, weight: 'bold' }, color: '#94A3B8' }
+                        }
+                    }
                 }
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { display: false },
-                y: {
-                    beginAtZero: true,
-                    grid: { borderDash: [5, 5], color: '#F1F5F9' },
-                    ticks: { font: { size: 10, weight: 'bold' }, color: '#94A3B8' }
-                }
-            }
+            });
         }
-    });
+    };
 </script>
 @endpush

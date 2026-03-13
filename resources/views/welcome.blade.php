@@ -188,7 +188,7 @@
         .loader-logo {
             width: 154px;
             height: 154px;
-            background: white;
+            background: transparent;
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -197,6 +197,7 @@
             position: relative;
             box-shadow: 0 0 50px rgba(0, 127, 255, 0.3);
             padding: 20px;
+            overflow: hidden;
         }
 
         .loader-logo::before,
@@ -413,7 +414,7 @@
     <!-- Écran de chargement -->
     <div id="loading-screen">
         <div class="loader-logo">
-            <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="loader-img w-full h-full object-contain">
+            <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="loader-img w-full h-full object-contain rounded-full overflow-hidden">
         </div>
         <div class="loader-text text-xl sm:text-2xl md:text-3xl">Service<span class="text-yellow-300">RDC</span></div>
         <div class="loader-subtext">La plateforme congolaise pour vos services et emplois</div>
@@ -1221,10 +1222,8 @@
                     <!-- Logo et description -->
                     <div>
                         <div class="flex items-center space-x-3 mb-6">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-r 
-                                        from-rdc-blue to-rdc-yellow 
-                                        flex items-center justify-center">
-                                <i class="fas fa-hands-helping text-white text-xl"></i>
+                            <div class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center">
+                                <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
                             </div>
                             <div>
                                 <h2 class="text-2xl font-bold">Service<span class="text-yellow-300">RDC</span></h2>
@@ -1761,27 +1760,68 @@
                 geolocationBtn.addEventListener('click', function () {
                     const originalText = locationText.innerHTML;
                     locationText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Localisation...';
-                    geolocationBtn.classList.add('opacity-75');
+                    geolocationBtn.classList.add('opacity-75', 'cursor-not-allowed');
                     geolocationBtn.disabled = true;
 
-                    // Simulation géolocalisation
-                    setTimeout(() => {
-                        const randomCity = rdCities[Math.floor(Math.random() * rdCities.length)];
+                    if (!navigator.geolocation) {
+                        showNotification("La géolocalisation n'est pas supportée par votre navigateur", 'error');
+                        resetButton();
+                        return;
+                    }
 
-                        if (currentCity) currentCity.textContent = randomCity.name;
-                        if (currentAddress) currentAddress.textContent = `${randomCity.address} • ${randomCity.province}`;
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            try {
+                                const lat = position.coords.latitude;
+                                const lon = position.coords.longitude;
+                                
+                                // Appel à Nominatim (OpenStreetMap) pour le reverse geocoding
+                                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+                                    headers: { 'Accept-Language': 'fr' }
+                                });
+                                const data = await response.json();
+                                
+                                // Extraction du nom de la ville/quartier
+                                const city = data.address.city || data.address.town || data.address.village || data.address.suburb || "Ville inconnue";
+                                const neighborhood = data.address.neighbourhood || data.address.suburb || "";
+                                const province = data.address.state || data.address.province || "";
+                                
+                                const fullAddress = neighborhood && neighborhood !== city ? `${neighborhood}, ${city}` : city;
+                                
+                                // Mise à jour de l'UI
+                                if (currentCity) currentCity.textContent = city;
+                                if (currentAddress) currentAddress.textContent = `${fullAddress} ${province ? '• ' + province : ''}`;
+                                
+                                locationText.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${city}`;
+                                
+                                showNotification(`Localisé à ${city}`, 'success');
+                            } catch (error) {
+                                console.error('Erreur reverse geocoding:', error);
+                                showNotification("Impossible de récupérer l'adresse précise", 'error');
+                            } finally {
+                                resetButton();
+                            }
+                        },
+                        (error) => {
+                            let msg = "Erreur de localisation";
+                            if (error.code === error.PERMISSION_DENIED) {
+                                msg = "Veuillez autoriser la localisation GPS pour cette fonctionnalité";
+                            } else if (error.code === error.TIMEOUT) {
+                                msg = "Le délai de localisation a expiré";
+                            }
+                            showNotification(msg, 'error');
+                            resetButton();
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
 
-                        locationText.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${randomCity.name}`;
-
-                        showNotification(`Localisé à ${randomCity.name}, ${randomCity.province}`, 'success');
-
-                        // Réinitialiser après 5 secondes
+                    function resetButton() {
                         setTimeout(() => {
                             locationText.innerHTML = originalText;
-                            geolocationBtn.classList.remove('opacity-75');
+                            geolocationBtn.classList.remove('opacity-75', 'cursor-not-allowed');
                             geolocationBtn.disabled = false;
-                        }, 5000);
-                    }, 2000);
+                        }, 8000);
+                    }
                 });
             }
 

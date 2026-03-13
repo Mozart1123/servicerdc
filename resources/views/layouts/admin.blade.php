@@ -78,12 +78,24 @@
            class="fixed inset-y-0 left-0 w-80 glass-sidebar z-50 transform lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl lg:shadow-none overflow-hidden">
         
         <!-- [ENTÊTE ADMIN] -->
-        <div class="p-8 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50 relative">
+        <div class="p-6 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50 relative">
             <!-- Close button for mobile -->
             <button @click="sidebarOpen = false" class="absolute top-4 right-4 lg:hidden p-2 text-slate-400 hover:text-slate-600 bg-white rounded-lg shadow-sm border border-slate-100 transition-colors">
                 <i class="fas fa-times"></i>
             </button>
-            <div class="flex items-center gap-4">
+            
+            <!-- Logo Section -->
+            <div class="flex items-center gap-3 mb-6 px-2">
+                <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1.5 bg-white border border-slate-100">
+                    <img src="/assets/img/logo.png?v=1.1" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Service<span class="text-rdc-blue">RDC</span></h2>
+                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Plateforme Nationale</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                 <div class="relative">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=007FFF&color=fff&size=128" 
                          class="w-16 h-16 rounded-2xl border-2 border-white shadow-lg object-cover" alt="Profile">

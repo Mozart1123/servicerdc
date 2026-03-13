@@ -84,6 +84,17 @@
         
         <!-- [PROFIL] Section -->
         <div class="px-8 py-10 border-b border-slate-100 bg-slate-50/30">
+            <!-- Logo Branding Integration -->
+            <div class="flex items-center gap-3 mb-8 px-1">
+                <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1.5 bg-white border border-slate-100">
+                    <img src="/assets/img/logo.png?v=1.1" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Service<span class="text-rdc-blue">RDC</span></h2>
+                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Dashboard Citoyen</p>
+                </div>
+            </div>
+
             <div class="flex items-center gap-4">
                 <div class="relative flex-shrink-0 group">
                     <div class="absolute -inset-1 bg-gradient-to-r from-rdc-blue to-blue-400 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-500"></div>

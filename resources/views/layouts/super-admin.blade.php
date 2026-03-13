@@ -105,8 +105,8 @@
             
             <div class="flex flex-col gap-5 relative z-10">
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-3xl shadow-xl shadow-amber-500/30 divine-glow relative">
-                        <i class="fas fa-crown text-white"></i>
+                    <div class="w-16 h-16 rounded-3xl bg-white flex items-center justify-center shadow-xl shadow-amber-500/30 divine-glow relative overflow-hidden p-2">
+                        <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
                         <div class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
                     </div>
                     <div>
