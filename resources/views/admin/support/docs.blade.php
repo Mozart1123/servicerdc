@@ -25,7 +25,7 @@
             </div>
         </div>
         
-        <button class="w-full sm:w-auto mt-8 sm:mt-12 px-10 py-4 bg-rdc-blue text-white font-black rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] uppercase tracking-widest shadow-2xl shadow-blue-500/20 active:scale-95 transition-all">Ajouter</button>
+        <button @click="alert('Ouverture de l\'éditeur de documentation...')" class="w-full sm:w-auto mt-8 sm:mt-12 px-10 py-4 bg-rdc-blue text-white font-black rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] uppercase tracking-widest shadow-2xl shadow-blue-500/20 active:scale-95 transition-all">Ajouter un Article</button>
     </div>
 </div>
 @endsection

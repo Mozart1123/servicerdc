@@ -6,7 +6,15 @@
 @section('page_subtitle', 'Consultez les empreintes numériques du serveur pour le débogage et la surveillance.')
 
 @section('content')
-<div class="space-y-8 pb-20">
+<div class="space-y-8 pb-20" x-data="{
+    clearLogs() {
+        if(!confirm('Voulez-vous vraiment effacer les journaux ?')) return;
+        fetch('{{ route('admin.tools.logs.clear') }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        }).then(() => window.location.reload());
+    }
+}">
     <div class="bg-slate-900 rounded-[2rem] sm:rounded-[3rem] shadow-2xl overflow-hidden border border-white/5">
         <!-- Terminal Header -->
         <div class="px-4 sm:px-8 py-3.5 sm:py-4 bg-white/5 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -19,33 +27,20 @@
                 <span class="text-[8px] sm:text-[10px] font-black text-white/30 uppercase tracking-[0.2em] font-mono truncate">system.log</span>
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto">
-                <button class="flex-1 sm:flex-none py-2 px-4 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-colors text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg">Download</button>
-                <button class="flex-1 sm:flex-none px-4 py-2 bg-red-500/10 text-red-500 text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg border border-red-500/20 active:scale-95 transition-all">Clear</button>
+                <button @click="window.location.reload()" class="flex-1 sm:flex-none py-2 px-4 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-colors text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg">Refresh</button>
+                <button @click="clearLogs()" class="flex-1 sm:flex-none px-4 py-2 bg-red-500/10 text-red-500 text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg border border-red-500/20 active:scale-95 transition-all">Clear</button>
             </div>
         </div>
 
         <!-- Terminal Output -->
-        <div class="p-4 sm:p-8 font-mono space-y-2.5 sm:space-y-2 text-[10px] sm:text-xs overflow-x-auto no-scrollbar max-h-[400px] sm:max-h-[600px] custom-scrollbar">
-            <div class="flex gap-3 sm:gap-4 min-w-max sm:min-w-0">
-                <span class="text-white/20 shrink-0">05:12:01</span>
-                <span class="text-emerald-500 font-bold uppercase tracking-tighter shrink-0">[INFO]</span>
-                <span class="text-white/70 whitespace-normal">Database migration sync completed successfully.</span>
-            </div>
-            <div class="flex gap-3 sm:gap-4 min-w-max sm:min-w-0">
-                <span class="text-white/20 shrink-0">05:12:02</span>
-                <span class="text-emerald-500 font-bold uppercase tracking-tighter shrink-0">[INFO]</span>
-                <span class="text-white/70 whitespace-normal">Cache cleared via admin console (User ID: 1).</span>
-            </div>
-            <div class="flex gap-3 sm:gap-4 min-w-max sm:min-w-0">
-                <span class="text-white/20 shrink-0">05:12:05</span>
-                <span class="text-amber-500 font-bold uppercase tracking-tighter shrink-0">[WARN]</span>
-                <span class="text-white/70 whitespace-normal">Slow query detected on /api/v1/jobs/active (0.84s).</span>
-            </div>
-            <div class="flex gap-3 sm:gap-4 min-w-max sm:min-w-0">
-                <span class="text-white/20 shrink-0">05:12:10</span>
-                <span class="text-red-500 font-bold uppercase tracking-tighter shrink-0">[ERR]</span>
-                <span class="text-red-400 whitespace-normal leading-relaxed">DiskFull: Failed to upload attachment for #TKT-00421.</span>
-            </div>
+        <div class="p-4 sm:p-8 font-mono space-y-1 text-[9px] sm:text-[11px] text-white/70 overflow-x-auto no-scrollbar max-h-[400px] sm:max-h-[600px] custom-scrollbar">
+            @if($logs)
+                <pre class="whitespace-pre-wrap leading-relaxed">{{ $logs }}</pre>
+            @else
+                <div class="flex items-center justify-center p-20 text-white/20 uppercase font-black text-[10px] tracking-widest">
+                    Aucune entrée dans le journal
+                </div>
+            @endif
         </div>
     </div>
     

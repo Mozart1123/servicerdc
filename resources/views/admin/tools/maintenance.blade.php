@@ -18,15 +18,31 @@
             <h3 class="text-xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight mb-3 sm:mb-4 px-4">Maintenance</h3>
             <p class="text-[11px] sm:text-lg text-slate-400 max-w-xl mx-auto font-medium leading-relaxed mb-8 sm:mb-12 px-4 italic sm:not-italic">Basculez le système en mode maintenance pour les réparations d'urgence.</p>
             
-            <div class="flex flex-col items-center gap-4 sm:gap-6">
+            <div class="flex flex-col items-center gap-4 sm:gap-6" x-data="{ 
+                isDown: {{ $isDown ? 'true' : 'false' }},
+                loading: false,
+                toggle() {
+                    if (this.loading) return;
+                    this.loading = true;
+                    fetch('{{ route('admin.tools.maintenance.toggle') }}', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        this.isDown = data.isDown;
+                        this.loading = false;
+                    });
+                }
+            }">
                 <!-- Premium Switcher -->
                 <div class="flex items-center gap-4 sm:gap-6 bg-slate-50 p-4 sm:p-6 rounded-[2rem] sm:rounded-[3rem] border border-slate-100">
-                    <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">Live</span>
-                    <button class="w-16 h-10 sm:w-24 sm:h-12 bg-slate-200 rounded-full relative p-1 transition-all duration-500 overflow-hidden active:scale-95">
-                        <div class="absolute left-1 top-1 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg transition-all duration-500"></div>
-                        <div class="absolute inset-0 flex items-center justify-center opacity-10 font-black text-[8px] sm:text-[10px]">OFF</div>
+                    <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400" :class="!isDown ? 'text-emerald-500' : ''">Live</span>
+                    <button @click="toggle()" class="w-16 h-10 sm:w-24 sm:h-12 rounded-full relative p-1 transition-all duration-500 overflow-hidden active:scale-95" :class="isDown ? 'bg-amber-500' : 'bg-slate-200'">
+                        <div class="absolute top-1 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg transition-all duration-500" :class="isDown ? 'left-7 sm:left-13' : 'left-1'"></div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-10 font-black text-[8px] sm:text-[10px]" x-text="isDown ? 'ON' : 'OFF'">OFF</div>
                     </button>
-                    <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-500 transition-colors">Offline</span>
+                    <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400" :class="isDown ? 'text-amber-500' : ''">Offline</span>
                 </div>
                 
                 <p class="text-[8px] sm:text-[10px] font-black text-slate-300 uppercase tracking-tighter italic px-4">Dernière: 14j (v2.4.1)</p>

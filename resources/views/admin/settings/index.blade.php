@@ -48,11 +48,11 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div class="space-y-1 sm:space-y-2">
                                     <label class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3 sm:ml-4">Nom</label>
-                                    <input type="text" name="app_name" value="ServiceRDC HQ" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                                    <input type="text" name="app_name" value="{{ $settings['app_name'] ?? 'ServiceRDC HQ' }}" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
                                 </div>
                                 <div class="space-y-1 sm:space-y-2">
                                     <label class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3 sm:ml-4">Email</label>
-                                    <input type="email" name="contact_email" value="admin@servicerdc.cd" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                                    <input type="email" name="contact_email" value="{{ $settings['contact_email'] ?? 'admin@servicerdc.cd' }}" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
                                 </div>
                             </div>
                         </div>
@@ -66,15 +66,15 @@
                                 <div class="space-y-1 sm:space-y-2">
                                     <label class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3 sm:ml-4">FUSEAU HORAIRE</label>
                                     <select name="timezone" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
-                                        <option value="Africa/Kinshasa">Kinshasa (GMT+1)</option>
-                                        <option value="Africa/Lubumbashi">Lubumbashi (GMT+2)</option>
+                                        <option value="Africa/Kinshasa" {{ ($settings['timezone'] ?? '') == 'Africa/Kinshasa' ? 'selected' : '' }}>Kinshasa (GMT+1)</option>
+                                        <option value="Africa/Lubumbashi" {{ ($settings['timezone'] ?? '') == 'Africa/Lubumbashi' ? 'selected' : '' }}>Lubumbashi (GMT+2)</option>
                                     </select>
                                 </div>
                                 <div class="space-y-1 sm:space-y-2">
                                     <label class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3 sm:ml-4">DEVISE</label>
                                     <select name="currency" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none font-mono">
-                                        <option value="USD">USD ($)</option>
-                                        <option value="CDF">CDF (FC)</option>
+                                        <option value="USD" {{ ($settings['currency'] ?? '') == 'USD' ? 'selected' : '' }}>USD ($)</option>
+                                        <option value="CDF" {{ ($settings['currency'] ?? '') == 'CDF' ? 'selected' : '' }}>CDF (FC)</option>
                                     </select>
                                 </div>
                             </div>

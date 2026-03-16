@@ -7,17 +7,103 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Document;
+use App\Models\JobOffer;
+use App\Models\Service;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the users.
      */
-    public function index()
+    public function index(Request $request)
     {
         $users = User::latest()->paginate(20, ['*'], 'users_page');
         
+        if ($request->wantsJson()) {
+            return response()->json($users);
+        }
+
         return view('admin.users.index', compact('users'));
+    }
+
+    /**
+     * Get dynamic counts for sidebar badges.
+     */
+    public function getCountsApi()
+    {
+        return response()->json([
+            'pending' => User::where('status', 'pending')->count(),
+            'flagged' => User::where('status', 'suspended')->count(),
+            'jobs' => JobOffer::where('status', 'active')->count(),
+            'services' => 8, // Mocked until reporting is implemented
+            'reviews' => 12, // Mocked until reviews are implemented
+        ]);
+    }
+
+    /**
+     * API for user listing with search and filters.
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $users = $query->latest()->paginate(20);
+
+        // Add stats to response
+        $stats = [
+            'total' => User::count(),
+            'active' => User::where('status', User::STATUS_ACTIVE)->count(),
+            'suspended' => User::where('status', User::STATUS_SUSPENDED)->count(),
+            'verified' => User::whereHas('documents', function($q) {
+                $q->where('status', 'verified');
+            })->count(),
+        ];
+
+        return response()->json([
+            'users' => $users,
+            'stats' => $stats
+        ]);
+    }
+
+    /**
+     * Toggle status via AJAX.
+     */
+    public function toggleStatusApi(int $id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->isSuperAdmin()) {
+            return response()->json(['error' => 'Action impossible sur Super-Admin'], 403);
+        }
+
+        if ($user->id === Auth::id()) {
+            return response()->json(['error' => 'Action impossible sur soi-même'], 403);
+        }
+
+        $newStatus = $user->status === User::STATUS_ACTIVE ? User::STATUS_SUSPENDED : User::STATUS_ACTIVE;
+        $user->update(['status' => $newStatus]);
+
+        return response()->json([
+            'success' => true,
+            'status' => $newStatus,
+            'message' => $newStatus === User::STATUS_SUSPENDED ? 'Compte suspendu' : 'Compte réactivé'
+        ]);
     }
 
     /**
@@ -88,18 +174,28 @@ class UserController extends Controller
     /**
      * Display users pending validation.
      */
-    public function pending()
+    public function pending(Request $request)
     {
         $users = User::where('status', 'pending')->latest()->paginate(20);
+
+        if ($request->wantsJson()) {
+            return response()->json($users);
+        }
+
         return view('admin.users.pending', compact('users'));
     }
 
     /**
      * Display flagged or suspended users.
      */
-    public function flagged()
+    public function flagged(Request $request)
     {
         $users = User::where('status', 'suspended')->latest()->paginate(20);
+
+        if ($request->wantsJson()) {
+            return response()->json($users);
+        }
+
         return view('admin.users.flagged', compact('users'));
     }
 
@@ -108,30 +204,28 @@ class UserController extends Controller
      */
     public function documents(Request $request)
     {
-        $query = Document::with('user')->latest();
+        $query = Document::with('user');
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        } else {
-            $query->where('status', 'pending');
-        }
-
-        if ($request->has('type')) {
+        if ($request->has('type') && $request->type) {
             $query->where('type', $request->type);
         }
 
-        $documents = $query->paginate(15);
-        
-        // Stats
+        $documents = $query->latest()->paginate(20);
+
         $stats = [
             'pending' => Document::where('status', 'pending')->count(),
-            'verified_30d' => Document::where('status', 'verified')
-                ->where('verified_at', '>=', now()->subDays(30))
-                ->count(),
+            'verified_30d' => Document::where('status', 'verified')->where('updated_at', '>=', now()->subDays(30))->count(),
             'rejected_rate' => Document::count() > 0 
-                ? round((Document::where('status', 'rejected')->count() / Document::count()) * 100, 1) 
+                ? round((Document::where('status', 'rejected')->count() / Document::count()) * 100) 
                 : 0,
         ];
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'documents' => $documents,
+                'stats' => $stats
+            ]);
+        }
 
         return view('admin.users.documents', compact('documents', 'stats'));
     }
@@ -139,38 +233,61 @@ class UserController extends Controller
     /**
      * Verify a document.
      */
-    public function verifyDocument(int $id)
+    public function verifyDocument(Request $request, int $id)
     {
-        $document = Document::findOrFail($id);
-        
-        $document->update([
-            'status' => 'verified',
-            'verified_at' => now(),
-            'verified_by' => Auth::id(),
-            'rejection_reason' => null,
-        ]);
+        $doc = Document::findOrFail($id);
+        $doc->update(['status' => 'verified']);
 
-        return back()->with('success', 'Document validé avec succès.');
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back()->with('success', 'Document vérifié avec succès.');
     }
 
-    /**
-     * Reject a document.
-     */
     public function rejectDocument(Request $request, int $id)
     {
-        $document = Document::findOrFail($id);
-        
-        $request->validate([
-            'reason' => 'required|string|max:255',
-        ]);
+        $request->validate(['reason' => 'required|string']);
 
-        $document->update([
+        $doc = Document::findOrFail($id);
+        $doc->update([
             'status' => 'rejected',
-            'verified_at' => now(),
-            'verified_by' => Auth::id(),
             'rejection_reason' => $request->reason,
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return back()->with('success', 'Document rejeté.');
+    }
+
+    /**
+     * Approve a pending user via AJAX.
+     */
+    public function approveApi(int $id)
+    {
+        $user = User::findOrFail($id);
+        $user->update(['status' => User::STATUS_ACTIVE]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Compte de {$user->name} approuvé."
+        ]);
+    }
+
+    /**
+     * Reject/Delete a pending user via AJAX.
+     */
+    public function rejectApi(int $id)
+    {
+        $user = User::findOrFail($id);
+        $name = $user->name;
+        $user->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Inscription de {$name} refusée."
+        ]);
     }
 }

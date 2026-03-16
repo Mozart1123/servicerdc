@@ -9,50 +9,53 @@
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
     <!-- Left: Category List -->
     <div class="xl:col-span-2 space-y-6 order-2 xl:order-1">
-        <div class="bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto sm:overflow-x-visible">
-                <table class="w-full text-left border-collapse table-fixed sm:table-auto">
+        <div class="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden relative min-h-[450px]">
+            <div class="overflow-x-hidden">
+                <table class="w-full text-left table-fixed lg:table-auto border-collapse">
                     <thead>
-                        <tr class="bg-slate-50/50 text-nowrap">
-                            <th class="w-2/3 sm:w-auto px-4 sm:px-8 py-4 sm:py-5 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest">Domaine</th>
-                            <th class="hidden sm:table-cell px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Slug</th>
-                            <th class="hidden lg:table-cell px-8 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Description</th>
-                            <th class="w-1/3 sm:w-auto px-4 sm:px-8 py-4 sm:py-5 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter sm:tracking-widest text-right">Actions</th>
+                        <tr class="bg-slate-50/50">
+                            <th class="w-[65%] sm:w-auto pl-4 pr-2 sm:px-8 py-5 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Domaine</th>
+                            <th class="hidden sm:table-cell px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Slug</th>
+                            <th class="hidden lg:table-cell px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</th>
+                            <th class="w-[35%] sm:w-auto pr-4 pl-2 sm:px-8 py-5 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50">
                         @forelse($categories as $category)
                         <tr class="hover:bg-slate-50/30 transition-colors group">
-                            <td class="px-4 sm:px-8 py-4 sm:py-5">
-                                <div class="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-50 text-rdc-blue flex items-center justify-center text-sm sm:text-lg shadow-sm border border-blue-100 group-hover:bg-rdc-blue group-hover:text-white transition-all shrink-0">
+                            <td class="pl-4 pr-2 sm:px-8 py-4 sm:py-5">
+                                <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
+                                    <div class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-50 text-rdc-blue flex items-center justify-center text-[10px] sm:text-lg shadow-sm border border-blue-50 group-hover:bg-rdc-blue group-hover:text-white transition-all shrink-0">
                                         <i class="{{ $category->icon ?? 'fas fa-tags' }}"></i>
                                     </div>
-                                    <p class="text-xs sm:text-sm font-black text-slate-900 truncate">{{ $category->name }}</p>
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] sm:text-sm font-black text-slate-900 truncate tracking-tight">{{ $category->name }}</p>
+                                        <p class="sm:hidden text-[7px] font-bold text-slate-400 uppercase tracking-tighter truncate">{{ $category->slug }}</p>
+                                    </div>
                                 </div>
                             </td>
                             <td class="hidden sm:table-cell px-8 py-5">
-                                <span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded uppercase tracking-wider truncate inline-block max-w-[120px]">
+                                <span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded uppercase tracking-wider truncate inline-block max-w-[100px]">
                                     {{ $category->slug }}
                                 </span>
                             </td>
                             <td class="hidden lg:table-cell px-8 py-5">
-                                <p class="text-xs text-slate-500 line-clamp-1 max-w-[200px]" title="{{ $category->description }}">
-                                    {{ $category->description ?: 'N/A' }}
+                                <p class="text-xs text-slate-500 line-clamp-1 max-w-[180px]" title="{{ $category->description }}">
+                                    {{ $category->description ?: 'Aucune description disponible' }}
                                 </p>
                             </td>
-                            <td class="px-4 sm:px-8 py-4 sm:py-5 text-right">
-                                <div class="flex items-center justify-end gap-1.5 sm:gap-2">
-                                    <button class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-rdc-blue transition-all" 
+                            <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-5 text-right">
+                                <div class="flex items-center justify-end gap-1 sm:gap-2">
+                                    <button class="w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-rdc-blue hover:border-rdc-blue hover:shadow-sm transition-all shadow-sm" 
                                             onclick="editCategory({{ json_encode($category) }})" title="Modifier">
-                                        <i class="fas fa-edit text-[10px] sm:text-xs"></i>
+                                        <i class="fas fa-pen text-[9px] sm:text-xs"></i>
                                     </button>
                                     
-                                    <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" class="inline" onsubmit="return confirm('Supprimer ?');">
+                                    <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" class="inline" onsubmit="return confirm('Supprimer ce domaine ?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-slate-50 text-rdc-red hover:bg-red-50 transition-all">
-                                            <i class="fas fa-trash-alt text-[10px] sm:text-xs"></i>
+                                        <button type="submit" class="w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-rdc-red hover:border-rdc-red hover:shadow-sm transition-all shadow-sm">
+                                            <i class="fas fa-trash-alt text-[9px] sm:text-xs"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -60,12 +63,13 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="px-8 py-16 sm:py-20 text-center">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 text-xl sm:text-2xl mb-4">
-                                        <i class="fas fa-folder-open"></i>
+                            <td colspan="4" class="px-8 py-20">
+                                <div class="flex flex-col items-center justify-center text-center min-h-[300px]">
+                                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-50 text-slate-200 flex items-center justify-center text-2xl sm:text-3xl mb-4 shadow-inner">
+                                        <i class="fas fa-folder-tree"></i>
                                     </div>
-                                    <p class="text-slate-400 text-xs sm:text-sm font-medium">Aucune catégorie.</p>
+                                    <h4 class="text-sm sm:text-base font-black text-slate-400 uppercase tracking-widest">Bibliothèque Vide</h4>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-300 font-bold uppercase tracking-tight mt-2 max-w-[200px] mx-auto">Aucune catégorie n'est définie. Commencez par en créer une à droite.</p>
                                 </div>
                             </td>
                         </tr>

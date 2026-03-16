@@ -303,14 +303,16 @@
             ],
 
             init() {
-                // Initial Chart Render is handled by global script
+                // Fetch initial logs
+                this.fetchLogs();
                 
-                // Simulate Real-time data movement
+                // Refresh logs every 3 seconds
                 setInterval(() => {
-                    // 1. Simuler fluctuation stats
+                    this.fetchLogs();
+                    
+                    // 1. Simuler fluctuation stats basic
                     this.activeUsers += Math.floor(Math.random() * 5) - 2;
                     
-                    // Aléatoirement simuler un pic CPU pour tester l'alerte
                     if (Math.random() > 0.95) {
                         this.cpuLoad = Math.floor(Math.random() * 15) + 85; 
                     } else {
@@ -325,22 +327,14 @@
                     this.reqSparkline.shift();
                     this.reqSparkline.push(Math.floor(Math.random() * 40) + 30);
                     
-                    // Update Chart Data
                     if (window.liveChart) {
                         window.liveChart.data.datasets[0].data.shift();
                         window.liveChart.data.datasets[0].data.push(Math.floor(Math.random() * 50) + 50);
                         window.liveChart.update('none');
                     }
-                    
-                    // 2. Simuler événements
-                    if (Math.random() > 0.6) {
-                        this.generateRandomEvent();
-                    }
 
-                    // 3. Vérifier seuils pour alertes
                     this.checkThresholds();
 
-                    // 4. Simuler changement d'activité par province
                     if (Math.random() > 0.8) {
                         const idx = Math.floor(Math.random() * 26);
                         this.provinces[idx].active = !this.provinces[idx].active;
@@ -348,77 +342,32 @@
                 }, 3000);
             },
 
-            generateRandomEvent() {
-                const types = ['AUTH', 'JOB', 'SERV', 'PAY', 'SEC'];
-                const type = types[Math.floor(Math.random() * types.length)];
-                
-                // Simuler des échecs pour tester les alertes
-                let isError = Math.random() > 0.85;
-                
-                // Cas spécifique pour forcer les alertes pendant la démo
-                if (type === 'AUTH' && Math.random() > 0.7) isError = true;
-                if (type === 'PAY' && Math.random() > 0.6) isError = true;
+            fetchLogs() {
+                let url = `/admin/api/logs?type=${this.currentFilter}`;
+                if (this.searchQuery) url += `&search=${this.searchQuery}`;
 
-                const now = new Date();
-                const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
-                
-                const event = {
-                    id: Date.now(),
-                    time: time,
-                    label: type,
-                    type: isError ? 'error' : 'info',
-                    message: this.getDynamicMsg(type, isError)
-                };
-
-                this.events.unshift(event);
-                if (this.events.length > 50) this.events.pop();
-
-                // Tracker les échecs pour les alertes
-                if (isError) {
-                    if (type === 'AUTH') {
-                        const nowMs = Date.now();
-                        if (nowMs - this.lastAuthFailureTime > 60000) this.authFailures = 0;
-                        this.authFailures++;
-                        this.lastAuthFailureTime = nowMs;
-                    }
-                    if (type === 'PAY') {
-                        this.consecutivePayFailures++;
-                    }
-                } else {
-                    if (type === 'PAY') this.consecutivePayFailures = 0;
-                }
-            },
-
-            getDynamicMsg(type, isError) {
-                if (isError) {
-                    const errors = {
-                        'AUTH': 'Échec de connexion : Mot de passe incorrect (User ID: 442)',
-                        'SEC': 'XSS suspect détecté sur le formulaire de contact',
-                        'PAY': 'Paiement décliné par l\'opérateur (Solde insuffisant)',
-                        'JOB': 'Erreur lors de l\'upload du CV (Format non supporté)',
-                        'SERV': 'Échec de validation d\'image (Fichier corrompu)'
-                    };
-                    return errors[type];
-                }
-                const msgs = {
-                    'AUTH': 'Session utilisateur initialisée avec succès',
-                    'JOB': 'Nouveau candidat pour: Responsable IT',
-                    'SERV': 'Mise à jour tariffaire pour "Maintenance Froid"',
-                    'PAY': 'Transaction 45,000 FC acceptée via Orange Money',
-                    'SEC': 'Scan d\'intégrité des fichiers terminé'
-                };
-                return msgs[type];
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        this.events = data;
+                        
+                        // Refine alert counters based on real logs
+                        // Count errors in the last set of logs
+                        this.authFailures = data.filter(e => e.label === 'AUTH' && e.type === 'error').length;
+                        this.consecutivePayFailures = 0;
+                        for (let e of data) {
+                            if (e.label === 'PAY') {
+                                if (e.type === 'error') this.consecutivePayFailures++;
+                                else break; // Stop counting consecutive on first success
+                            }
+                        }
+                    })
+                    .catch(err => console.error('Error fetching logs:', err));
             },
 
             filteredEvents() {
-                return this.events.filter(event => {
-                    const matchesFilter = this.currentFilter === 'ALL' || 
-                                        (this.currentFilter === 'ERRORS' ? event.type === 'error' : event.label === this.currentFilter);
-                    const matchesSearch = this.searchQuery === '' || 
-                                        event.message.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                                        event.label.toLowerCase().includes(this.searchQuery.toLowerCase());
-                    return matchesFilter && matchesSearch;
-                });
+                // Now handled by fetchLogs server-side, but keep as fallback or for local refine
+                return this.events;
             },
 
             checkThresholds() {

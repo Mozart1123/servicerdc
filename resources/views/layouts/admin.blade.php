@@ -126,28 +126,63 @@
                 <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
                     <i class="fas fa-grid-2 text-[8px]"></i> DASHBOARD
                 </div>
-                <ul class="space-y-1">
+                <ul class="space-y-1" x-data="{ alertCount: 0, init() { this.updateCount(); setInterval(() => this.updateCount(), 30000); document.addEventListener('alerts-updated', (e) => this.alertCount = e.detail); }, updateCount() { fetch('{{ route('admin.api.alerts.unread-count') }}').then(r => r.json()).then(d => { this.alertCount = d.count; window.dispatchEvent(new CustomEvent('alerts-updated', { detail: d.count })); }) } }">
                     <x-admin-nav-item route="admin.dashboard" icon="fas fa-chart-bar" label="Vue globale" />
                     <x-admin-nav-item route="admin.stats" icon="fas fa-chart-line" label="Stats temps réel" />
-                    <x-admin-nav-item route="admin.alerts" icon="fas fa-triangle-exclamation" label="Alertes système" badge="5" badgeColor="bg-rdc-red" />
+                    <x-admin-nav-item route="admin.alerts" icon="fas fa-triangle-exclamation" label="Alertes système" ::badge="alertCount > 0 ? alertCount : null" badgeColor="bg-rdc-red" />
                 </ul>
             </section>
             
             <ul class="space-y-1">
                 <!-- [GESTION UTILISATEURS] -->
-                <x-admin-dropdown-nav icon="fas fa-users-gear" label="Utilisateurs" :activePrefixes="['admin.users', 'admin.users-mgmt']">
+                <x-admin-dropdown-nav icon="fas fa-users-gear" label="Utilisateurs" :activePrefixes="['admin.users', 'admin.users-mgmt']" 
+                    x-data="{ 
+                        pendingCount: 0, 
+                        flaggedCount: 0,
+                        init() {
+                            this.fetchCounts();
+                            setInterval(() => this.fetchCounts(), 30000);
+                            document.addEventListener('users-updated', () => this.fetchCounts());
+                        },
+                        fetchCounts() {
+                            fetch('{{ route('admin.users-mgmt.counts') }}')
+                                .then(r => r.json())
+                                .then(d => {
+                                    this.pendingCount = d.pending;
+                                    this.flaggedCount = d.flagged;
+                                });
+                        }
+                    }">
                     <x-admin-dropdown-item route="admin.users.index" label="Tous les utilisateurs" />
-                    <x-admin-dropdown-item route="admin.users-mgmt.pending" label="En attente" badge="12" />
-                    <x-admin-dropdown-item route="admin.users-mgmt.flagged" label="Signalés/Suspendus" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.pending" label="En attente" ::badge="pendingCount > 0 ? pendingCount : null" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.flagged" label="Signalés/Suspendus" ::badge="flaggedCount > 0 ? flaggedCount : null" badgeColor="bg-rdc-red" />
                     <x-admin-dropdown-item route="admin.users-mgmt.docs" label="Vérification KYC" />
                 </x-admin-dropdown-nav>
                 
                 <!-- [MODÉRATION & RESSOURCES] -->
-                <x-admin-dropdown-nav icon="fas fa-shield-halved" label="Modération & Opérations" :activePrefixes="['admin.moderation', 'admin.categories', 'admin.jobs']">
-                    <x-admin-dropdown-item route="admin.moderation.services" label="Services signalés" />
-                    <x-admin-dropdown-item route="admin.moderation.reviews" label="Évaluations à modérer" />
+                <x-admin-dropdown-nav icon="fas fa-shield-halved" label="Modération & Opérations" :activePrefixes="['admin.moderation', 'admin.categories', 'admin.jobs']"
+                    x-data="{ 
+                        servicesCount: 0, 
+                        reviewsCount: 0,
+                        jobsCount: 0,
+                        init() {
+                            this.fetchCounts();
+                            setInterval(() => this.fetchCounts(), 45000);
+                        },
+                        fetchCounts() {
+                            fetch('{{ route('admin.users-mgmt.counts') }}')
+                                .then(r => r.json())
+                                .then(d => {
+                                    this.servicesCount = d.services;
+                                    this.reviewsCount = d.reviews;
+                                    this.jobsCount = d.jobs;
+                                });
+                        }
+                    }">
+                    <x-admin-dropdown-item route="admin.moderation.services" label="Services signalés" ::badge="servicesCount > 0 ? servicesCount : null" badgeColor="bg-amber-500" />
+                    <x-admin-dropdown-item route="admin.moderation.reviews" label="Évaluations à modérer" ::badge="reviewsCount > 0 ? reviewsCount : null" badgeColor="bg-blue-500" />
                     <x-admin-dropdown-item route="admin.categories.index" label="Catégories système" />
-                    <x-admin-dropdown-item route="admin.jobs.index" label="Offres d'emploi" />
+                    <x-admin-dropdown-item route="admin.jobs.index" label="Offres d'emploi" ::badge="jobsCount > 0 ? jobsCount : null" />
                 </x-admin-dropdown-nav>
 
                 <!-- [FINANCES] -->
@@ -240,10 +275,14 @@
                 </div>
 
                 <!-- Notifications -->
-                <button class="relative p-2.5 text-slate-400 hover:text-rdc-blue transition-colors rounded-full hover:bg-blue-50">
+                <a href="{{ route('admin.alerts') }}" 
+                   x-data="{ count: 0, init() { this.poll(); setInterval(() => this.poll(), 30000); document.addEventListener('alerts-updated', (e) => this.count = e.detail); }, poll() { fetch('{{ route('admin.api.alerts.unread-count') }}').then(r => r.json()).then(d => { this.count = d.count; window.dispatchEvent(new CustomEvent('alerts-updated', { detail: d.count })); }) } }"
+                   class="relative p-2.5 text-slate-400 hover:text-rdc-blue transition-colors rounded-full hover:bg-blue-50">
                     <i class="far fa-bell text-xl"></i>
-                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rdc-red rounded-full border-2 border-white"></span>
-                </button>
+                    <template x-if="count > 0">
+                        <span class="absolute top-2.5 right-2.5 w-4 h-4 bg-rdc-red text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animate-bounce-short" x-text="count"></span>
+                    </template>
+                </a>
                 
                 <!-- Profile Toggle -->
                 <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
@@ -261,22 +300,78 @@
         <main class="flex-1 p-4 lg:p-8">
             <!-- Breadcrumbs / Top Actions -->
             <div class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">@yield('page_title', 'Vue d\'ensemble')</h2>
-                    <p class="text-slate-500 text-sm mt-1">@yield('page_subtitle', 'Bienvenue dans votre centre de contrôle ServiceRDC.')</p>
+                <div class="flex items-center gap-4">
+                    @if(Route::currentRouteName() !== 'admin.dashboard')
+                        <a href="{{ url()->previous() == url()->current() ? route('admin.dashboard') : url()->previous() }}" 
+                           class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-rdc-blue hover:border-rdc-blue transition-all shadow-sm">
+                            <i class="fas fa-chevron-left text-xs"></i>
+                        </a>
+                    @endif
+                    <div>
+                        <h2 class="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">@yield('page_title', 'Vue d\'ensemble')</h2>
+                        <p class="text-slate-500 text-sm mt-1">@yield('page_subtitle', 'Bienvenue dans votre centre de contrôle ServiceRDC.')</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-rdc-blue hover:text-rdc-blue transition-all flex items-center gap-2">
-                        <i class="fas fa-file-export"></i> Exporter
-                    </button>
-                    <button class="px-5 py-2.5 bg-rdc-blue text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:bg-rdc-blue-dark transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
-                        <i class="fas fa-plus-circle"></i> Nouveau Rapport
-                    </button>
+                    <form action="{{ route('admin.api.logs.export') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-rdc-blue hover:text-rdc-blue transition-all flex items-center gap-2">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </form>
+                    <form action="{{ route('admin.reports.generate') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 bg-rdc-blue text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:bg-rdc-blue-dark transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                            <i class="fas fa-plus-circle"></i> Nouveau Rapport
+                        </button>
+                    </form>
                 </div>
             </div>
 
             @yield('content')
         </main>
+
+        <!-- Global Notifications (Toasts) -->
+        <div class="fixed top-8 right-8 z-[200] space-y-4" x-data="{ 
+            notifications: [],
+            add(msg, type = 'success') {
+                const id = Date.now();
+                this.notifications.push({ id, msg, type });
+                setTimeout(() => {
+                    this.notifications = this.notifications.filter(n => n.id !== id);
+                }, 5000);
+            }
+        }" @notify.window="add($event.detail.message, $event.detail.type)">
+            <template x-for="n in notifications" :key="n.id">
+                <div x-transition:enter="transition ease-out duration-300" 
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:translate-x-4" 
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border min-w-[300px]"
+                     :class="n.type === 'success' ? 'bg-white border-emerald-100 text-emerald-900' : 'bg-white border-blue-100 text-blue-900'">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                         :class="n.type === 'success' ? 'bg-emerald-50 text-emerald-500' : 'bg-blue-50 text-blue-500'">
+                        <i class="fas" :class="n.type === 'success' ? 'fa-check-circle' : 'fa-info-circle'"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-40" x-text="n.type"></p>
+                        <p class="text-xs font-bold" x-text="n.msg"></p>
+                    </div>
+                    <button @click="notifications = notifications.filter(notif => notif.id !== n.id)" class="ml-auto text-slate-300 hover:text-slate-900">
+                        <i class="fas fa-times text-[10px]"></i>
+                    </button>
+                </div>
+            </template>
+            
+            @if(session('success'))
+                <div x-init="$nextTick(() => add('{{ session('success') }}', 'success'))"></div>
+            @endif
+            @if(session('info'))
+                <div x-init="$nextTick(() => add('{{ session('info') }}', 'info'))"></div>
+            @endif
+        </div>
         
         <!-- Footer -->
         <footer class="p-8 border-t border-slate-100 bg-white/50 text-center">

@@ -6,7 +6,28 @@
 @section('page_subtitle', 'Gérez les couches de persistance de données pour assurer une fluidité maximale aux utilisateurs.')
 
 @section('content')
-<div class="space-y-8 pb-20">
+<div class="space-y-8 pb-20" x-data="{
+    loading: false,
+    clearCache(type = 'all') {
+        if (this.loading) return;
+        this.loading = true;
+        fetch('{{ route('admin.tools.cache.clear') }}', {
+            method: 'POST',
+            headers: { 
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ type: type })
+        })
+        .then(res => res.json())
+        .then(data => {
+            this.loading = false;
+            if (data.success) {
+                alert('Cache ' + type + ' vidé avec succès !');
+            }
+        });
+    }
+}">
     <!-- Cache Actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         <!-- Global Flush -->
@@ -16,20 +37,22 @@
             </div>
             <h4 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight mb-2">Flush Global</h4>
             <p class="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-6 sm:mb-8">Efface vues, config et routes</p>
-            <button class="w-full py-4 bg-slate-900 text-white font-black rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-rdc-blue transition-all active:scale-95">Tout Vider</button>
+            <button @click="clearCache('all')" :disabled="loading" class="w-full py-4 bg-slate-900 text-white font-black rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-rdc-blue transition-all active:scale-95 disabled:opacity-50">
+                <span x-text="loading ? 'Vuidage...' : 'Tout Vider'">Tout Vider</span>
+            </button>
         </div>
 
         <!-- Selective Flushes -->
         <div class="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm">
             <h4 class="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-6 sm:mb-8">Actions Ciblées</h4>
             <div class="space-y-2 sm:space-y-3">
-                <button class="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl text-[8px] sm:text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-between transition-all active:scale-[0.98]">
+                <button @click="clearCache('view')" :disabled="loading" class="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl text-[8px] sm:text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-between transition-all active:scale-[0.98] disabled:opacity-50">
                     Vues Blade <i class="fas fa-angle-right text-[10px]"></i>
                 </button>
-                <button class="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl text-[8px] sm:text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-between transition-all active:scale-[0.98]">
+                <button @click="clearCache('route')" :disabled="loading" class="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl text-[8px] sm:text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-between transition-all active:scale-[0.98] disabled:opacity-50">
                     Routes & URL <i class="fas fa-angle-right text-[10px]"></i>
                 </button>
-                <button class="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl text-[8px] sm:text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-between transition-all active:scale-[0.98]">
+                <button @click="clearCache('config')" :disabled="loading" class="w-full px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl text-[8px] sm:text-[9px] font-black text-slate-900 uppercase tracking-widest flex items-center justify-between transition-all active:scale-[0.98] disabled:opacity-50">
                     Config PHP <i class="fas fa-angle-right text-[10px]"></i>
                 </button>
             </div>

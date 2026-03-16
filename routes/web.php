@@ -128,8 +128,10 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
         Route::prefix('users')->name('users.')->group(function (): void {
             Route::get('/', [AdminUserController::class, 'index'])->name('index');
+            Route::get('/api', [AdminUserController::class, 'apiIndex'])->name('api.index');
             Route::post('/{id}/promote', [AdminUserController::class, 'promoteToAdmin'])->name('promote');
             Route::post('/{id}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('/{id}/toggle-status-api', [AdminUserController::class, 'toggleStatusApi'])->name('toggle-status-api');
             Route::delete('/{id}', [AdminUserController::class, 'destroy'])->name('destroy');
         });
 
@@ -157,10 +159,18 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
         // Administrative Placeholders for Premium UI
         Route::get('/stats-realtime', [AdminDashboardController::class, 'stats'])->name('stats');
+        Route::get('/api/logs', [AdminDashboardController::class, 'getLogs'])->name('api.logs');
+        Route::post('/api/logs/export', [AdminReportController::class, 'exportLogs'])->name('api.logs.export');
+        Route::get('/api/alerts/unread-count', [AdminDashboardController::class, 'getUnreadAlertCount'])->name('api.alerts.unread-count');
         Route::get('/alerts', [AdminDashboardController::class, 'alerts'])->name('alerts');
+        Route::post('/alerts/{alert}/resolve', [AdminDashboardController::class, 'resolveAlert'])->name('alerts.resolve');
+        Route::post('/alerts/mark-all-read', [AdminDashboardController::class, 'markAllAlertsRead'])->name('alerts.mark-all-read');
         
         Route::prefix('users-mgmt')->name('users-mgmt.')->group(function() {
+            Route::get('/counts', [AdminUserController::class, 'getCountsApi'])->name('counts');
             Route::get('/pending', [AdminUserController::class, 'pending'])->name('pending');
+            Route::post('/pending/{id}/approve-api', [AdminUserController::class, 'approveApi'])->name('pending.approve-api');
+            Route::post('/pending/{id}/reject-api', [AdminUserController::class, 'rejectApi'])->name('pending.reject-api');
             Route::get('/flagged', [AdminUserController::class, 'flagged'])->name('flagged');
             Route::get('/documents', [AdminUserController::class, 'documents'])->name('docs');
             Route::post('/documents/{id}/verify', [AdminUserController::class, 'verifyDocument'])->name('docs.verify');
@@ -174,15 +184,29 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
         Route::prefix('finances')->name('finances.')->group(function() {
             Route::get('/transactions', [AdminFinancialController::class, 'transactions'])->name('transactions');
+            Route::get('/transactions/export', [AdminFinancialController::class, 'exportTransactions'])->name('transactions.export');
+            
             Route::get('/commissions', [AdminFinancialController::class, 'commissions'])->name('commissions');
+            Route::post('/commissions', [AdminFinancialController::class, 'updateCommission'])->name('commissions.update');
+            
             Route::get('/invoicing', [AdminFinancialController::class, 'invoicing'])->name('invoicing');
+            Route::get('/invoicing/export', [AdminFinancialController::class, 'exportInvoices'])->name('invoicing.export');
         });
 
-        Route::prefix('content')->name('content.')->group(function() {
-            Route::get('/news', [AdminContentController::class, 'news'])->name('news');
-            Route::get('/newsletter', [AdminContentController::class, 'newsletter'])->name('newsletter');
-            Route::get('/push', [AdminContentController::class, 'push'])->name('push');
-        });
+        // Communication Logic
+    Route::prefix('content')->name('content.')->group(function () {
+        Route::get('/news', [AdminContentController::class, 'news'])->name('news');
+        Route::post('/news', [AdminContentController::class, 'newsStore'])->name('news.store');
+        Route::delete('/news/{article}', [AdminContentController::class, 'newsDelete'])->name('news.delete');
+
+        Route::get('/newsletter', [AdminContentController::class, 'newsletter'])->name('newsletter');
+        Route::post('/newsletter', [AdminContentController::class, 'newsletterStore'])->name('newsletter.store');
+        Route::post('/newsletter/{campaign}/duplicate', [AdminContentController::class, 'newsletterDuplicate'])->name('newsletter.duplicate');
+        Route::delete('/newsletter/{campaign}', [AdminContentController::class, 'newsletterDelete'])->name('newsletter.delete');
+
+        Route::get('/push', [AdminContentController::class, 'push'])->name('push');
+        Route::post('/push/broadcast', [AdminContentController::class, 'pushBroadcast'])->name('push.broadcast');
+    });
 
         Route::prefix('settings-hq')->name('settings-hq.')->group(function() {
             Route::get('/geo', [AdminSettingController::class, 'geo'])->name('geo');
@@ -193,23 +217,32 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::get('/analytics', [AdminReportController::class, 'analytics'])->name('analytics');
             Route::get('/financial', [AdminReportController::class, 'financial'])->name('financial');
             Route::get('/export', [AdminReportController::class, 'export'])->name('export');
+            Route::get('/export/users', [AdminReportController::class, 'exportUsers'])->name('export.users');
+            Route::get('/export/services', [AdminReportController::class, 'exportServices'])->name('export.services');
         });
 
         Route::prefix('tools')->name('tools.')->group(function() {
             Route::get('/maintenance', [AdminSettingController::class, 'maintenance'])->name('maintenance');
+            Route::post('/maintenance/toggle', [AdminSettingController::class, 'toggleMaintenance'])->name('maintenance.toggle');
             Route::get('/cache', [AdminSettingController::class, 'cache'])->name('cache');
+            Route::post('/cache/clear', [AdminSettingController::class, 'clearCache'])->name('cache.clear');
             Route::get('/logs', [AdminSettingController::class, 'logs'])->name('logs');
+            Route::post('/logs/clear', [AdminSettingController::class, 'clearLogs'])->name('logs.clear');
         });
 
         Route::prefix('support-hq')->name('support-hq.')->group(function() {
             Route::get('/tickets', [AdminSupportController::class, 'tickets'])->name('tickets');
+            Route::post('/tickets/{id}/reply', [AdminSupportController::class, 'replyTicket'])->name('tickets.reply');
+            Route::post('/tickets/{id}/close', [AdminSupportController::class, 'closeTicket'])->name('tickets.close');
             Route::get('/docs', [AdminSupportController::class, 'docs'])->name('docs');
             Route::get('/suggestions', [AdminSupportController::class, 'suggestions'])->name('suggestions');
+            Route::post('/suggestions/{id}/toggle', [AdminSupportController::class, 'toggleSuggestionStatus'])->name('suggestions.toggle');
         });
 
         Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/generate', [AdminReportController::class, 'generate'])->name('reports.generate');
         Route::get('/reports/{report}/download', [AdminReportController::class, 'download'])->name('reports.download');
+        Route::delete('/reports/{report}', [AdminReportController::class, 'destroy'])->name('reports.destroy');
 
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
