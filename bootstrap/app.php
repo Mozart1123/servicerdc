@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register custom middleware aliases
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'user.type' => \App\Http\Middleware\SetUserType::class,
+            'client' => \App\Http\Middleware\TypeMiddleware::class . ':client',
+            'artisan' => \App\Http\Middleware\TypeMiddleware::class . ':artisan',
+            'emploie' => \App\Http\Middleware\TypeMiddleware::class . ':job_seeker',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

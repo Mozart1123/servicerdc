@@ -30,6 +30,7 @@ class DashboardController extends Controller
     public function index(): View
     {
         $user = Auth::user();
+        $activeType = session('active_user_type', $user->user_type);
 
         $stats = [
             'applied_jobs_count' => $user->jobApplications()->count(),
@@ -65,7 +66,14 @@ class DashboardController extends Controller
         $myApplications = $user->jobApplications()->with('jobOffer')->latest()->get();
         $notifications = $user->notifications()->latest()->take(5)->get();
 
-        return view('user.dashboard', compact(
+        // Return view based on type
+        $view = match($activeType) {
+            'artisan' => 'user.artisan',
+            'job_seeker' => 'user.emploie', 
+            default => 'user.client',
+        };
+
+        return view($view, compact(
             'stats',
             'recentJobs',
             'allJobs',
@@ -106,10 +114,12 @@ class DashboardController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'bio' => ['nullable', 'string', 'max:500'],
+            'specialty' => ['nullable', 'string', 'max:255'],
+            'experience' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = Auth::user();
-        $user->update($request->only(['name', 'phone']));
+        $user->update($request->only(['name', 'phone', 'bio', 'specialty', 'experience']));
 
         return redirect()->back()->with('success', 'Profil mis à jour avec succès.');
     }

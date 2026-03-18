@@ -62,61 +62,66 @@ Route::middleware('auth')->group(function (): void {
 });
 
 // User Routes
-Route::middleware(['auth', 'role:user,admin,super_admin'])
+Route::middleware(['auth', 'role:user,admin,super_admin', 'user.type'])
     ->prefix('user')
     ->name('user.')
     ->group(function (): void {
-        // Dashboard
+        // Type switching
+        Route::get('/switch-type/{type}', function(string $type) {
+            if (in_array($type, ['client', 'artisan', 'job_seeker'])) {
+                session(['active_user_type' => $type]);
+                return back()->with('success', 'Mode ' . ucfirst($type) . ' activé.');
+            }
+            return back();
+        })->name('switch-type');
+
+        // General routes accessible to all types
         Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
-        
-        // Profile
         Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserDashboardController::class, 'profile'])->name('profile.edit');
         Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
-        
-        // Services
-        Route::get('/services', [UserServiceController::class, 'index'])->name('services.index');
-        Route::get('/services/create', [UserServiceController::class, 'create'])->name('services.create');
-        Route::post('/services', [UserServiceController::class, 'store'])->name('services.store');
-        Route::get('/services/{id}', [UserServiceController::class, 'show'])->name('services.show');
-        Route::get('/services/{id}/edit', [UserServiceController::class, 'edit'])->name('services.edit');
-        Route::put('/services/{id}', [UserServiceController::class, 'update'])->name('services.update');
-        Route::delete('/services/{id}', [UserServiceController::class, 'destroy'])->name('services.destroy');
-        Route::get('/my-services', [UserServiceController::class, 'myServices'])->name('services.my');
-        Route::post('/services/{id}/remove-image', [UserServiceController::class, 'removeImage'])->name('services.remove-image');
-        
-        // Jobs
-        Route::get('/jobs', [UserJobController::class, 'index'])->name('jobs.index');
-        Route::get('/jobs/{id}', [UserJobController::class, 'show'])->name('jobs.show');
-        Route::post('/jobs/{job}/apply', [UserJobController::class, 'apply'])->name('jobs.apply');
-        Route::get('/my-applications', [UserJobController::class, 'myApplications'])->name('applications.index');
-        Route::delete('/applications/{applicationId}', [UserJobController::class, 'withdrawApplication'])->name('applications.withdraw');
-        
-        // Missions
+        Route::get('/notifications', [UserDashboardController::class, 'notifications'])->name('notifications.index');
+        Route::post('/notifications/{notificationId}/read', [UserDashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
+        Route::get('/messages', function() { return view('user.messages.index'); })->name('messages.index');
+
+        // Artisan Routes (Services management)
+        Route::middleware('artisan')->group(function() {
+            Route::get('/my-services', [UserServiceController::class, 'myServices'])->name('services.my');
+            Route::get('/services/create', [UserServiceController::class, 'create'])->name('services.create');
+            Route::post('/services', [UserServiceController::class, 'store'])->name('services.store');
+            Route::get('/services/{id}/edit', [UserServiceController::class, 'edit'])->name('services.edit');
+            Route::put('/services/{id}', [UserServiceController::class, 'update'])->name('services.update');
+            Route::delete('/services/{id}', [UserServiceController::class, 'destroy'])->name('services.destroy');
+            Route::post('/services/{id}/remove-image', [UserServiceController::class, 'removeImage'])->name('services.remove-image');
+        });
+
+        // Client & Job Seeker Routes (Finding work or artisans)
+        Route::middleware('client')->group(function() {
+            Route::get('/services', [UserServiceController::class, 'index'])->name('services.index');
+            Route::get('/services/{id}', [UserServiceController::class, 'show'])->name('services.show');
+            
+            Route::get('/jobs', [UserJobController::class, 'index'])->name('jobs.index');
+            Route::get('/jobs/{id}', [UserJobController::class, 'show'])->name('jobs.show');
+            Route::post('/jobs/{job}/apply', [UserJobController::class, 'apply'])->name('jobs.apply');
+            Route::get('/my-applications', [UserJobController::class, 'myApplications'])->name('applications.index');
+            Route::delete('/applications/{applicationId}', [UserJobController::class, 'withdrawApplication'])->name('applications.withdraw');
+            
+            Route::get('/service-requests', [\App\Http\Controllers\User\ServiceRequestController::class, 'index'])->name('service-requests.index');
+            Route::get('/service-requests/{serviceRequest}', [\App\Http\Controllers\User\ServiceRequestController::class, 'show'])->name('service-requests.show');
+            Route::post('/service-requests', [\App\Http\Controllers\User\ServiceRequestController::class, 'store'])->name('service-requests.store');
+        });
+
+        // Common shared resources (Missions/History)
         Route::get('/missions', [UserDashboardController::class, 'missions'])->name('missions.index');
         Route::get('/missions/{id}', [UserDashboardController::class, 'missionDetail'])->name('missions.show');
         Route::put('/missions/{id}/status', [UserDashboardController::class, 'updateMissionStatus'])->name('missions.update-status');
         
-        // Notifications
-        Route::get('/notifications', [UserDashboardController::class, 'notifications'])->name('notifications.index');
-        Route::post('/notifications/{notificationId}/read', [UserDashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
-
-        // Messages (Premium Demo)
-        Route::get('/messages', function() {
-            return view('user.messages.index');
-        })->name('messages.index');
-
-        // Placeholder Routes for Premium UX
+        // Premium Placeholders
         Route::get('/favorites', [UserDashboardController::class, 'favorites'])->name('favorites');
         Route::get('/new', [UserDashboardController::class, 'newOpportunities'])->name('new');
         Route::get('/security', [UserDashboardController::class, 'security'])->name('security');
         Route::get('/help', [UserDashboardController::class, 'help'])->name('help');
         Route::get('/report', [UserDashboardController::class, 'report'])->name('report');
-
-        // Service Requests (Custom service requests from users)
-        Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
-        Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
-        Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
     });
 
 // Admin Routes
