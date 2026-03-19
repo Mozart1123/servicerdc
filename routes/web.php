@@ -26,6 +26,11 @@ use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\FinancialController as AdminFinancialController;
 use App\Http\Controllers\Admin\ContentController as AdminContentController;
 use App\Http\Controllers\Admin\SupportController as AdminSupportController;
+use App\Http\Controllers\SuperAdmin\BillingController;
+use App\Http\Controllers\SuperAdmin\ActivityLogController;
+use App\Http\Controllers\SuperAdmin\OrganizationController as SuperAdminOrganizationController;
+use App\Http\Controllers\SuperAdmin\PlanController as SuperAdminPlanController;
+use App\Http\Controllers\SuperAdmin\ServiceController as SuperAdminServiceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,12 +73,12 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
     ->group(function (): void {
         // Dashboard
         Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Profile
         Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserDashboardController::class, 'profile'])->name('profile.edit');
         Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
-        
+
         // Services
         Route::get('/services', [UserServiceController::class, 'index'])->name('services.index');
         Route::get('/services/create', [UserServiceController::class, 'create'])->name('services.create');
@@ -84,25 +89,25 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::delete('/services/{id}', [UserServiceController::class, 'destroy'])->name('services.destroy');
         Route::get('/my-services', [UserServiceController::class, 'myServices'])->name('services.my');
         Route::post('/services/{id}/remove-image', [UserServiceController::class, 'removeImage'])->name('services.remove-image');
-        
+
         // Jobs
         Route::get('/jobs', [UserJobController::class, 'index'])->name('jobs.index');
         Route::get('/jobs/{id}', [UserJobController::class, 'show'])->name('jobs.show');
         Route::post('/jobs/{job}/apply', [UserJobController::class, 'apply'])->name('jobs.apply');
         Route::get('/my-applications', [UserJobController::class, 'myApplications'])->name('applications.index');
         Route::delete('/applications/{applicationId}', [UserJobController::class, 'withdrawApplication'])->name('applications.withdraw');
-        
+
         // Missions
         Route::get('/missions', [UserDashboardController::class, 'missions'])->name('missions.index');
         Route::get('/missions/{id}', [UserDashboardController::class, 'missionDetail'])->name('missions.show');
         Route::put('/missions/{id}/status', [UserDashboardController::class, 'updateMissionStatus'])->name('missions.update-status');
-        
+
         // Notifications
         Route::get('/notifications', [UserDashboardController::class, 'notifications'])->name('notifications.index');
         Route::post('/notifications/{notificationId}/read', [UserDashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
 
         // Messages (Premium Demo)
-        Route::get('/messages', function() {
+        Route::get('/messages', function () {
             return view('user.messages.index');
         })->name('messages.index');
 
@@ -114,9 +119,9 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/report', [UserDashboardController::class, 'report'])->name('report');
 
         // Service Requests (Custom service requests from users)
-        Route::get('/service-requests', [ServiceRequestController::class, 'index'])->name('service-requests.index');
-        Route::get('/service-requests/{serviceRequest}', [ServiceRequestController::class, 'show'])->name('service-requests.show');
-        Route::post('/service-requests', [ServiceRequestController::class, 'store'])->name('service-requests.store');
+        Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
+        Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
+        Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
     });
 
 // Admin Routes
@@ -144,8 +149,10 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::patch('/{id}/status', [AdminJobApplicationController::class, 'updateStatus'])->name('status');
         });
 
-        Route::get('/profile', function() { return view('admin.placeholder'); })->name('profile');
-        
+        Route::get('/profile', function () {
+            return view('admin.placeholder');
+        })->name('profile');
+
         // Service Requests Management
         Route::prefix('service-requests')->name('service-requests.')->group(function (): void {
             Route::get('/', [UserServiceRequestController::class, 'adminIndex'])->name('index');
@@ -153,13 +160,15 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::patch('/{serviceRequest}', [UserServiceRequestController::class, 'adminRespond'])->name('respond');
         });
 
-        Route::get('/account', function() { return view('admin.placeholder'); })->name('account');
+        Route::get('/account', function () {
+            return view('admin.placeholder');
+        })->name('account');
 
         // Administrative Placeholders for Premium UI
         Route::get('/stats-realtime', [AdminDashboardController::class, 'stats'])->name('stats');
         Route::get('/alerts', [AdminDashboardController::class, 'alerts'])->name('alerts');
-        
-        Route::prefix('users-mgmt')->name('users-mgmt.')->group(function() {
+
+        Route::prefix('users-mgmt')->name('users-mgmt.')->group(function () {
             Route::get('/pending', [AdminUserController::class, 'pending'])->name('pending');
             Route::get('/flagged', [AdminUserController::class, 'flagged'])->name('flagged');
             Route::get('/documents', [AdminUserController::class, 'documents'])->name('docs');
@@ -167,41 +176,41 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::post('/documents/{id}/reject', [AdminUserController::class, 'rejectDocument'])->name('docs.reject');
         });
 
-        Route::prefix('moderation')->name('moderation.')->group(function() {
+        Route::prefix('moderation')->name('moderation.')->group(function () {
             Route::get('/services', [AdminServiceController::class, 'index'])->name('services');
             Route::get('/reviews', [ModerationController::class, 'reviews'])->name('reviews');
         });
 
-        Route::prefix('finances')->name('finances.')->group(function() {
+        Route::prefix('finances')->name('finances.')->group(function () {
             Route::get('/transactions', [AdminFinancialController::class, 'transactions'])->name('transactions');
             Route::get('/commissions', [AdminFinancialController::class, 'commissions'])->name('commissions');
             Route::get('/invoicing', [AdminFinancialController::class, 'invoicing'])->name('invoicing');
         });
 
-        Route::prefix('content')->name('content.')->group(function() {
+        Route::prefix('content')->name('content.')->group(function () {
             Route::get('/news', [AdminContentController::class, 'news'])->name('news');
             Route::get('/newsletter', [AdminContentController::class, 'newsletter'])->name('newsletter');
             Route::get('/push', [AdminContentController::class, 'push'])->name('push');
         });
 
-        Route::prefix('settings-hq')->name('settings-hq.')->group(function() {
+        Route::prefix('settings-hq')->name('settings-hq.')->group(function () {
             Route::get('/geo', [AdminSettingController::class, 'geo'])->name('geo');
             Route::get('/api', [AdminSettingController::class, 'api'])->name('api');
         });
 
-        Route::prefix('reports-hq')->name('reports-hq.')->group(function() {
+        Route::prefix('reports-hq')->name('reports-hq.')->group(function () {
             Route::get('/analytics', [AdminReportController::class, 'analytics'])->name('analytics');
             Route::get('/financial', [AdminReportController::class, 'financial'])->name('financial');
             Route::get('/export', [AdminReportController::class, 'export'])->name('export');
         });
 
-        Route::prefix('tools')->name('tools.')->group(function() {
+        Route::prefix('tools')->name('tools.')->group(function () {
             Route::get('/maintenance', [AdminSettingController::class, 'maintenance'])->name('maintenance');
             Route::get('/cache', [AdminSettingController::class, 'cache'])->name('cache');
             Route::get('/logs', [AdminSettingController::class, 'logs'])->name('logs');
         });
 
-        Route::prefix('support-hq')->name('support-hq.')->group(function() {
+        Route::prefix('support-hq')->name('support-hq.')->group(function () {
             Route::get('/tickets', [AdminSupportController::class, 'tickets'])->name('tickets');
             Route::get('/docs', [AdminSupportController::class, 'docs'])->name('docs');
             Route::get('/suggestions', [AdminSupportController::class, 'suggestions'])->name('suggestions');
@@ -221,6 +230,9 @@ Route::middleware(['auth', 'role:super_admin'])
     ->name('super-admin.')
     ->group(function (): void {
         Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/roles', [SuperAdminUserController::class, 'roles'])->name('roles');
+        Route::post('/roles/{id}/update', [SuperAdminUserController::class, 'updateRole'])->name('roles.update');
+        Route::get('/sessions', [SuperAdminUserController::class, 'sessions'])->name('sessions');
 
         // Admin Hierarchy
         Route::prefix('users')->name('users.')->group(function (): void {
@@ -228,54 +240,135 @@ Route::middleware(['auth', 'role:super_admin'])
             Route::get('/create', [SuperAdminUserController::class, 'create'])->name('create');
             Route::get('/{id}', [SuperAdminUserController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [SuperAdminUserController::class, 'edit'])->name('edit');
-            Route::delete('/{id}', [SuperAdminDashboardController::class, 'deleteUser'])->name('destroy');
+            Route::delete('/{id}', [SuperAdminUserController::class, 'destroy'])->name('destroy');
             Route::post('/{id}/promote', [SuperAdminDashboardController::class, 'promoteUser'])->name('promote');
+            Route::post('/{id}/toggle-status', [SuperAdminUserController::class, 'toggleStatus'])->name('toggle-status');
+        });
+
+        // Organizations
+        Route::prefix('organizations')->name('organizations.')->group(function (): void {
+            Route::get('/', [SuperAdminOrganizationController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminOrganizationController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminOrganizationController::class, 'store'])->name('store');
+            Route::get('/{organization}', [SuperAdminOrganizationController::class, 'show'])->name('show');
+            // Using ID instead of model binding for simplicity in my CRUD logic if needed, but Controller uses Organization typehint
+            Route::get('/{organization}/edit', [SuperAdminOrganizationController::class, 'edit'])->name('edit');
+            Route::put('/{organization}', [SuperAdminOrganizationController::class, 'update'])->name('update');
+            Route::delete('/{organization}', [SuperAdminOrganizationController::class, 'destroy'])->name('destroy');
+            Route::post('/{organization}/toggle-status', [SuperAdminOrganizationController::class, 'toggleStatus'])->name('toggle-status');
+        });
+
+        // Service Moderation
+        Route::prefix('services')->name('services.')->group(function (): void {
+            Route::get('/', [SuperAdminServiceController::class, 'index'])->name('index');
+            Route::post('/{service}/toggle-verification', [SuperAdminServiceController::class, 'toggleVerification'])->name('toggle-verification');
+            Route::post('/{service}/toggle-status', [SuperAdminServiceController::class, 'toggleStatus'])->name('toggle-status');
+            Route::delete('/{service}', [SuperAdminServiceController::class, 'destroy'])->name('destroy');
+        });
+
+        // Plans & Features
+        Route::prefix('plans')->name('plans.')->group(function (): void {
+            Route::get('/', [SuperAdminPlanController::class, 'index'])->name('index');
+            Route::get('/create', [SuperAdminPlanController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminPlanController::class, 'store'])->name('store');
+            Route::get('/{plan}/edit', [SuperAdminPlanController::class, 'edit'])->name('edit');
+            Route::put('/{plan}', [SuperAdminPlanController::class, 'update'])->name('update');
+            Route::delete('/{plan}', [SuperAdminPlanController::class, 'destroy'])->name('destroy');
+            Route::post('/{plan}/toggle-status', [SuperAdminPlanController::class, 'toggleStatus'])->name('toggle-status');
+        });
+
+        // Billing & Finance
+        Route::prefix('billing')->name('billing.')->group(function (): void {
+            Route::get('/', [BillingController::class, 'index'])->name('index');
+            Route::get('/transactions', [BillingController::class, 'transactions'])->name('transactions');
+            Route::get('/payouts', [BillingController::class, 'payouts'])->name('payouts');
         });
 
         // SYSTEM CORE
-        Route::prefix('system')->name('system.')->group(function() {
-            Route::get('/console', function() { return view('super-admin.system.console'); })->name('console');
-            Route::get('/env', function() { return view('super-admin.system.env'); })->name('env');
-            Route::get('/files', function() { return view('super-admin.placeholder'); })->name('files');
-            Route::get('/debug', function() { return view('super-admin.placeholder'); })->name('debug');
+    
+        Route::prefix('system')->name('system.')->group(function () {
+            Route::get('/console', function () {
+                return view('super-admin.system.console');
+            })->name('console');
+            Route::get('/env', function () {
+                return view('super-admin.system.env');
+            })->name('env');
+            Route::get('/files', function () {
+                return view('super-admin.placeholder');
+            })->name('files');
+            Route::get('/debug', function () {
+                return view('super-admin.placeholder');
+            })->name('debug');
         });
 
         // BDD MASTER
-        Route::prefix('database')->name('database.')->group(function() {
-            Route::get('/phpmyadmin', function() { return view('super-admin.placeholder'); })->name('phpmyadmin');
-            Route::get('/tables', function() { return view('super-admin.database.tables'); })->name('tables');
-            Route::get('/migrations', function() { return view('super-admin.placeholder'); })->name('migrations');
-            Route::get('/backup', function() { return view('super-admin.placeholder'); })->name('backup');
+        Route::prefix('database')->name('database.')->group(function () {
+            Route::get('/phpmyadmin', function () {
+                return view('super-admin.placeholder');
+            })->name('phpmyadmin');
+            Route::get('/tables', function () {
+                return view('super-admin.database.tables');
+            })->name('tables');
+            Route::get('/migrations', function () {
+                return view('super-admin.placeholder');
+            })->name('migrations');
+            Route::get('/backup', function () {
+                return view('super-admin.placeholder');
+            })->name('backup');
         });
 
         // SECURE
-        Route::prefix('security')->name('security.')->group(function() {
-            Route::get('/firewall', function() { return view('super-admin.security.firewall'); })->name('firewall');
-            Route::get('/logs', function() { return view('super-admin.placeholder'); })->name('logs');
-            Route::get('/hashing', function() { return view('super-admin.placeholder'); })->name('hashing');
-            Route::get('/lockdown', function() { return view('super-admin.placeholder'); })->name('lockdown');
+        Route::prefix('security')->name('security.')->group(function () {
+            Route::get('/firewall', function () {
+                return view('super-admin.security.firewall');
+            })->name('firewall');
+            Route::get('/logs', function () {
+                return view('super-admin.placeholder');
+            })->name('logs');
+            Route::get('/hashing', function () {
+                return view('super-admin.placeholder');
+            })->name('hashing');
+            Route::get('/lockdown', function () {
+                return view('super-admin.placeholder');
+            })->name('lockdown');
         });
 
         // MULTI-INSTANCE
-        Route::prefix('instances')->name('instances.')->group(function() {
-            Route::get('/all', function() { return view('super-admin.instances.all'); })->name('all');
-            Route::get('/sync', function() { return view('super-admin.placeholder'); })->name('sync');
-            Route::get('/stats', function() { return view('super-admin.placeholder'); })->name('stats');
+        Route::prefix('instances')->name('instances.')->group(function () {
+            Route::get('/all', function () {
+                return view('super-admin.instances.all');
+            })->name('all');
+            Route::get('/sync', function () {
+                return view('super-admin.placeholder');
+            })->name('sync');
+            Route::get('/stats', function () {
+                return view('super-admin.placeholder');
+            })->name('stats');
         });
 
         // VISION DIVINE
-        Route::prefix('divine')->name('divine.')->group(function() {
-            Route::get('/messages', function() { return view('super-admin.placeholder'); })->name('messages');
-            Route::get('/files', function() { return view('super-admin.placeholder'); })->name('files');
-            Route::get('/tracking', function() { return view('super-admin.divine.tracking'); })->name('tracking');
-            Route::get('/impersonate', function() { return view('super-admin.divine.impersonate'); })->name('impersonate');
-            Route::get('/powers', function() { return view('super-admin.divine.powers'); })->name('powers');
+        Route::prefix('divine')->name('divine.')->group(function () {
+            Route::get('/messages', function () {
+                return view('super-admin.placeholder');
+            })->name('messages');
+            Route::get('/files', function () {
+                return view('super-admin.placeholder');
+            })->name('files');
+            Route::get('/tracking', function () {
+                return view('super-admin.divine.tracking');
+            })->name('tracking');
+            Route::get('/impersonate', function () {
+                return view('super-admin.divine.impersonate');
+            })->name('impersonate');
+            Route::get('/powers', function () {
+                return view('super-admin.divine.powers');
+            })->name('powers');
         });
 
         // Placeholder for legacy calls (if any)
-        Route::get('/services', [SuperAdminSystemController::class, 'services'])->name('services');
         Route::get('/jobs', [SuperAdminSystemController::class, 'jobs'])->name('jobs');
         Route::get('/reports', [SuperAdminSystemController::class, 'reports'])->name('reports');
         Route::get('/settings', [SuperAdminSystemController::class, 'settings'])->name('settings');
-        Route::get('/logs', [SuperAdminSystemController::class, 'logs'])->name('logs');
+        Route::get('/logs', [ActivityLogController::class, 'index'])->name('logs');
+        Route::post('/logs/clear', [ActivityLogController::class, 'clear'])->name('logs.clear');
     });

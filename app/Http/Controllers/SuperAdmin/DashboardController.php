@@ -6,14 +6,16 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Service;
+use App\Models\JobOffer;
+use App\Models\Mission;
+use App\Models\Organization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
  * Super Admin Dashboard Controller
- * 
- * Handles super-admin specific functionality including user management.
  */
 class DashboardController extends Controller
 {
@@ -22,22 +24,56 @@ class DashboardController extends Controller
      */
     public function index(): View
     {
+        $totalUsers = User::count();
+        $activeUsers = User::where('status', 'active')->count();
+        $suspendedUsers = User::where('status', 'suspended')->count();
+        $totalAdmins = User::whereIn('role', ['admin', 'super_admin'])->count();
+
+        // Active sessions: approximate from sessions table
+        $activeSessions = 0;
+        try {
+            $activeSessions = \DB::table('sessions')
+                ->where('last_activity', '>', now()->subMinutes(30)->timestamp)
+                ->count();
+        } catch (\Exception $e) {
+            $activeSessions = 0;
+        }
+
         $stats = [
-            'total_users' => User::count(),
-            'total_admins' => User::where('role', 'admin')->count(),
-            'total_super_admins' => User::where('role', 'super_admin')->count(),
-            'system_load' => 12.5,
-            'ram_usage' => '2.4 GB',
-            'uptime' => '1,245h 32m',
-            'monthly_revenue' => 12450.75,
-            'pending_security_alerts' => 5,
-            'active_instances' => 3,
-            'database_size' => '1.2 GB',
+            'total_users' => $totalUsers,
+            'active_users' => $activeUsers,
+            'suspended_users' => $suspendedUsers,
+            'total_admins' => $totalAdmins,
+            'active_sessions' => $activeSessions,
+            'monthly_revenue' => 0,        // placeholder — connect payment gateway later
+            'system_uptime' => $this->getUptime(),
+            'total_services' => Service::count(),
+            'total_jobs' => JobOffer::count(),
+            'active_missions' => Mission::where('status', 'active')->count(),
+            'total_organizations' => Organization::count(),
         ];
 
-        $recent_users = User::latest()->take(10)->get();
-        
-        return view('super-admin.dashboard', compact('stats', 'recent_users'));
+        // Recent users for activity feed
+        $recentActivity = User::latest()->take(8)->get();
+
+        // All users for table (paginated)
+        $users = User::latest()->paginate(10);
+
+        return view('super-admin.dashboard', compact('stats', 'recentActivity', 'users'));
+    }
+
+    /**
+     * Get a human-readable server uptime string.
+     */
+    private function getUptime(): string
+    {
+        if (PHP_OS_FAMILY === 'Linux') {
+            $uptime = (int) file_get_contents('/proc/uptime');
+            $days = floor($uptime / 86400);
+            $hours = floor(($uptime % 86400) / 3600);
+            return "{$days}d {$hours}h";
+        }
+        return 'N/A';
     }
 
     /**
@@ -47,26 +83,21 @@ class DashboardController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Prevent self-deletion
         if ($user->id === auth()->id()) {
-            return redirect()->back()
-                ->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+            return redirect()->back()->with('error', 'You cannot delete your own account.');
         }
 
-        // Prevent deletion of other super admins
         if ($user->isSuperAdmin()) {
-            return redirect()->back()
-                ->with('error', 'Vous ne pouvez pas supprimer un autre Super Administrateur.');
+            return redirect()->back()->with('error', 'Super admin accounts cannot be deleted.');
         }
 
         $user->delete();
 
-        return redirect()->route('super-admin.users')
-            ->with('success', 'Utilisateur supprimé avec succès.');
+        return redirect()->back()->with('success', "User {$user->name} has been deleted.");
     }
 
     /**
-     * Promote a user to admin or super admin.
+     * Promote / change a user's role.
      */
     public function promoteUser(Request $request, int $id): RedirectResponse
     {
@@ -76,17 +107,30 @@ class DashboardController extends Controller
 
         $user = User::findOrFail($id);
 
-        // Prevent self-demotion
         if ($user->id === auth()->id() && $request->role !== User::ROLE_SUPER_ADMIN) {
-            return redirect()->back()
-                ->with('error', 'Vous ne pouvez pas vous rétrograder vous-même.');
+            return redirect()->back()->with('error', 'You cannot demote your own account.');
         }
 
         $user->update(['role' => $request->role]);
 
-        $roleLabel = User::ROLES[$request->role] ?? $request->role;
+        return redirect()->back()->with('success', "{$user->name}'s role has been updated to {$request->role}.");
+    }
 
-        return redirect()->back()
-            ->with('success', "Le rôle de {$user->name} a été changé en {$roleLabel}.");
+    /**
+     * Toggle user active/suspended status.
+     */
+    public function toggleStatus(int $id): RedirectResponse
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'You cannot suspend your own account.');
+        }
+
+        $newStatus = $user->status === 'active' ? 'suspended' : 'active';
+        $user->update(['status' => $newStatus]);
+
+        $label = $newStatus === 'active' ? 'activated' : 'suspended';
+        return redirect()->back()->with('success', "{$user->name} has been {$label}.");
     }
 }

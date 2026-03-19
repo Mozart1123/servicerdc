@@ -1,379 +1,1389 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full bg-slate-50">
+<html lang="en" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOD MODE | MAÎTRE ABSOLU | SRDC-DIVINE</title>
-    
-    <!-- Premium Fonts -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('page_title', 'Dashboard') — ServiceRDC Admin</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Icons & Stylings -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Plus Jakarta Sans', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        'rdc-blue': '#007FFF',
-                        'rdc-blue-dark': '#0066CC',
-                        'rdc-yellow': '#F0B800',
-                        'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#0F172A',
-                        'divine-gold': '#FFD700',
-                        'cosmic-purple': '#A855F7',
-                    }
-                }
-            }
-        }
-    </script>
 
     <style>
-        [x-cloak] { display: none !important; }
-        
-        .glass-sidebar {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(15px);
-            border-right: 1px solid rgba(226, 232, 240, 0.8);
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
+        :root {
+            --sidebar-w: 220px;
+            --topbar-h: 60px;
+            --bg-sidebar: #0f172a;
+            --bg-sidebar-hover: #1e293b;
+            --bg-sidebar-active: #1d4ed8;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-sidebar: #94a3b8;
+            --text-sidebar-active: #ffffff;
+            --accent: #2563eb;
+            --accent-light: #eff6ff;
+            --accent-hover: #1d4ed8;
+            --green: #16a34a;
+            --green-bg: #f0fdf4;
+            --red: #dc2626;
+            --red-bg: #fef2f2;
+            --amber: #d97706;
+            --amber-bg: #fffbeb;
+            --radius: 8px;
+            --radius-sm: 6px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, .07), 0 2px 4px -1px rgba(0, 0, 0, .05);
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
+
+        html,
+        body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #E2E8F0;
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-w);
+            background: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            transition: transform .25s ease;
+        }
+
+        .sidebar-logo {
+            height: var(--topbar-h);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo .logo-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -.3px;
+        }
+
+        .sidebar-logo .logo-badge {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(37, 99, 235, .15);
+            padding: 2px 7px;
+            border-radius: 20px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 10px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .1);
             border-radius: 10px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #CBD5E1;
+
+        .nav-section {
+            margin-bottom: 24px;
         }
 
-        @keyframes pulse-soft {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(0.98); }
-        }
-        .animate-pulse-soft { animation: pulse-soft 2s infinite; }
-
-        .divine-glow {
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-        }
-
-        .gold-shimmer {
-            background: linear-gradient(90deg, #F59E0B, #FBBF24, #F59E0B);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite linear;
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: rgba(148, 163, 184, .5);
+            padding: 0 10px;
+            margin-bottom: 4px;
         }
 
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-sidebar);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+            position: relative;
         }
 
-        .power-bar-fill {
-            background: linear-gradient(90deg, #3B82F6, #10B981, #F59E0B);
-            transition: width 1s ease-in-out;
+        .nav-item:hover {
+            background: var(--bg-sidebar-hover);
+            color: #e2e8f0;
+        }
+
+        .nav-item.active {
+            background: var(--bg-sidebar-active);
+            color: var(--text-sidebar-active);
+        }
+
+        .nav-item .nav-icon {
+            width: 16px;
+            text-align: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .nav-item .nav-badge {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, .12);
+            color: rgba(255, 255, 255, .7);
+        }
+
+        .nav-item.active .nav-badge {
+            background: rgba(255, 255, 255, .2);
+            color: #fff;
+        }
+
+        .sidebar-footer {
+            padding: 12px 10px;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+            flex-shrink: 0;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 4px;
+        }
+
+        .sidebar-user .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user .user-info {
+            min-width: 0;
+        }
+
+        .sidebar-user .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #e2e8f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user .user-role {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: #64748b;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            transition: background .15s, color .15s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(220, 38, 38, .1);
+            color: #f87171;
+        }
+
+        /* ─── TOPBAR ─── */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            gap: 16px;
+            z-index: 40;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .topbar-breadcrumb {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .topbar-breadcrumb span {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .search-wrap {
+            position: relative;
+        }
+
+        .search-input {
+            height: 36px;
+            padding: 0 12px 0 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-main);
+            font-size: 13px;
+            color: var(--text-primary);
+            width: 220px;
+            outline: none;
+            transition: border-color .15s, background .15s;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            background: #fff;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            position: relative;
+            text-decoration: none;
+            transition: border-color .15s, background .15s;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-main);
+            border-color: #cbd5e1;
+        }
+
+        .icon-btn .notif-dot {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 6px;
+            height: 6px;
+            background: var(--red);
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+        }
+
+        .user-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px 4px 4px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: none;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .user-menu-btn:hover {
+            background: var(--bg-main);
+        }
+
+        .user-menu-btn .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu-btn .name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-menu-btn .fa-chevron-down {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* ─── MAIN CONTENT ─── */
+        .main-wrap {
+            margin-left: var(--sidebar-w);
+            padding-top: var(--topbar-h);
+            min-height: 100vh;
+        }
+
+        .page-content {
+            padding: 28px;
+        }
+
+        /* ─── CARDS ─── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* ─── STAT CARDS ─── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -.5px;
+            line-height: 1;
+        }
+
+        .stat-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        /* ─── BADGES ─── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .badge-green {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        .badge-green .badge-dot {
+            background: var(--green);
+        }
+
+        .badge-red {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        .badge-red .badge-dot {
+            background: var(--red);
+        }
+
+        .badge-amber {
+            background: var(--amber-bg);
+            color: var(--amber);
+        }
+
+        .badge-amber .badge-dot {
+            background: var(--amber);
+        }
+
+        .badge-blue {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .badge-blue .badge-dot {
+            background: var(--accent);
+        }
+
+        .badge-gray {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .badge-gray .badge-dot {
+            background: #94a3b8;
+        }
+
+        /* ─── TABLE ─── */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 10px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-muted);
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            color: var(--text-primary);
+        }
+
+        th .sort-icon {
+            margin-left: 4px;
+            opacity: .4;
+            font-size: 10px;
+        }
+
+        th.sorted .sort-icon {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        td {
+            padding: 12px 14px;
+            font-size: 13px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: background .15s, border-color .15s, color .15s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-main);
+        }
+
+        .btn-danger {
+            background: var(--red-bg);
+            color: var(--red);
+            border-color: #fecaca;
+        }
+
+        .btn-danger:hover {
+            background: #fee2e2;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            padding: 7px 8px;
+        }
+
+        /* ─── ACTION MENU ─── */
+        .action-menu {
+            position: relative;
+        }
+
+        .action-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            min-width: 160px;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            font-size: 13px;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .12s;
+        }
+
+        .action-item:hover {
+            background: var(--bg-main);
+        }
+
+        .action-item.danger {
+            color: var(--red);
+        }
+
+        .action-item.danger:hover {
+            background: var(--red-bg);
+        }
+
+        .action-item i {
+            width: 14px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .action-item.danger i {
+            color: var(--red);
+        }
+
+        /* ─── SLIDE-OVER MODAL ─── */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .4);
+            z-index: 200;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .slideover {
+            width: 440px;
+            max-width: 100%;
+            background: var(--bg-card);
+            height: 100%;
+            overflow-y: auto;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, .12);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slideover-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .slideover-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: background .15s;
+        }
+
+        .close-btn:hover {
+            background: var(--bg-main);
+        }
+
+        .slideover-body {
+            padding: 24px;
+            flex: 1;
+        }
+
+        .slideover-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+
+        /* ─── FORM ─── */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            height: 38px;
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-primary);
+            background: var(--bg-card);
+            outline: none;
+            transition: border-color .15s;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+        }
+
+        /* ─── SEARCH/FILTER BAR ─── */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-input {
+            height: 34px;
+            padding: 0 10px 0 32px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            width: 240px;
+            background: var(--bg-main);
+            outline: none;
+            font-family: inherit;
+            transition: border-color .15s, background .15s;
+        }
+
+        .filter-input:focus {
+            border-color: var(--accent);
+            background: #fff;
+        }
+
+        .filter-input-wrap {
+            position: relative;
+        }
+
+        .filter-input-wrap i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .filter-select {
+            height: 34px;
+            padding: 0 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* ─── PAGINATION ─── */
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 14px 20px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border);
+        }
+
+        .pagination .page-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-right: 8px;
+        }
+
+        .page-btn {
+            height: 30px;
+            min-width: 30px;
+            padding: 0 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: background .15s, border-color .15s;
+        }
+
+        .page-btn:hover {
+            background: var(--bg-main);
+        }
+
+        .page-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .page-btn:disabled,
+        .page-btn.disabled {
+            opacity: .4;
+            pointer-events: none;
+        }
+
+        /* ─── ACTIVITY FEED ─── */
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-text {
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .activity-text strong {
+            font-weight: 600;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* ─── QUICK ACTIONS ─── */
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            text-decoration: none;
+            transition: border-color .15s, background .15s;
+            background: var(--bg-card);
+        }
+
+        .quick-action:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .quick-action .qa-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .quick-action .qa-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .quick-action .qa-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        /* ─── ALERT ─── */
+        .alert {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: var(--red-bg);
+            color: var(--red);
+            border: 1px solid #fecaca;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .topbar {
+                left: 0;
+            }
+
+            .main-wrap {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .search-input {
+                width: 160px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-content {
+                padding: 16px;
+            }
+
+            .topbar {
+                padding: 0 16px;
+            }
         }
     </style>
+
+    @stack('styles')
 </head>
-<body class="h-full font-sans antialiased text-slate-800" x-data="godMode">
 
-    <!-- Mobile Sidebar Overlay -->
-    <div x-show="sidebarOpen" @click="sidebarOpen = false" x-transition.opacity 
-         class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm"></div>
+<body x-data="{
+    sidebarOpen: false,
+    editModal: false,
+    editUser: {},
+    confirmModal: false,
+    confirmAction: null,
+    openEdit(user) { this.editUser = JSON.parse(JSON.stringify(user)); this.editModal = true; },
+    closeEdit() { this.editModal = false; },
+    confirmDo(action) { this.confirmAction = action; this.confirmModal = true; },
+}">
 
-    <!-- Sidebar -->
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-           class="fixed inset-y-0 left-0 w-80 glass-sidebar z-50 transform lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl lg:shadow-none overflow-hidden">
-        
-        <!-- [ENTÊTE ULTIME] -->
-        <div class="p-8 border-b border-warning-100 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            
-            <div class="flex flex-col gap-5 relative z-10">
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-3xl shadow-xl shadow-amber-500/30 divine-glow relative">
-                        <i class="fas fa-crown text-white"></i>
-                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
-                    </div>
-                    <div>
-                        <h2 class="font-heading font-extrabold text-sm leading-tight tracking-widest text-amber-400 uppercase">MAÎTRE ABSOLU</h2>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">SUPER ADMIN - HQ</span>
-                        </div>
-                    </div>
-                </div>
+    {{-- ─── MOBILE OVERLAY ─── --}}
+    <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"
+        style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:45;" x-transition.opacity></div>
 
-                <!-- Jauge de Pouvoir -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
-                        <span class="text-amber-500">⚡ Pouvoir</span>
-                        <span x-text="powerLevel + '%'"></span>
-                    </div>
-                    <div class="h-1.5 w-full bg-slate-700/50 rounded-full overflow-hidden p-[1px]">
-                        <div class="h-full power-bar-fill rounded-full" :style="'width: ' + powerLevel + '%'"></div>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-2 border-t border-white/10">
-                    <div class="flex flex-col">
-                        <span class="text-[9px] font-mono text-slate-400 uppercase tracking-tighter">UID: GOD-MODE-001</span>
-                        <span class="text-[9px] font-mono text-emerald-400 uppercase tracking-tighter">ALL SYSTEMS UNLOCKED</span>
-                    </div>
-                    <div class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded text-[8px] font-bold text-amber-500 uppercase">OFFLINE MODE: NO</div>
-                </div>
-            </div>
+    {{-- ─── SIDEBAR ─── --}}
+    <aside class="sidebar" :class="sidebarOpen ? 'open' : ''">
+        {{-- Logo --}}
+        <div class="sidebar-logo">
+            <div class="logo-icon">S</div>
+            <span class="logo-text">ServiceRDC</span>
+            <span class="logo-badge">Admin</span>
         </div>
 
-        <!-- Navigation Menu -->
-        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-8 custom-scrollbar">
-            
-            <!-- SECTION 1 : CONTRÔLE ABSOLU DES UTILISATEURS -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-blue-500 uppercase tracking-widest font-heading flex items-center justify-between">
-                    <span>1. Contrôle Utilisateurs</span>
-                    <i class="fas fa-users text-[8px]"></i>
-                </div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="super-admin.divine.tracking" icon="fas fa-map-marked-alt" label="Carte Temps Réel" badge="LIVE" variant="default" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-search-dollar" label="Recherche Omnisciente" variant="default" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-eye" label="Vision Utilisateur" variant="default" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-brain" label="Lire les Pensées" variant="default" />
-                    <x-super-admin-nav-item route="super-admin.users.index" icon="fas fa-user-edit" label="Modifier n'importe qui" variant="gold" />
-                    <x-super-admin-nav-item route="super-admin.divine.impersonate" icon="fas fa-user-secret" label="Impersonation Ultime" variant="gold" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-bullhorn" label="Message à Tous" badge="PUSH" variant="gold" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-ban" label="Apocalypse (Ban Global)" variant="danger" />
-                </ul>
-            </section>
+        {{-- Nav --}}
+        <nav class="sidebar-nav">
 
-            <!-- SECTION 2 : CONTRÔLE TOTAL DU CONTENU -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-emerald-500 uppercase tracking-widest font-heading flex items-center justify-between">
-                    <span>2. Contrôle Contenu</span>
-                    <i class="fas fa-file-invoice text-[8px]"></i>
-                </div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="#" icon="fas fa-pen-nib" label="Édition Universelle" variant="default" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-code" label="Modifier HTML/CSS Live" variant="gold" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-ghost" label="Censure Totale" variant="danger" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-magic" label="Échange Magique" variant="gold" />
-                </ul>
-            </section>
-
-            <!-- SECTION 3 : CONTRÔLE TOTAL DES SERVICES -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-amber-500 uppercase tracking-widest font-heading">3. Contrôle Services</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="super-admin.services" icon="fas fa-tools" label="Gestion Divine Services" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-hard-hat" label="Contrôle des Artisans" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-chart-pie" label="Manipulation Marché" variant="gold" />
-                </ul>
-            </section>
-
-            <!-- SECTION 5 : CONTRÔLE TOTAL FINANCIER -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-yellow-500 uppercase tracking-widest font-heading">5. Contrôle Financier</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="#" icon="fas fa-vault" label="Trésorerie Absolue" badge="$$$" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-money-bill-wave" label="Créer de l'argent" variant="gold" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-file-invoice-dollar" label="Facturation Divine" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-exchange-alt" label="Remboursements Divins" variant="danger" />
-                </ul>
-            </section>
-
-            <!-- SECTION 6 : CONTRÔLE TOTAL DU SYSTÈME -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-red-500 uppercase tracking-widest font-heading">6. Contrôle Système</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="super-admin.system.console" icon="fas fa-server" label="Admin Serveur (Root)" variant="danger" />
-                    <x-super-admin-nav-item route="super-admin.database.tables" icon="fas fa-database" label="BDD Divine (Direct)" variant="danger" />
-                    <x-super-admin-nav-item route="super-admin.security.firewall" icon="fas fa-shield-alt" label="Sécurité Absolue" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-unlock-alt" label="Casser Mots de Passe" variant="danger" />
-                </ul>
-            </section>
-
-            <!-- SECTION 8 : CONTRÔLE TOTAL DES ADMINS -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-slate-900 uppercase tracking-widest font-heading">8. Contrôle Admins</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="super-admin.users.index" icon="fas fa-crown" label="Hiérarchie Divine" />
-                    <x-super-admin-nav-item route="super-admin.logs" icon="fas fa-history" label="Audit Universel" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-gavel" label="Juger les Admins" variant="danger" />
-                </ul>
-            </section>
-
-            <!-- SECTION 9 : CONTRÔLE TOTAL DU CODE -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-indigo-500 uppercase tracking-widest font-heading">9. Contrôle Code</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="#" icon="fas fa-file-code" label="Édition Source" variant="danger" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-rocket" label="Déploiement Divin" variant="gold" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-bug" label="Debug Universel" />
-                </ul>
-            </section>
-
-            <!-- SECTION 10 : CONTRÔLE TOTAL DU TEMPS -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-purple-500 uppercase tracking-widest font-heading">10. Contrôle Temps</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="#" icon="fas fa-undo-alt" label="Revenir dans le Temps" variant="cosmic" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-fast-forward" label="Avancer (Simulation)" variant="cosmic" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-calendar-alt" label="Modifier l'Histoire" variant="danger" />
-                </ul>
-            </section>
-
-            <!-- SECTION 12 : POUVOIRS COSMIQUES -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-pink-500 uppercase tracking-widest font-heading">12. Pouvoirs Cosmiques</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="super-admin.divine.powers" icon="fas fa-sparkles" label="Création Ex-Nihilo" variant="cosmic" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-meteor" label="Destruction Totale" variant="danger" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-crystal-ball" label="Voyance Digitale" variant="cosmic" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-atom" label="Big Bang (Reset)" variant="panic" />
-                </ul>
-            </section>
-
-            <!-- SECTION 14 : MODES SPÉCIAUX -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest font-heading">14. Modes Spéciaux</div>
-                <ul class="space-y-1">
-                    <x-super-admin-nav-item route="#" icon="fas fa-ghost" label="Mode Furtif" variant="default" badge="OFF" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-mask" label="Mode Incognito" variant="default" />
-                    <x-super-admin-nav-item route="#" icon="fas fa-skull" label="Confirmation Nucléaire" variant="danger" />
-                </ul>
-            </section>
-
-            <!-- SECTION 15 : COMMANDES DIVINES -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest font-heading">15. Commandes Divines</div>
-                <ul class="space-y-1 text-[10px] font-mono p-4 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-500">
-                    <li>Ctrl+Shift+G : God Mode</li>
-                    <li>Ctrl+Shift+D : Destruction</li>
-                    <li>##GODMODE## : Activate</li>
-                </ul>
-            </section>
-
-            <div class="h-10"></div>
-        </nav>
-        
-        <!-- [BAS] - CONTRÔLE FINAL -->
-        <div class="p-4 border-t border-slate-200 bg-slate-50/80 backdrop-blur-md">
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <button class="flex flex-col items-center justify-center p-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all gap-1 shadow-lg shadow-red-600/20">
-                    <i class="fas fa-bomb text-xs"></i>
-                    <span class="text-[8px] font-bold uppercase tracking-tighter">Destruction</span>
-                </button>
-                <button class="flex flex-col items-center justify-center p-3 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-all gap-1 shadow-lg shadow-amber-500/20">
-                    <i class="fas fa-sync text-xs"></i>
-                    <span class="text-[8px] font-bold uppercase tracking-tighter">Réinitialiser</span>
-                </button>
-                <button class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 text-white hover:bg-black transition-all gap-1 shadow-lg shadow-black/20">
-                    <i class="fas fa-lock text-xs"></i>
-                    <span class="text-[8px] font-bold uppercase tracking-tighter">Verrouiller</span>
-                </button>
-                <button class="flex flex-col items-center justify-center p-3 rounded-xl bg-rdc-blue text-white hover:bg-rdc-blue-dark transition-all gap-1 shadow-xl shadow-blue-500/20">
-                    <i class="fas fa-phone-alt text-xs"></i>
-                    <span class="text-[8px] font-bold uppercase tracking-tighter">Créateur</span>
-                </button>
+            {{-- Overview --}}
+            <div class="nav-section">
+                <div class="nav-section-label">Overview</div>
+                <a href="{{ route('super-admin.dashboard') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.dashboard') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-grid-2"></i> Dashboard
+                </a>
             </div>
 
+            {{-- User Management --}}
+            <div class="nav-section">
+                <div class="nav-section-label">User Management</div>
+                <a href="{{ route('super-admin.users.index') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.users.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-users"></i> Users
+                </a>
+                <a href="{{ route('super-admin.roles') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.roles*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-shield-halved"></i> Roles & Permissions
+                </a>
+                <a href="{{ route('super-admin.sessions') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.sessions') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-clock-rotate-left"></i> Sessions
+                </a>
+            </div>
+
+            {{-- Platform --}}
+            <div class="nav-section">
+                <div class="nav-section-label">Platform</div>
+                <a href="{{ route('super-admin.services.index') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.services.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-briefcase"></i> Services
+                </a>
+                <a href="{{ route('super-admin.organizations.index') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.organizations.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-building"></i> Organizations
+                </a>
+                <a href="{{ route('super-admin.plans.index') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.plans.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-layer-group"></i> Plans & Features
+                </a>
+                <a href="{{ route('super-admin.logs') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.logs') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-list-check"></i> Activity Logs
+                    <span class="nav-badge" style="background:var(--accent);color:white;">Live</span>
+                </a>
+            </div>
+
+            {{-- Finance --}}
+            <div class="nav-section">
+                <div class="nav-section-label">Finance</div>
+                <a href="{{ route('super-admin.billing.index') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.billing.index') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-credit-card"></i> Overview
+                </a>
+                <a href="{{ route('super-admin.billing.transactions') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.billing.transactions') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-arrow-right-arrow-left"></i> Transactions
+                </a>
+                <a href="{{ route('super-admin.billing.payouts') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.billing.payouts') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-money-bill-transfer"></i> Payouts
+                </a>
+            </div>
+
+            {{-- System --}}
+            <div class="nav-section">
+                <div class="nav-section-label">System</div>
+                <a href="#" class="nav-item">
+                    <i class="nav-icon fas fa-gear"></i> Settings
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="nav-icon fas fa-file-shield"></i> Audit Trail
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="nav-icon fas fa-key"></i> API Keys
+                </a>
+                <a href="{{ route('super-admin.security.firewall') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.security.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-heart-pulse"></i> System Health
+                </a>
+            </div>
+        </nav>
+
+        {{-- Footer --}}
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                <div class="user-info">
+                    <div class="user-name">{{ auth()->user()->name }}</div>
+                    <div class="user-role">Super Admin</div>
+                </div>
+            </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest text-slate-600 hover:bg-red-50 hover:text-rdc-red hover:shadow-sm transition-all group border border-transparent hover:border-red-100">
-                    <i class="fas fa-power-off text-slate-400 group-hover:text-rdc-red"></i>
-                    Quitter l'Univers
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-arrow-right-from-bracket"
+                        style="font-size:13px;width:16px;text-align:center;color:#64748b;"></i>
+                    Sign out
                 </button>
             </form>
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <div class="lg:pl-80 flex flex-col min-h-screen transition-all duration-300">
-        
-        <!-- Top Navbar -->
-        <header class="h-24 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-4 lg:px-8 flex items-center justify-between">
-            <div class="flex items-center gap-6">
-                <button @click="sidebarOpen = true" class="lg:hidden p-2 text-slate-600 hover:bg-slate-50 rounded-lg">
-                    <i class="fas fa-bars text-xl"></i>
+    {{-- ─── TOPBAR ─── --}}
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="mobile-menu-btn" @click="sidebarOpen = !sidebarOpen">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="topbar-breadcrumb">
+                <span>ServiceRDC</span> / @yield('page_title', 'Dashboard')
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="search-wrap" style="display:none;" id="search-wrap">
+                <i class="fas fa-magnifying-glass search-icon"></i>
+                <input type="text" placeholder="Search..." class="search-input">
+            </div>
+            <button class="icon-btn" title="Search"
+                onclick="document.getElementById('search-wrap').style.display='block';this.style.display='none';">
+                <i class="fas fa-magnifying-glass"></i>
+            </button>
+            <a href="#" class="icon-btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-dot"></span>
+            </a>
+            <div x-data="{ open: false }" @click.outside="open = false" style="position:relative;">
+                <button class="user-menu-btn" @click="open = !open">
+                    <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                    <span class="name"
+                        style="display:none;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ auth()->user()->name }}</span>
+                    <i class="fas fa-chevron-down"></i>
                 </button>
-                <div class="flex flex-col">
-                    <h1 class="text-2xl font-heading font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        @yield('header_title', 'Master System Control')
-                        <div class="flex items-center gap-1 group">
-                            <span class="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded-full animate-pulse-soft">GOD MODE ACTIF</span>
-                            <span class="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-bold rounded-full opacity-0 group-hover:opacity-100 transition-opacity">LVL ∞</span>
-                        </div>
-                    </h1>
-                    <div class="flex items-center gap-4 mt-1">
-                        <span class="text-[10px] font-mono text-slate-400 flex items-center gap-1.5 uppercase tracking-tighter">
-                            <i class="fas fa-fingerprint text-emerald-500"></i> BIOMÉTRIE VÉRIFIÉE
-                        </span>
-                        <div class="h-3 w-px bg-slate-200"></div>
-                        <span class="text-[10px] font-mono text-slate-400 flex items-center gap-1.5 uppercase tracking-tighter">
-                            <i class="fas fa-satellite text-rdc-blue"></i> UPLINK: HQ-ORBITAL-STATION
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <!-- Search Bar -->
-                <div class="relative hidden xl:block group">
-                    <input type="text" placeholder="Recherche omnisciente..." 
-                           class="w-80 pl-12 pr-4 py-3 bg-slate-100 border-none rounded-2xl text-xs focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white transition-all font-medium">
-                    <i class="fas fa-search absolute left-4.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-rdc-blue transition-colors"></i>
-                </div>
-
-                <!-- Profile -->
-                <div class="flex items-center gap-4 pl-6 border-l border-slate-200">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-sm font-extrabold text-slate-900 tracking-tight">{{ auth()->user()->name }}</p>
-                        <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mt-0.5">Architecte Suprême</p>
-                    </div>
-                    <div class="relative group cursor-pointer">
-                        <div class="absolute -inset-1 bg-gradient-to-r from-amber-500 to-rdc-blue rounded-2xl blur opacity-20 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=000&color=F59E0B&size=128" 
-                             class="relative w-12 h-12 rounded-2xl shadow-xl border-2 border-white" alt="Super Admin">
-                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-white flex items-center justify-center">
-                            <i class="fas fa-crown text-[6px] text-white"></i>
+                <div x-show="open" x-cloak x-transition class="action-dropdown"
+                    style="min-width:180px;right:0;top:calc(100% + 8px);">
+                    <div class="action-item"
+                        style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:4px;">
+                        <div>
+                            <div style="font-weight:600;font-size:13px;">{{ auth()->user()->name }}</div>
+                            <div style="font-size:11px;color:var(--text-muted);">{{ auth()->user()->email }}</div>
                         </div>
                     </div>
+                    <a href="#" class="action-item"><i class="fas fa-user"></i> Profile</a>
+                    <a href="#" class="action-item"><i class="fas fa-gear"></i> Settings</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="action-item danger"
+                            style="width:100%;background:none;border:none;font-family:inherit;cursor:pointer;">
+                            <i class="fas fa-arrow-right-from-bracket"></i> Sign out
+                        </button>
+                    </form>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <!-- Page Content -->
-        <main class="flex-1 p-4 lg:p-10 bg-slate-50/50">
+    {{-- ─── MAIN ─── --}}
+    <div class="main-wrap">
+        <main class="page-content">
+            @if(session('success'))
+                <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-error"><i class="fas fa-triangle-exclamation"></i> {{ session('error') }}</div>
+            @endif
+
             @yield('content')
         </main>
     </div>
 
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('godMode', () => ({
-                sidebarOpen: false,
-                powerLevel: 100,
-                init() {
-                    setInterval(() => {
-                        this.powerLevel = 95 + Math.floor(Math.random() * 6);
-                    }, 3000);
-                }
-            }))
-        })
-    </script>
+    {{-- ─── EDIT USER SLIDE-OVER ─── --}}
+    <div x-show="editModal" x-cloak @keydown.escape.window="closeEdit()" style="position:fixed;inset:0;z-index:200;"
+        x-transition.opacity>
+        <div class="overlay" @click.self="closeEdit()">
+            <div class="slideover" @click.stop>
+                <div class="slideover-header">
+                    <span class="slideover-title">Edit User</span>
+                    <button class="close-btn" @click="closeEdit()"><i class="fas fa-xmark"></i></button>
+                </div>
+                <div class="slideover-body">
+                    <form method="POST" :action="'/super-admin/users/' + editUser.id + '/promote'">
+                        @csrf
+                        @method('POST')
+                        <div
+                            style="display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+                            <div class="user-avatar" style="width:48px;height:48px;font-size:16px;"
+                                x-text="editUser.name ? editUser.name.charAt(0).toUpperCase() : '?'"></div>
+                            <div>
+                                <div style="font-weight:700;font-size:15px;" x-text="editUser.name"></div>
+                                <div style="font-size:12px;color:var(--text-muted);" x-text="editUser.email"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" :value="editUser.name" readonly
+                                style="background:var(--bg-main);color:var(--text-muted);">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-input" :value="editUser.email" readonly
+                                style="background:var(--bg-main);color:var(--text-muted);">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Role</label>
+                            <select name="role" class="form-select" x-model="editUser.role">
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                                <option value="super_admin">Super Admin</option>
+                            </select>
+                        </div>
+                        <div class="slideover-footer" style="padding:0;margin-top:8px;border:none;">
+                            <button type="button" class="btn btn-secondary" @click="closeEdit()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @stack('scripts')
 </body>
+
 </html>
