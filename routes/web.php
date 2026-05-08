@@ -146,7 +146,8 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::patch('/{id}/status', [AdminJobApplicationController::class, 'updateStatus'])->name('status');
         });
 
-        Route::get('/profile', function() { return view('admin.placeholder'); })->name('profile');
+        Route::get('/profile', [AdminDashboardController::class, 'profile'])->name('profile');
+        Route::put('/profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
         
         // Service Requests Management
         Route::prefix('service-requests')->name('service-requests.')->group(function (): void {

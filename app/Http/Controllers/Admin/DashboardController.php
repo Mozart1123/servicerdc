@@ -134,4 +134,48 @@ class DashboardController extends Controller
         $count = SystemAlert::where('is_resolved', false)->count();
         return response()->json(['count' => $count]);
     }
+
+    /**
+     * Display the admin profile.
+     */
+    public function profile(): View
+    {
+        $user = auth()->user();
+        
+        // Mock recent activity for the UI since there is no standard activity table.
+        $recentLogs = \App\Models\SystemLog::where('user_id', $user->id)
+                                           ->latest()
+                                           ->take(5)
+                                           ->get();
+                                           
+        return view('admin.profile', compact('user', 'recentLogs'));
+    }
+
+    /**
+     * Update the admin profile.
+     */
+    public function updateProfile(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ]);
+
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'confirmed|min:8']);
+            $user->update(['password' => bcrypt($request->password)]);
+        }
+
+        return redirect()->route('admin.profile')->with('success', 'Profil mis à jour avec succès.');
+    }
 }
