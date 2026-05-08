@@ -13,7 +13,8 @@
     <!-- Icons & Stylings -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -77,8 +78,24 @@
            class="fixed inset-y-0 left-0 w-80 glass-sidebar z-50 transform lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl lg:shadow-none overflow-hidden">
         
         <!-- [ENTÊTE ADMIN] -->
-        <div class="p-8 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50">
-            <div class="flex items-center gap-4">
+        <div class="p-6 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50 relative">
+            <!-- Close button for mobile -->
+            <button @click="sidebarOpen = false" class="absolute top-4 right-4 lg:hidden p-2 text-slate-400 hover:text-slate-600 bg-white rounded-lg shadow-sm border border-slate-100 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- Logo Section -->
+            <div class="flex items-center gap-3 mb-6 px-2">
+                <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1.5 bg-white border border-slate-100">
+                    <img src="/assets/img/logo.png?v=1.1" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Service<span class="text-rdc-blue">RDC</span></h2>
+                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Plateforme Nationale</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                 <div class="relative">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=007FFF&color=fff&size=128" 
                          class="w-16 h-16 rounded-2xl border-2 border-white shadow-lg object-cover" alt="Profile">
@@ -109,110 +126,104 @@
                 <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
                     <i class="fas fa-grid-2 text-[8px]"></i> DASHBOARD
                 </div>
-                <ul class="space-y-1">
+                <ul class="space-y-1" x-data="{ alertCount: 0, init() { this.updateCount(); setInterval(() => this.updateCount(), 30000); document.addEventListener('alerts-updated', (e) => this.alertCount = e.detail); }, updateCount() { fetch('{{ route('admin.api.alerts.unread-count') }}').then(r => r.json()).then(d => { this.alertCount = d.count; window.dispatchEvent(new CustomEvent('alerts-updated', { detail: d.count })); }) } }">
                     <x-admin-nav-item route="admin.dashboard" icon="fas fa-chart-bar" label="Vue globale" />
                     <x-admin-nav-item route="admin.stats" icon="fas fa-chart-line" label="Stats temps réel" />
-                    <x-admin-nav-item route="admin.alerts" icon="fas fa-triangle-exclamation" label="Alertes système" badge="5" badgeColor="bg-rdc-red" />
+                    <x-admin-nav-item route="admin.alerts" icon="fas fa-triangle-exclamation" label="Alertes système" ::badge="alertCount > 0 ? alertCount : null" badgeColor="bg-rdc-red" />
                 </ul>
             </section>
+            
+            <ul class="space-y-1">
+                <!-- [GESTION UTILISATEURS] -->
+                <x-admin-dropdown-nav icon="fas fa-users-gear" label="Utilisateurs" :activePrefixes="['admin.users', 'admin.users-mgmt']" 
+                    x-data="{ 
+                        pendingCount: 0, 
+                        flaggedCount: 0,
+                        init() {
+                            this.fetchCounts();
+                            setInterval(() => this.fetchCounts(), 30000);
+                            document.addEventListener('users-updated', () => this.fetchCounts());
+                        },
+                        fetchCounts() {
+                            fetch('{{ route('admin.users-mgmt.counts') }}')
+                                .then(r => r.json())
+                                .then(d => {
+                                    this.pendingCount = d.pending;
+                                    this.flaggedCount = d.flagged;
+                                });
+                        }
+                    }">
+                    <x-admin-dropdown-item route="admin.users.index" label="Tous les utilisateurs" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.pending" label="En attente" ::badge="pendingCount > 0 ? pendingCount : null" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.flagged" label="Signalés/Suspendus" ::badge="flaggedCount > 0 ? flaggedCount : null" badgeColor="bg-rdc-red" />
+                    <x-admin-dropdown-item route="admin.users-mgmt.docs" label="Vérification KYC" />
+                </x-admin-dropdown-nav>
+                
+                <!-- [MODÉRATION & RESSOURCES] -->
+                <x-admin-dropdown-nav icon="fas fa-shield-halved" label="Modération & Opérations" :activePrefixes="['admin.moderation', 'admin.categories', 'admin.jobs']"
+                    x-data="{ 
+                        servicesCount: 0, 
+                        reviewsCount: 0,
+                        jobsCount: 0,
+                        init() {
+                            this.fetchCounts();
+                            setInterval(() => this.fetchCounts(), 45000);
+                        },
+                        fetchCounts() {
+                            fetch('{{ route('admin.users-mgmt.counts') }}')
+                                .then(r => r.json())
+                                .then(d => {
+                                    this.servicesCount = d.services;
+                                    this.reviewsCount = d.reviews;
+                                    this.jobsCount = d.jobs;
+                                });
+                        }
+                    }">
+                    <x-admin-dropdown-item route="admin.moderation.services" label="Services signalés" ::badge="servicesCount > 0 ? servicesCount : null" badgeColor="bg-amber-500" />
+                    <x-admin-dropdown-item route="admin.moderation.reviews" label="Évaluations à modérer" ::badge="reviewsCount > 0 ? reviewsCount : null" badgeColor="bg-blue-500" />
+                    <x-admin-dropdown-item route="admin.categories.index" label="Catégories système" />
+                    <x-admin-dropdown-item route="admin.jobs.index" label="Offres d'emploi" ::badge="jobsCount > 0 ? jobsCount : null" />
+                </x-admin-dropdown-nav>
 
-            <!-- [GESTION UTILISATEURS] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-users-gear text-[8px]"></i> GESTION UTILISATEURS
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.users.index" icon="fas fa-users" label="Tous les utilisateurs" />
-                    <x-admin-nav-item route="admin.users-mgmt.pending" icon="fas fa-hourglass-start" label="En attente de validation" badge="12" badgeColor="bg-rdc-blue" />
-                    <x-admin-nav-item route="admin.users-mgmt.flagged" icon="fas fa-triangle-exclamation" label="Signalés/Suspendus" />
-                    <x-admin-nav-item route="admin.users-mgmt.docs" icon="fas fa-file-lines" label="Documents à vérifier" />
-                </ul>
-            </section>
+                <!-- [FINANCES] -->
+                <x-admin-dropdown-nav icon="fas fa-wallet" label="Gestion Financière" :activePrefixes="['admin.finances']">
+                    <x-admin-dropdown-item route="admin.finances.transactions" label="Transactions" />
+                    <x-admin-dropdown-item route="admin.finances.commissions" label="Commissions" />
+                    <x-admin-dropdown-item route="admin.finances.invoicing" label="Facturation" />
+                </x-admin-dropdown-nav>
 
-            <!-- [MODÉRATION] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-shield-halved text-[8px]"></i> MODÉRATION
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.moderation.services" icon="fas fa-screwdriver-wrench" label="Services signalés" />
-                    <x-admin-nav-item route="admin.moderation.reviews" icon="fas fa-star" label="Évaluations à modérer" />
-                    <x-admin-nav-item route="admin.categories.index" icon="fas fa-tags" label="Catégories de services" />
-                    <x-admin-nav-item route="admin.jobs.index" icon="fas fa-briefcase" label="Offres d'emploi" />
-                </ul>
-            </section>
+                <!-- [CONTENU & COMMUNICATION] -->
+                <x-admin-dropdown-nav icon="fas fa-bullhorn" label="Communication" :activePrefixes="['admin.content']">
+                    <x-admin-dropdown-item route="admin.content.news" label="Actualités/Blog" />
+                    <x-admin-dropdown-item route="admin.content.newsletter" label="Newsletter" />
+                    <x-admin-dropdown-item route="admin.content.push" label="Alertes Push" />
+                </x-admin-dropdown-nav>
 
-            <!-- [FINANCES] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-wallet text-[8px]"></i> FINANCES
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.finances.transactions" icon="fas fa-credit-card" label="Transactions" />
-                    <x-admin-nav-item route="admin.finances.commissions" icon="fas fa-chart-bar" label="Commissions" />
-                    <x-admin-nav-item route="admin.finances.invoicing" icon="fas fa-file-invoice" label="Facturation" />
-                </ul>
-            </section>
+                <!-- [RAPPORTS & ANALYTICS] -->
+                <x-admin-dropdown-nav icon="fas fa-chart-pie" label="Rapports Data" :activePrefixes="['admin.reports-hq']">
+                    <x-admin-dropdown-item route="admin.reports-hq.analytics" label="Analytics globaux" />
+                    <x-admin-dropdown-item route="admin.reports-hq.financial" label="Rapports financiers" />
+                    <x-admin-dropdown-item route="admin.reports-hq.export" label="Exports massifs" />
+                </x-admin-dropdown-nav>
 
-            <!-- [CONTENU] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-pen-nib text-[8px]"></i> CONTENU
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.content.news" icon="fas fa-bullhorn" label="Actualités/Blog" />
-                    <x-admin-nav-item route="admin.content.newsletter" icon="fas fa-envelope-open-text" label="Newsletter" />
-                    <x-admin-nav-item route="admin.content.push" icon="fas fa-bell" label="Notifications push" />
-                </ul>
-            </section>
+                <!-- [SUPPORT CLIENT] -->
+                <x-admin-dropdown-nav icon="fas fa-headset" label="Support ServiceRDC" :activePrefixes="['admin.support-hq']">
+                    <x-admin-dropdown-item route="admin.support-hq.tickets" label="Tickets ouverts" />
+                    <x-admin-dropdown-item route="admin.support-hq.docs" label="Base de connaissances" />
+                    <x-admin-dropdown-item route="admin.support-hq.suggestions" label="Boîte à idées" />
+                </x-admin-dropdown-nav>
 
-            <!-- [PARAMÈTRES] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-gears text-[8px]"></i> PARAMÈTRES
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.settings.index" icon="fas fa-gear" label="Configuration générale" />
-                    <x-admin-nav-item route="admin.settings-hq.geo" icon="fas fa-location-dot" label="Zones géographiques" />
-                    <x-admin-nav-item route="admin.settings-hq.api" icon="fas fa-plug" label="Intégrations API" />
-                </ul>
-            </section>
-
-            <!-- [RAPPORTS] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-layer-group text-[8px]"></i> RAPPORTS
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.reports-hq.analytics" icon="fas fa-chart-pie" label="Analytics détaillés" />
-                    <x-admin-nav-item route="admin.reports-hq.financial" icon="fas fa-arrow-trend-up" label="Rapports financiers" />
-                    <x-admin-nav-item route="admin.reports-hq.export" icon="fas fa-file-export" label="Exports de données" />
-                </ul>
-            </section>
-
-            <!-- [OUTILS TECHNIQUES] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-microchip text-[8px]"></i> OUTILS TECHNIQUES
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.tools.maintenance" icon="fas fa-screwdriver-wrench" label="Maintenance" />
-                    <x-admin-nav-item route="admin.tools.cache" icon="fas fa-trash" label="Cache" />
-                    <x-admin-nav-item route="admin.tools.logs" icon="fas fa-folder-open" label="Logs système" />
-                </ul>
-            </section>
-
-            <!-- [SUPPORT] -->
-            <section>
-                <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
-                    <i class="fas fa-headset text-[8px]"></i> SUPPORT
-                </div>
-                <ul class="space-y-1">
-                    <x-admin-nav-item route="admin.support-hq.tickets" icon="fas fa-phone" label="Tickets support" />
-                    <x-admin-nav-item route="admin.support-hq.docs" icon="fas fa-book-open" label="Documentation" />
-                    <x-admin-nav-item route="admin.support-hq.suggestions" icon="fas fa-lightbulb" label="Suggestions" />
-                </ul>
-            </section>
+                <!-- [CONFIGURATION TECHNIQUE] -->
+                <x-admin-dropdown-nav icon="fas fa-gears" label="Configuration Core" :activePrefixes="['admin.settings', 'admin.settings-hq', 'admin.tools']">
+                    <x-admin-dropdown-item route="admin.settings.index" label="Paramètres généraux" />
+                    <x-admin-dropdown-item route="admin.settings-hq.geo" label="Zones de service" />
+                    <x-admin-dropdown-item route="admin.settings-hq.api" label="Intégrations (API)" />
+                    <div class="h-px bg-slate-200 my-1 mx-2"></div>
+                    <x-admin-dropdown-item route="admin.tools.maintenance" label="Mode maintenance" badge="OFF" badgeColor="bg-slate-400" />
+                    <x-admin-dropdown-item route="admin.tools.cache" label="Purge cache" />
+                    <x-admin-dropdown-item route="admin.tools.logs" label="Logs erreurs" />
+                </x-admin-dropdown-nav>
+            </ul>
 
             <div class="h-10"></div>
         </nav>
@@ -264,10 +275,14 @@
                 </div>
 
                 <!-- Notifications -->
-                <button class="relative p-2.5 text-slate-400 hover:text-rdc-blue transition-colors rounded-full hover:bg-blue-50">
+                <a href="{{ route('admin.alerts') }}" 
+                   x-data="{ count: 0, init() { this.poll(); setInterval(() => this.poll(), 30000); document.addEventListener('alerts-updated', (e) => this.count = e.detail); }, poll() { fetch('{{ route('admin.api.alerts.unread-count') }}').then(r => r.json()).then(d => { this.count = d.count; window.dispatchEvent(new CustomEvent('alerts-updated', { detail: d.count })); }) } }"
+                   class="relative p-2.5 text-slate-400 hover:text-rdc-blue transition-colors rounded-full hover:bg-blue-50">
                     <i class="far fa-bell text-xl"></i>
-                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rdc-red rounded-full border-2 border-white"></span>
-                </button>
+                    <template x-if="count > 0">
+                        <span class="absolute top-2.5 right-2.5 w-4 h-4 bg-rdc-red text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animate-bounce-short" x-text="count"></span>
+                    </template>
+                </a>
                 
                 <!-- Profile Toggle -->
                 <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
@@ -285,22 +300,78 @@
         <main class="flex-1 p-4 lg:p-8">
             <!-- Breadcrumbs / Top Actions -->
             <div class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">@yield('page_title', 'Vue d\'ensemble')</h2>
-                    <p class="text-slate-500 text-sm mt-1">@yield('page_subtitle', 'Bienvenue dans votre centre de contrôle ServiceRDC.')</p>
+                <div class="flex items-center gap-4">
+                    @if(Route::currentRouteName() !== 'admin.dashboard')
+                        <a href="{{ url()->previous() == url()->current() ? route('admin.dashboard') : url()->previous() }}" 
+                           class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-rdc-blue hover:border-rdc-blue transition-all shadow-sm">
+                            <i class="fas fa-chevron-left text-xs"></i>
+                        </a>
+                    @endif
+                    <div>
+                        <h2 class="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">@yield('page_title', 'Vue d\'ensemble')</h2>
+                        <p class="text-slate-500 text-sm mt-1">@yield('page_subtitle', 'Bienvenue dans votre centre de contrôle ServiceRDC.')</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-rdc-blue hover:text-rdc-blue transition-all flex items-center gap-2">
-                        <i class="fas fa-file-export"></i> Exporter
-                    </button>
-                    <button class="px-5 py-2.5 bg-rdc-blue text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:bg-rdc-blue-dark transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
-                        <i class="fas fa-plus-circle"></i> Nouveau Rapport
-                    </button>
+                    <form action="{{ route('admin.api.logs.export') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-rdc-blue hover:text-rdc-blue transition-all flex items-center gap-2">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                    </form>
+                    <form action="{{ route('admin.reports.generate') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 bg-rdc-blue text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:bg-rdc-blue-dark transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                            <i class="fas fa-plus-circle"></i> Nouveau Rapport
+                        </button>
+                    </form>
                 </div>
             </div>
 
             @yield('content')
         </main>
+
+        <!-- Global Notifications (Toasts) -->
+        <div class="fixed top-8 right-8 z-[200] space-y-4" x-data="{ 
+            notifications: [],
+            add(msg, type = 'success') {
+                const id = Date.now();
+                this.notifications.push({ id, msg, type });
+                setTimeout(() => {
+                    this.notifications = this.notifications.filter(n => n.id !== id);
+                }, 5000);
+            }
+        }" @notify.window="add($event.detail.message, $event.detail.type)">
+            <template x-for="n in notifications" :key="n.id">
+                <div x-transition:enter="transition ease-out duration-300" 
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:translate-x-4" 
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border min-w-[300px]"
+                     :class="n.type === 'success' ? 'bg-white border-emerald-100 text-emerald-900' : 'bg-white border-blue-100 text-blue-900'">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                         :class="n.type === 'success' ? 'bg-emerald-50 text-emerald-500' : 'bg-blue-50 text-blue-500'">
+                        <i class="fas" :class="n.type === 'success' ? 'fa-check-circle' : 'fa-info-circle'"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-40" x-text="n.type"></p>
+                        <p class="text-xs font-bold" x-text="n.msg"></p>
+                    </div>
+                    <button @click="notifications = notifications.filter(notif => notif.id !== n.id)" class="ml-auto text-slate-300 hover:text-slate-900">
+                        <i class="fas fa-times text-[10px]"></i>
+                    </button>
+                </div>
+            </template>
+            
+            @if(session('success'))
+                <div x-init="$nextTick(() => add('{{ session('success') }}', 'success'))"></div>
+            @endif
+            @if(session('info'))
+                <div x-init="$nextTick(() => add('{{ session('info') }}', 'info'))"></div>
+            @endif
+        </div>
         
         <!-- Footer -->
         <footer class="p-8 border-t border-slate-100 bg-white/50 text-center">

@@ -9,7 +9,29 @@ class SupportController extends Controller
 {
     public function tickets()
     {
-        return view('admin.support.tickets');
+        $tickets = \App\Models\SupportTicket::with('user')->latest()->paginate(20);
+        return view('admin.support.tickets', compact('tickets'));
+    }
+
+    public function replyTicket(Request $request, $id)
+    {
+        $ticket = \App\Models\SupportTicket::findOrFail($id);
+        $request->validate(['reply' => 'required|string']);
+
+        $ticket->update([
+            'admin_reply' => $request->reply,
+            'status' => 'pending',
+            'replied_at' => now()
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function closeTicket($id)
+    {
+        $ticket = \App\Models\SupportTicket::findOrFail($id);
+        $ticket->update(['status' => 'closed']);
+        return response()->json(['success' => true]);
     }
 
     public function docs()
@@ -19,6 +41,15 @@ class SupportController extends Controller
 
     public function suggestions()
     {
-        return view('admin.support.suggestions');
+        $suggestions = \App\Models\Suggestion::with('user')->latest()->paginate(20);
+        return view('admin.support.suggestions', compact('suggestions'));
+    }
+
+    public function toggleSuggestionStatus($id)
+    {
+        $suggestion = \App\Models\Suggestion::findOrFail($id);
+        $nextStatus = $suggestion->status == 'pending' ? 'reviewed' : ($suggestion->status == 'reviewed' ? 'implemented' : 'pending');
+        $suggestion->update(['status' => $nextStatus]);
+        return response()->json(['success' => true, 'status' => $nextStatus]);
     }
 }

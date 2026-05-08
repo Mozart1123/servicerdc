@@ -6,136 +6,138 @@
 @section('page_subtitle', 'Identifiez et résolvez les anomalies détectées par ServiceRDC Active Guard.')
 
 @section('content')
-<div class="space-y-8 pb-20">
+<div class="space-y-8 pb-20" x-data="alertManager()">
     
     <!-- Alert HUD -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-red-50 p-8 rounded-[2.5rem] border border-red-100 shadow-sm relative overflow-hidden group">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div class="bg-red-50 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-red-100 shadow-sm relative overflow-hidden group">
             <div class="absolute -right-10 -top-10 w-40 h-40 bg-rdc-red/5 rounded-full blur-3xl"></div>
             <div class="flex items-center justify-between mb-4 relative z-10">
-                <span class="text-[10px] font-black text-rdc-red uppercase tracking-widest">Critique</span>
-                <i class="fas fa-radiation text-rdc-red animate-pulse"></i>
+                <span class="text-[8px] sm:text-[10px] font-black text-rdc-red uppercase tracking-widest">Critique</span>
+                <i class="fas fa-radiation text-rdc-red {{ $stats['critical'] > 0 ? 'animate-pulse' : '' }} text-sm"></i>
             </div>
-            <h3 class="text-4xl font-heading font-black text-slate-900">03</h3>
-            <p class="text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Incidents non résolus</p>
+            <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">{{ str_pad((string)$stats['critical'], 2, '0', STR_PAD_LEFT) }}</h3>
+            <p class="text-[9px] sm:text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Incidents</p>
         </div>
         
-        <div class="bg-amber-50 p-8 rounded-[2.5rem] border border-amber-100 shadow-sm relative overflow-hidden group">
+        <div class="bg-amber-50 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-amber-100 shadow-sm relative overflow-hidden group">
             <div class="absolute -right-10 -top-10 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl"></div>
             <div class="flex items-center justify-between mb-4 relative z-10">
-                <span class="text-[10px] font-black text-amber-600 uppercase tracking-widest">Avertissements</span>
-                <i class="fas fa-triangle-exclamation text-amber-500"></i>
+                <span class="text-[8px] sm:text-[10px] font-black text-amber-600 uppercase tracking-widest">Avertissements</span>
+                <i class="fas fa-triangle-exclamation text-amber-500 text-sm"></i>
             </div>
-            <h3 class="text-4xl font-heading font-black text-slate-900">12</h3>
-            <p class="text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Anomalies mineures</p>
+            <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">{{ str_pad((string)$stats['warning'], 2, '0', STR_PAD_LEFT) }}</h3>
+            <p class="text-[9px] sm:text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Anomalies</p>
         </div>
 
-        <div class="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 shadow-sm relative overflow-hidden group">
+        <div class="bg-emerald-50 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-emerald-100 shadow-sm relative overflow-hidden group sm:col-span-2 lg:col-span-1">
             <div class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl"></div>
             <div class="flex items-center justify-between mb-4 relative z-10">
-                <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Résolus</span>
-                <i class="fas fa-circle-check text-emerald-500"></i>
+                <span class="text-[8px] sm:text-[10px] font-black text-emerald-600 uppercase tracking-widest">Résolus</span>
+                <i class="fas fa-circle-check text-emerald-500 text-sm"></i>
             </div>
-            <h3 class="text-4xl font-heading font-black text-slate-900">142</h3>
-            <p class="text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Dernières 24 heures</p>
+            <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">{{ str_pad((string)$stats['resolved'], 3, '0', STR_PAD_LEFT) }}</h3>
+            <p class="text-[9px] sm:text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Archives</p>
         </div>
     </div>
 
     <!-- Alert List Container -->
-    <div class="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden min-h-[500px]">
+    <div class="bg-white rounded-[2rem] sm:rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
         <!-- Table Header -->
-        <div class="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-            <div class="flex items-center gap-6">
-                <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Journal des Alertes</h3>
-                <div class="flex gap-2">
-                    <button class="px-4 py-2 bg-slate-900 text-white text-[9px] font-black uppercase rounded-xl tracking-widest">Tous</button>
-                    <button class="px-4 py-2 bg-white text-slate-400 text-[9px] font-black uppercase rounded-xl border border-slate-100 hover:text-rdc-blue transition-all tracking-widest">Sécurité</button>
-                    <button class="px-4 py-2 bg-white text-slate-400 text-[9px] font-black uppercase rounded-xl border border-slate-100 hover:text-rdc-blue transition-all tracking-widest">Performance</button>
-                </div>
+        <div class="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 space-y-6 bg-slate-50/30">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h3 class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">Journal Alertes</h3>
+                <button @click="markAllRead()" class="w-full sm:w-auto px-6 py-3 bg-red-500/10 text-red-500 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rdc-red hover:text-white active:scale-95 transition-all">Tout marquer Résolu</button>
             </div>
-            <button class="px-6 py-2.5 bg-rdc-red/10 text-rdc-red text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rdc-red hover:text-white transition-all">Tout Marquer comme Lu</button>
+            <div class="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+                <button @click="filter = 'ALL'" :class="filter === 'ALL' ? 'bg-slate-900 text-white' : 'bg-white text-slate-400 border border-slate-100'" class="px-4 py-2 text-[8px] sm:text-[9px] font-black uppercase rounded-lg tracking-widest shrink-0 transition-all">Tous</button>
+                <button @click="filter = 'critical'" :class="filter === 'critical' ? 'bg-red-600 text-white' : 'bg-white text-slate-400 border border-slate-100'" class="px-4 py-2 text-[8px] sm:text-[9px] font-black uppercase rounded-lg border shrink-0 transition-all">Critique</button>
+                <button @click="filter = 'warning'" :class="filter === 'warning' ? 'bg-amber-500 text-white' : 'bg-white text-slate-400 border border-slate-100'" class="px-4 py-2 text-[8px] sm:text-[9px] font-black uppercase rounded-lg border shrink-0 transition-all">Avertissement</button>
+            </div>
         </div>
 
         <!-- Alerts Content -->
         <div class="divide-y divide-slate-50">
-            <!-- Alert Item: Critical -->
-            <div class="px-10 py-8 flex items-start gap-8 group hover:bg-red-50/30 transition-colors">
-                <div class="w-14 h-14 bg-red-100 text-rdc-red rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                    <i class="fas fa-shield-virus text-2xl"></i>
+            @forelse($alerts as $alert)
+            <div x-show="shouldShow('{{ $alert->level }}', {{ $alert->is_resolved ? 'true' : 'false' }})"
+                 class="px-6 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row items-start gap-4 sm:gap-8 group transition-colors"
+                 :class="{{ $alert->is_resolved ? 'true' : 'false' }} ? 'opacity-50 grayscale bg-slate-50/20' : 'hover:bg-blue-50/30'">
+                
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform"
+                     class="{{ $alert->level === 'critical' ? 'bg-red-100 text-red-600' : ($alert->level === 'warning' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-rdc-blue') }}">
+                    <i class="fas {{ $alert->level === 'critical' ? 'fa-shield-virus' : ($alert->level === 'warning' ? 'fa-microchip' : 'fa-info-circle') }} text-xl sm:text-2xl"></i>
                 </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 bg-rdc-red text-white text-[8px] font-black uppercase tracking-widest rounded-full">Critique</span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">ID: SEC-2024-042</span>
+                
+                <div class="flex-1 w-full">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 text-white text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded-full {{ $alert->level === 'critical' ? 'bg-red-600' : ($alert->level === 'warning' ? 'bg-amber-500' : 'bg-blue-600') }}">
+                                {{ $alert->level }}
+                            </span>
+                            <span class="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono truncate">{{ $alert->code }}</span>
                         </div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic group-hover:text-rdc-red transition-colors">Il y a 14 minutes</span>
+                        <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest italic font-mono">{{ $alert->created_at->diffForHumans() }}</span>
                     </div>
-                    <h4 class="text-lg font-black text-slate-900 mb-2">Tentative d'Injection SQL Bloquée</h4>
-                    <p class="text-sm text-slate-500 max-w-2xl leading-relaxed">Le firewall a détecté une payload malveillante sur la route <code class="bg-slate-100 px-2 py-0.5 rounded text-rdc-blue font-bold px-1">/api/v1/services/search</code>. L'adresse IP <span class="text-slate-900 font-bold underline decoration-rdc-red/30">197.242.12.84</span> a été bannie pour 24h.</p>
+                    <h4 class="text-base sm:text-lg font-black text-slate-900 mb-2 uppercase tracking-tight">{{ $alert->title }}</h4>
+                    <p class="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6">{{ $alert->description }}</p>
                     
-                    <div class="mt-6 flex items-center gap-3">
-                        <button class="px-5 py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-rdc-blue transition-all">Ban Définitif</button>
-                        <button class="px-5 py-2.5 bg-white border border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50">Détails Log</button>
-                        <button class="px-5 py-2.5 bg-white border border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-xl hover:text-emerald-500">Marquer Résolu</button>
+                    @if(!$alert->is_resolved)
+                    <div class="flex flex-wrap gap-2">
+                        <button @click="resolveAlert({{ $alert->id }})" class="w-full sm:w-auto px-6 py-3 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg active:scale-95 transition-all shadow-lg shadow-emerald-500/20">
+                            Marquer Résolu
+                        </button>
+                        <button class="flex-1 sm:flex-none px-4 py-3 bg-white border border-slate-200 text-slate-500 text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg active:scale-95 transition-all">Détails</button>
                     </div>
+                    @else
+                    <div class="flex items-center gap-2 text-emerald-600">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Résolu par {{ $alert->resolver->name ?? 'Système' }}</span>
+                    </div>
+                    @endif
                 </div>
             </div>
-
-            <!-- Alert Item: Warning -->
-            <div class="px-10 py-8 flex items-start gap-8 group hover:bg-amber-50/30 transition-colors">
-                <div class="w-14 h-14 bg-amber-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                    <i class="fas fa-microchip text-2xl"></i>
+            @empty
+            <div class="py-32 flex flex-col items-center justify-center text-center">
+                <div class="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner">
+                    <i class="fas fa-check-double"></i>
                 </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 bg-amber-500 text-white text-[8px] font-black uppercase tracking-widest rounded-full">Avertissement</span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">ID: PERF-009</span>
-                        </div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Il y a 1 heure</span>
-                    </div>
-                    <h4 class="text-lg font-black text-slate-900 mb-2">Pic de Charge CPU Inhabituel</h4>
-                    <p class="text-sm text-slate-500 max-w-2xl leading-relaxed">L'instance <span class="font-bold text-slate-700">SRV-KIN-03</span> a atteint 85% d'utilisation pendant plus de 5 minutes. Autoscale en cours de déclenchement.</p>
-                    
-                    <div class="mt-6 flex items-center gap-3">
-                        <button class="px-5 py-2.5 bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-amber-500/20">Optimiser Cache</button>
-                        <button class="px-5 py-2.5 bg-white border border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50">Stats Temps Réel</button>
-                    </div>
-                </div>
+                <h4 class="text-xl font-black text-slate-900 uppercase tracking-tight">Ciel Dégagé !</h4>
+                <p class="text-slate-400 max-w-xs mx-auto mt-2 font-medium">Aucun incident de sécurité ou de performance n'a été signalé pour le moment.</p>
             </div>
-
-            <!-- Alert Item: Info -->
-            <div class="px-10 py-8 flex items-start gap-8 group hover:bg-blue-50/30 transition-colors">
-                <div class="w-14 h-14 bg-blue-100 text-rdc-blue rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
-                    <i class="fas fa-arrows-rotate text-2xl group-hover:rotate-180 transition-transform duration-700"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 bg-rdc-blue text-white text-[8px] font-black uppercase tracking-widest rounded-full">Information</span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">ID: SYS-045</span>
-                        </div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Il y a 3 heures</span>
-                    </div>
-                    <h4 class="text-lg font-black text-slate-900 mb-2">Sauvegarde Hebdomadaire Terminée</h4>
-                    <p class="text-sm text-slate-500 max-w-2xl leading-relaxed">L'instantané complet du système (4.2 GB) a été uploadé avec succès sur le bucket S3 redondant.</p>
-                    
-                    <div class="mt-6 flex items-center gap-3">
-                        <button class="px-5 py-2.5 bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-xl cursor-default">Archive Sécurisée</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Empty State (Hidden) -->
-        <div class="hidden py-32 flex flex-col items-center justify-center text-center">
-            <div class="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner">
-                <i class="fas fa-check-double"></i>
-            </div>
-            <h4 class="text-xl font-black text-slate-900 uppercase tracking-tight">Ciel Dégagé !</h4>
-            <p class="text-slate-400 max-w-xs mx-auto mt-2 font-medium">Aucun incident de sécurité ou de performance n'a été signalé pour le moment.</p>
+            @endforelse
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function alertManager() {
+        return {
+            filter: 'ALL',
+            shouldShow(level, isResolved) {
+                if (this.filter === 'ALL') return true;
+                return level === this.filter;
+            },
+            resolveAlert(id) {
+                fetch(`/admin/alerts/${id}/resolve`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                }).then(() => window.location.reload());
+            },
+            markAllRead() {
+                fetch('/admin/alerts/mark-all-read', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                }).then(() => window.location.reload());
+            }
+        }
+    }
+</script>
+@endpush

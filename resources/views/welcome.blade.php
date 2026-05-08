@@ -21,6 +21,9 @@
         tailwind.config = {
             theme: {
                 extend: {
+                    screens: {
+                        'xs': '400px',
+                    },
                     colors: {
                         // Couleurs officielles drapeau RDC
                         'rdc-blue': '#007FFF',
@@ -183,19 +186,18 @@
         }
 
         .loader-logo {
-            width: 150px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 154px;
+            height: 154px;
+            background: transparent;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 2rem;
             position: relative;
-            backdrop-filter: blur(10px);
-            box-shadow:
-                0 0 50px rgba(0, 127, 255, 0.3),
-                inset 0 0 30px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0, 127, 255, 0.3);
+            padding: 20px;
+            overflow: hidden;
         }
 
         .loader-logo::before,
@@ -408,13 +410,13 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 overflow-x-hidden">
     <!-- Écran de chargement -->
     <div id="loading-screen">
         <div class="loader-logo">
-            <i class="fas fa-hands-helping loader-icon"></i>
+            <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="loader-img w-full h-full object-contain rounded-full overflow-hidden">
         </div>
-        <div class="loader-text">Service<span class="text-yellow-300">RDC</span></div>
+        <div class="loader-text text-xl sm:text-2xl md:text-3xl">Service<span class="text-yellow-300">RDC</span></div>
         <div class="loader-subtext">La plateforme congolaise pour vos services et emplois</div>
         <div class="loader-subtext mt-2 animate-pulse">Chargement en cours...</div>
         <div class="progress-bar">
@@ -423,22 +425,21 @@
     </div>
 
     <!-- Contenu principal -->
-    <div id="main-content" class="min-h-screen flex flex-col">
+    <div id="main-content" class="min-h-screen flex flex-col overflow-x-hidden">
         <!-- Header & Navigation -->
         <header class="sticky top-0 z-50 bg-white shadow-lg will-change-transform">
             <div class="flag-stripe"></div>
             <div class="container mx-auto px-4 py-4">
                 <div class="flex justify-between items-center">
                     <!-- Logo -->
-                    <a href="/" class="flex items-center space-x-3 group">
-                        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center 
-                                    group-hover:scale-105 transition-transform duration-300 shadow-lg">
-                            <i class="fas fa-hands-helping text-white text-xl"></i>
+                    <a href="/" class="flex items-center space-x-2 sm:space-x-3 group min-w-0">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-white flex items-center justify-center 
+                                    group-hover:scale-105 transition-transform duration-300 shadow-lg shrink-0">
+                            <img src="/assets/img/logo.png?v=1.1" alt="Logo" class="w-full h-full object-contain">
                         </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900">Service<span class="text-rdc-blue">RDC</span>
-                            </h1>
-                            <p class="text-xs text-gray-600">Plateforme congolaise de services & emplois</p>
+                        <div class="truncate">
+                            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">Service<span class="text-rdc-blue">RDC</span></h1>
+                            <p class="text-[10px] text-gray-600 hidden xs:block truncate">Plateforme de services & emplois</p>
                         </div>
                     </a>
 
@@ -471,32 +472,32 @@
                         </a>
                     </nav>
 
-                    <!-- Boutons CTA et Auth -->
-                    <div class="flex items-center space-x-4">
-                        <!-- Bouton Localisation -->
-                        <button id="geolocation-btn" class="hidden md:flex items-center space-x-2 px-4 py-2 bg-rdc-blue/10 
-                                       text-rdc-blue rounded-lg hover:bg-rdc-blue/20 transition-all 
-                                       duration-300 animate-pulse-slow border border-rdc-blue/20"
-                            aria-label="Détecter ma position">
-                            <i class="fas fa-location-dot"></i>
-                            <span id="location-text">Me localiser</span>
-                        </button>
+                        <!-- Boutons CTA et Auth -->
+                        <div class="flex items-center space-x-2 sm:space-x-4">
+                            <!-- Bouton Localisation -->
+                            <button id="geolocation-btn" class="hidden xl:flex items-center space-x-2 px-4 py-2 bg-rdc-blue/10 
+                                           text-rdc-blue rounded-lg hover:bg-rdc-blue/20 transition-all 
+                                           duration-300 animate-pulse-slow border border-rdc-blue/20"
+                                aria-label="Détecter ma position">
+                                <i class="fas fa-location-dot"></i>
+                                <span id="location-text">Me localiser</span>
+                            </button>
 
-                        <!-- État Auth -->
-                        @guest
-                            <div class="flex items-center space-x-3">
-                                <a href="{{ route('login') }}" class="px-5 py-2.5 text-rdc-blue font-semibold hover:text-rdc-blue-dark 
-                                                      transition-colors duration-300 border border-rdc-blue/30 
-                                                      rounded-lg hover:border-rdc-blue/50">
-                                    Connexion
-                                </a>
-                                <a href="{{ route('register') }}" class="px-6 py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
-                                                      text-white font-semibold rounded-lg hover:shadow-lg 
-                                                      transition-all duration-300 hover:scale-105">
-                                    Inscription
-                                </a>
-                            </div>
-                        @endguest
+                            <!-- État Auth -->
+                            @guest
+                                <div class="flex items-center space-x-2 sm:space-x-3">
+                                    <a href="{{ route('login') }}" class="px-3 sm:px-5 py-2 sm:py-2.5 text-rdc-blue text-sm sm:text-base font-semibold hover:text-rdc-blue-dark 
+                                                          transition-colors duration-300 border border-rdc-blue/30 
+                                                          rounded-lg hover:border-rdc-blue/50">
+                                        Connexion
+                                    </a>
+                                    <a href="{{ route('register') }}" class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
+                                                          text-white text-sm sm:text-base font-semibold rounded-lg hover:shadow-lg 
+                                                          transition-all duration-300 hover:scale-105">
+                                        Inscription
+                                    </a>
+                                </div>
+                            @endguest
 
                         @auth
                             <div class="flex items-center space-x-4">
@@ -580,38 +581,37 @@
             <div class="container mx-auto px-4 py-20 md:py-32 relative z-10">
                 <div class="flex flex-col lg:flex-row items-center justify-between">
                     <!-- Texte Hero -->
-                    <div class="lg:w-1/2 mb-12 lg:mb-0" data-aos="fade-right" data-aos-duration="800">
+                    <div class="lg:w-1/2 mb-12 lg:mb-0 text-center lg:text-left" data-aos="fade-right" data-aos-duration="800">
                         <div class="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm 
                                     rounded-full mb-6 animate-fade-in-up">
-                            <span class="text-sm font-medium">🌟 Nouveau : Tableau de bord utilisateur</span>
+                            <span class="text-[10px] sm:text-sm font-medium">🌟 Nouveau : Tableau de bord utilisateur</span>
                         </div>
 
-                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                             <span class="block">Trouvez l'artisan</span>
                             <span class="block">ou l'emploi idéal</span>
                             <span class="gradient-text">en RDC</span>
                         </h1>
 
-                        <p class="text-xl md:text-2xl mb-10 text-blue-100 leading-relaxed max-w-2xl">
+                        <p class="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-10 text-blue-100 leading-relaxed max-w-2xl">
                             La première plateforme congolaise qui connecte directement
                             <span class="font-semibold text-yellow-200">chercheurs d'emploi</span> et
                             <span class="font-semibold text-yellow-200">clients</span> aux meilleurs
-                            <span class="font-semibold text-yellow-200">prestataires de services</span>
-                            dans toutes les provinces.
+                            <span class="font-semibold text-yellow-200">prestataires de services</span>.
                         </p>
 
                         <!-- Barre de recherche améliorée -->
-                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border border-white/20 
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-2 sm:p-3 shadow-2xl border border-white/20 
                                     animate-fade-in-up" data-aos="fade-up" data-aos-delay="200">
-                            <div class="flex flex-col md:flex-row gap-3">
+                            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <div class="flex-1 relative">
                                     <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
                                         <i class="fas fa-search"></i>
                                     </div>
                                     <input type="text" id="search-input"
-                                        placeholder="Rechercher un service, un emploi..." class="w-full pl-12 pr-4 py-4 rounded-xl border-0 
+                                        placeholder="Service, emploi..." class="w-full pl-12 pr-4 py-3 sm:py-4 rounded-xl border-0 
                                                   focus:ring-3 focus:ring-rdc-blue/30 text-gray-800
-                                                  placeholder-gray-500"
+                                                  placeholder-gray-500 text-sm sm:text-base"
                                         aria-label="Rechercher des services ou emplois">
                                     <div id="search-suggestions" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl 
                                                 border border-gray-200 hidden overflow-hidden">
@@ -650,31 +650,31 @@
                         </div>
 
                         <!-- Statistiques améliorées -->
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mt-12" data-aos="fade-up"
+                        <div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12" data-aos="fade-up"
                             data-aos-delay="400">
-                            <div class="text-center bg-white/5 backdrop-blur-sm rounded-2xl p-6 
+                            <div class="text-center bg-white/5 backdrop-blur-sm rounded-2xl p-4 sm:p-6 
                                         border border-white/10 hover:border-white/20 transition-colors">
-                                <div class="text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center">
+                                <div class="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 flex items-center justify-center">
                                     <span class="text-rdc-yellow">5,000+</span>
-                                    <i class="fas fa-user-check ml-2 text-green-400"></i>
+                                    <i class="fas fa-user-check ml-2 text-green-400 text-sm sm:text-base"></i>
                                 </div>
-                                <div class="text-blue-100 font-medium">Artisans vérifiés</div>
+                                <div class="text-blue-100 text-xs sm:text-sm font-medium">Artisans vérifiés</div>
                             </div>
-                            <div class="text-center bg-white/5 backdrop-blur-sm rounded-2xl p-6 
+                            <div class="text-center bg-white/5 backdrop-blur-sm rounded-2xl p-4 sm:p-6 
                                         border border-white/10 hover:border-white/20 transition-colors">
-                                <div class="text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center">
+                                <div class="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 flex items-center justify-center">
                                     <span class="text-rdc-yellow">1,200+</span>
-                                    <i class="fas fa-briefcase ml-2 text-blue-300"></i>
+                                    <i class="fas fa-briefcase ml-2 text-blue-300 text-sm sm:text-base"></i>
                                 </div>
-                                <div class="text-blue-100 font-medium">Offres actives</div>
+                                <div class="text-blue-100 text-xs sm:text-sm font-medium">Offres actives</div>
                             </div>
-                            <div class="text-center bg-white/5 backdrop-blur-sm rounded-2xl p-6 
-                                        border border-white/10 hover:border-white/20 transition-colors">
-                                <div class="text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center">
+                            <div class="text-center bg-white/5 backdrop-blur-sm rounded-2xl p-4 sm:p-6 
+                                        border border-white/10 hover:border-white/20 transition-colors xs:col-span-2 md:col-span-1">
+                                <div class="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 flex items-center justify-center">
                                     <span class="text-rdc-yellow">25</span>
-                                    <i class="fas fa-map-marker-alt ml-2 text-red-300"></i>
+                                    <i class="fas fa-map-marker-alt ml-2 text-red-300 text-sm sm:text-base"></i>
                                 </div>
-                                <div class="text-blue-100 font-medium">Provinces couvertes</div>
+                                <div class="text-blue-100 text-xs sm:text-sm font-medium">Provinces couvertes</div>
                             </div>
                         </div>
                     </div>
@@ -775,11 +775,11 @@
                                     </div>
 
                                     <!-- Indicateur de proximité -->
-                                    <div class="mt-6 pt-6 border-t border-white/10">
-                                        <div class="flex items-center justify-between">
-                                            <div class="text-sm text-blue-100">
+                                    <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10">
+                                        <div class="flex flex-col sm:flex-row items-center justify-between gap-2">
+                                            <div class="text-[10px] sm:text-sm text-blue-100 text-center sm:text-left">
                                                 <i class="fas fa-info-circle mr-2"></i>
-                                                Ces services sont dans votre zone
+                                                Services dans votre zone
                                             </div>
                                             <div class="flex space-x-2">
                                                 <div class="w-2 h-2 rounded-full bg-green-500"></div>
@@ -1222,10 +1222,8 @@
                     <!-- Logo et description -->
                     <div>
                         <div class="flex items-center space-x-3 mb-6">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-r 
-                                        from-rdc-blue to-rdc-yellow 
-                                        flex items-center justify-center">
-                                <i class="fas fa-hands-helping text-white text-xl"></i>
+                            <div class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center">
+                                <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
                             </div>
                             <div>
                                 <h2 class="text-2xl font-bold">Service<span class="text-yellow-300">RDC</span></h2>
@@ -1762,27 +1760,68 @@
                 geolocationBtn.addEventListener('click', function () {
                     const originalText = locationText.innerHTML;
                     locationText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Localisation...';
-                    geolocationBtn.classList.add('opacity-75');
+                    geolocationBtn.classList.add('opacity-75', 'cursor-not-allowed');
                     geolocationBtn.disabled = true;
 
-                    // Simulation géolocalisation
-                    setTimeout(() => {
-                        const randomCity = rdCities[Math.floor(Math.random() * rdCities.length)];
+                    if (!navigator.geolocation) {
+                        showNotification("La géolocalisation n'est pas supportée par votre navigateur", 'error');
+                        resetButton();
+                        return;
+                    }
 
-                        if (currentCity) currentCity.textContent = randomCity.name;
-                        if (currentAddress) currentAddress.textContent = `${randomCity.address} • ${randomCity.province}`;
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            try {
+                                const lat = position.coords.latitude;
+                                const lon = position.coords.longitude;
+                                
+                                // Appel à Nominatim (OpenStreetMap) pour le reverse geocoding
+                                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+                                    headers: { 'Accept-Language': 'fr' }
+                                });
+                                const data = await response.json();
+                                
+                                // Extraction du nom de la ville/quartier
+                                const city = data.address.city || data.address.town || data.address.village || data.address.suburb || "Ville inconnue";
+                                const neighborhood = data.address.neighbourhood || data.address.suburb || "";
+                                const province = data.address.state || data.address.province || "";
+                                
+                                const fullAddress = neighborhood && neighborhood !== city ? `${neighborhood}, ${city}` : city;
+                                
+                                // Mise à jour de l'UI
+                                if (currentCity) currentCity.textContent = city;
+                                if (currentAddress) currentAddress.textContent = `${fullAddress} ${province ? '• ' + province : ''}`;
+                                
+                                locationText.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${city}`;
+                                
+                                showNotification(`Localisé à ${city}`, 'success');
+                            } catch (error) {
+                                console.error('Erreur reverse geocoding:', error);
+                                showNotification("Impossible de récupérer l'adresse précise", 'error');
+                            } finally {
+                                resetButton();
+                            }
+                        },
+                        (error) => {
+                            let msg = "Erreur de localisation";
+                            if (error.code === error.PERMISSION_DENIED) {
+                                msg = "Veuillez autoriser la localisation GPS pour cette fonctionnalité";
+                            } else if (error.code === error.TIMEOUT) {
+                                msg = "Le délai de localisation a expiré";
+                            }
+                            showNotification(msg, 'error');
+                            resetButton();
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
 
-                        locationText.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${randomCity.name}`;
-
-                        showNotification(`Localisé à ${randomCity.name}, ${randomCity.province}`, 'success');
-
-                        // Réinitialiser après 5 secondes
+                    function resetButton() {
                         setTimeout(() => {
                             locationText.innerHTML = originalText;
-                            geolocationBtn.classList.remove('opacity-75');
+                            geolocationBtn.classList.remove('opacity-75', 'cursor-not-allowed');
                             geolocationBtn.disabled = false;
-                        }, 5000);
-                    }, 2000);
+                        }, 8000);
+                    }
                 });
             }
 

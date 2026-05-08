@@ -87,9 +87,15 @@
             background: #F8FAFC; /* Light gray bg */
             border: 1px solid #E2E8F0;
             color: #0F172A; /* Dark text */
-            padding: 1rem 1rem 1rem 3rem;
+            padding: 0.75rem 1rem 0.75rem 3rem;
             border-radius: 1rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (min-width: 640px) {
+            .premium-input {
+                padding: 1rem 1rem 1rem 3rem;
+            }
         }
 
         .premium-input:focus {
@@ -99,24 +105,51 @@
             transform: translateY(-1px);
         }
 
-        /* Floating Label Logic */
-        .premium-input:placeholder-shown + .premium-label {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
+        /* Improved Floating Label Logic */
         .premium-label {
             position: absolute;
             left: 3rem;
-            top: -0.6rem;
-            background: #FFFFFF; /* Match input focus bg */
-            padding: 0 0.5rem;
-            font-size: 0.75rem;
-            color: #007FFF;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            padding: 0;
+            font-size: 0.875rem;
+            color: #94A3B8; /* slate-400 */
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
-            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .premium-input:focus ~ .premium-label,
+        .premium-input:not(:placeholder-shown) ~ .premium-label {
+            top: 0;
+            left: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #007FFF;
+            background: white;
+            padding: 0 0.5rem;
+            transform: translateY(-50%);
+            text-transform: uppercase;
+            tracking: 0.05em;
+        }
+
+        /* Adjust input padding for better alignment */
+        .premium-input {
+            width: 100%;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            color: #0F172A;
+            padding: 1.125rem 1rem 1.125rem 3rem;
+            border-radius: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (max-width: 640px) {
+            .premium-input {
+                padding: 0.875rem 1rem 0.875rem 3rem;
+            }
         }
 
         /* Animated Objects */
@@ -178,8 +211,8 @@
         <div class="hidden lg:flex lg:w-5/12 relative flex-col justify-between p-12 z-10">
             <!-- Logo -->
             <a href="/" class="flex items-center gap-3 w-fit group" data-aos="fade-down">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-rdc-blue to-rdc-dark-blue flex items-center justify-center shadow-lg shadow-rdc-blue/20 group-hover:scale-110 transition-transform duration-300 border border-white">
-                     <i class="fas fa-hands-helping text-white text-xl"></i>
+                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-rdc-blue/10 group-hover:scale-110 transition-transform duration-300 border border-slate-100 overflow-hidden p-2">
+                     <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
                      <h1 class="text-2xl font-bold tracking-tight text-slate-900">Service<span class="text-rdc-blue">RDC</span></h1>
@@ -235,12 +268,12 @@
         </div>
 
         <!-- Right Panel: Auth Form -->
-        <div class="w-full lg:w-7/12 flex flex-col justify-center items-center p-6 lg:p-12 relative z-10">
+        <div class="w-full lg:w-7/12 flex flex-col justify-center items-center p-4 sm:p-6 lg:p-12 relative z-10">
             <!-- Mobile Header -->
-            <div class="w-full max-w-md lg:hidden mb-8 flex justify-between items-center" data-aos="fade-down">
+            <div class="w-full max-w-md lg:hidden mb-4 sm:mb-8 flex justify-between items-center" data-aos="fade-down">
                 <a href="/" class="flex items-center gap-2">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-rdc-blue to-rdc-dark-blue flex items-center justify-center shadow-lg">
-                        <i class="fas fa-hands-helping text-white"></i>
+                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-lg p-1.5 border border-slate-100 overflow-hidden">
+                        <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
                     </div>
                     <span class="font-bold text-xl text-slate-900">Service<span class="text-rdc-blue">RDC</span></span>
                 </a>

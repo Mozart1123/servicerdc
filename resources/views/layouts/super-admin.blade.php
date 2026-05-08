@@ -1149,12 +1149,13 @@
     {{-- ─── MOBILE OVERLAY ─── --}}
     <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"
         style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:45;" x-transition.opacity></div>
-
     {{-- ─── SIDEBAR ─── --}}
     <aside class="sidebar" :class="sidebarOpen ? 'open' : ''">
         {{-- Logo --}}
         <div class="sidebar-logo">
-            <div class="logo-icon">S</div>
+            <div class="logo-icon" style="background: white; padding: 4px;">
+                <img src="/assets/img/logo.png?v=1.1" alt="S" style="width: 100%; height: 100%; object-contain;">
+            </div>
             <span class="logo-text">ServiceRDC</span>
             <span class="logo-badge">Admin</span>
         </div>
