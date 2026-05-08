@@ -7,6 +7,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\PlanFeature;
+use App\Traits\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class PlanController extends Controller
 {
+    use AuditLogger;
+
     /**
      * Display a listing of subscription plans.
      */
@@ -47,7 +50,7 @@ class PlanController extends Controller
             'features.*.value' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($validated, $request) {
+        $plan = DB::transaction(function () use ($validated, $request) {
             $plan = Plan::create([
                 'name' => $validated['name'],
                 'description' => $validated['description'],
@@ -61,7 +64,11 @@ class PlanController extends Controller
                     $plan->features()->create($featureData);
                 }
             }
+
+            return $plan;
         });
+
+        $this->auditLog('created', "Created Subscription Plan: {$plan->name}", $plan, $validated);
 
         return redirect()->route('super-admin.plans.index')
             ->with('success', 'Plan created successfully with its features.');
@@ -93,6 +100,8 @@ class PlanController extends Controller
             'features.*.value' => 'nullable|string|max:255',
         ]);
 
+        $oldData = $plan->load('features')->toArray();
+
         DB::transaction(function () use ($validated, $plan, $request) {
             $plan->update([
                 'name' => $validated['name'],
@@ -122,6 +131,11 @@ class PlanController extends Controller
             }
         });
 
+        $this->auditLog('updated', "Updated Subscription Plan: {$plan->name}", $plan, [
+            'old' => $oldData,
+            'new' => $validated
+        ]);
+
         return redirect()->route('super-admin.plans.index')
             ->with('success', 'Plan updated successfully.');
     }
@@ -131,8 +145,14 @@ class PlanController extends Controller
      */
     public function toggleStatus(Plan $plan): RedirectResponse
     {
+        $oldStatus = $plan->is_active;
         $plan->update(['is_active' => !$plan->is_active]);
         $status = $plan->is_active ? 'activated' : 'deactivated';
+
+        $this->auditLog('updated', "Toggled status for Plan \"{$plan->name}\" to {$status}", $plan, [
+            'old_status' => $oldStatus,
+            'new_status' => $plan->is_active
+        ], 'warning');
 
         return redirect()->back()->with('success', "Plan \"{$plan->name}\" has been {$status}.");
     }
@@ -143,7 +163,10 @@ class PlanController extends Controller
     public function destroy(Plan $plan): RedirectResponse
     {
         $name = $plan->name;
+        $oldData = $plan->load('features')->toArray();
         $plan->delete();
+
+        $this->auditLog('deleted', "Deleted Subscription Plan: {$name}", null, $oldData, 'danger');
 
         return redirect()->route('super-admin.plans.index')
             ->with('success', "Plan \"{$name}\" has been deleted.");

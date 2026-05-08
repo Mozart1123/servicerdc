@@ -7,6 +7,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
 use App\Models\User;
+use App\Traits\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -17,6 +18,8 @@ use Illuminate\View\View;
  */
 class OrganizationController extends Controller
 {
+    use AuditLogger;
+
     /**
      * Display a listing of organizations.
      */
@@ -67,7 +70,9 @@ class OrganizationController extends Controller
 
         $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(5);
 
-        Organization::create($validated);
+        $organization = Organization::create($validated);
+
+        $this->auditLog('created', "Created Organization: {$organization->name}", $organization, $validated);
 
         return redirect()->route('super-admin.organizations.index')
             ->with('success', 'Organization created successfully.');
@@ -110,7 +115,13 @@ class OrganizationController extends Controller
             $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(5);
         }
 
+        $oldData = $organization->toArray();
         $organization->update($validated);
+
+        $this->auditLog('updated', "Updated Organization: {$organization->name}", $organization, [
+            'old' => $oldData,
+            'new' => $validated
+        ]);
 
         return redirect()->route('super-admin.organizations.index')
             ->with('success', 'Organization updated successfully.');
@@ -122,7 +133,13 @@ class OrganizationController extends Controller
     public function toggleStatus(Organization $organization): RedirectResponse
     {
         $newStatus = $organization->status === 'active' ? 'suspended' : 'active';
+        $oldStatus = $organization->status;
         $organization->update(['status' => $newStatus]);
+
+        $this->auditLog('updated', "Toggled status for {$organization->name} to {$newStatus}", $organization, [
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus
+        ], 'warning');
 
         return redirect()->back()->with('success', "Organization {$organization->name} status updated to {$newStatus}.");
     }
@@ -133,7 +150,10 @@ class OrganizationController extends Controller
     public function destroy(Organization $organization): RedirectResponse
     {
         $name = $organization->name;
+        $oldData = $organization->toArray();
         $organization->delete();
+
+        $this->auditLog('deleted', "Deleted Organization: {$name}", null, $oldData, 'danger');
 
         return redirect()->route('super-admin.organizations.index')
             ->with('success', "Organization {$name} has been deleted.");

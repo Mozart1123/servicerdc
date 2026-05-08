@@ -26,11 +26,14 @@ use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\FinancialController as AdminFinancialController;
 use App\Http\Controllers\Admin\ContentController as AdminContentController;
 use App\Http\Controllers\Admin\SupportController as AdminSupportController;
+use App\Http\Controllers\SuperAdmin\ApiKeyController;
+use App\Http\Controllers\SuperAdmin\SystemHealthController;
 use App\Http\Controllers\SuperAdmin\BillingController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\OrganizationController as SuperAdminOrganizationController;
 use App\Http\Controllers\SuperAdmin\PlanController as SuperAdminPlanController;
 use App\Http\Controllers\SuperAdmin\ServiceController as SuperAdminServiceController;
+use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,6 +125,10 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
         Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
         Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
+
+        // Smart Career Advisor
+        Route::get('/career-advisor', [\App\Http\Controllers\User\CareerAdvisorController::class, 'index'])->name('career-advisor.index');
+        Route::post('/career-advisor/update', [\App\Http\Controllers\User\CareerAdvisorController::class, 'updateProfile'])->name('career-advisor.update');
     });
 
 // Admin Routes
@@ -287,6 +294,15 @@ Route::middleware(['auth', 'role:super_admin'])
         // SYSTEM CORE
     
         Route::prefix('system')->name('system.')->group(function () {
+            Route::get('/settings', [SuperAdminSettingController::class, 'index'])->name('settings.index');
+            Route::post('/settings', [SuperAdminSettingController::class, 'update'])->name('settings.update');
+
+            Route::get('/api-keys', [ApiKeyController::class, 'index'])->name('api-keys.index');
+            Route::post('/api-keys', [ApiKeyController::class, 'store'])->name('api-keys.store');
+            Route::post('/api-keys/{apiKey}/revoke', [ApiKeyController::class, 'revoke'])->name('api-keys.revoke');
+
+            Route::get('/health', [SystemHealthController::class, 'index'])->name('health');
+
             Route::get('/console', function () {
                 return view('super-admin.system.console');
             })->name('console');
@@ -369,6 +385,6 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::get('/jobs', [SuperAdminSystemController::class, 'jobs'])->name('jobs');
         Route::get('/reports', [SuperAdminSystemController::class, 'reports'])->name('reports');
         Route::get('/settings', [SuperAdminSystemController::class, 'settings'])->name('settings');
-        Route::get('/logs', [ActivityLogController::class, 'index'])->name('logs');
-        Route::post('/logs/clear', [ActivityLogController::class, 'clear'])->name('logs.clear');
+        Route::get('/audit-trail', [ActivityLogController::class, 'index'])->name('logs');
+        Route::post('/audit-trail/clear', [ActivityLogController::class, 'clear'])->name('logs.clear');
     });

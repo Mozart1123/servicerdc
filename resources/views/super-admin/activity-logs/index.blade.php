@@ -61,10 +61,10 @@
     {{-- ─── PAGE HEADER ✨ ─── --}}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
         <div>
-            <h1 style="font-size:24px;font-weight:800;color:var(--text-primary);letter-spacing:-.5px;">Advanced Audit Trail
+            <h1 style="font-size:24px;font-weight:800;color:var(--text-primary);letter-spacing:-.5px;">System Audit Trail
             </h1>
-            <p style="font-size:14px;color:var(--text-muted);margin-top:4px;">Deep system forensics and behavioral
-                monitoring</p>
+            <p style="font-size:14px;color:var(--text-muted);margin-top:4px;">Security forensic monitoring and system event
+                log</p>
         </div>
         <div style="display:flex;gap:12px;">
             <form method="POST" action="{{ route('super-admin.logs.clear') }}"
@@ -244,13 +244,15 @@
                                             <div>
                                                 <div class="detail-ghost">IP ADDRESS</div>
                                                 <div style="font-weight:600;font-family:monospace;">
-                                                    {{ $log->ip_address ?? 'Not Recorded' }}</div>
+                                                    {{ $log->ip_address ?? 'Not Recorded' }}
+                                                </div>
                                             </div>
                                             <div>
                                                 <div class="detail-ghost">USER AGENT</div>
                                                 <div
                                                     style="font-size:11px;color:var(--text-secondary);line-height:1.4;max-width:300px;">
-                                                    {{ $log->user_agent ?? 'Direct System Access' }}</div>
+                                                    {{ $log->user_agent ?? 'Direct System Access' }}
+                                                </div>
                                             </div>
                                             <div>
                                                 <div class="detail-ghost">BROWSER / OS</div>

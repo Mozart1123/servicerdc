@@ -1203,11 +1203,7 @@
                     class="nav-item {{ request()->routeIs('super-admin.plans.*') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-layer-group"></i> Plans & Features
                 </a>
-                <a href="{{ route('super-admin.logs') }}"
-                    class="nav-item {{ request()->routeIs('super-admin.logs') ? 'active' : '' }}">
-                    <i class="nav-icon fas fa-list-check"></i> Activity Logs
-                    <span class="nav-badge" style="background:var(--accent);color:white;">Live</span>
-                </a>
+
             </div>
 
             {{-- Finance --}}
@@ -1230,17 +1226,21 @@
             {{-- System --}}
             <div class="nav-section">
                 <div class="nav-section-label">System</div>
-                <a href="#" class="nav-item">
+                <a href="{{ route('super-admin.system.settings.index') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.system.settings.*') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-gear"></i> Settings
                 </a>
-                <a href="#" class="nav-item">
+                <a href="{{ route('super-admin.logs') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.logs') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-file-shield"></i> Audit Trail
+                    <span class="nav-badge" style="background:var(--accent);color:white;">Live</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="{{ route('super-admin.system.api-keys.index') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.system.api-keys.*') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-key"></i> API Keys
                 </a>
-                <a href="{{ route('super-admin.security.firewall') }}"
-                    class="nav-item {{ request()->routeIs('super-admin.security.*') ? 'active' : '' }}">
+                <a href="{{ route('super-admin.system.health') }}"
+                    class="nav-item {{ request()->routeIs('super-admin.system.health') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-heart-pulse"></i> System Health
                 </a>
             </div>

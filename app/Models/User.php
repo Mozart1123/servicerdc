@@ -83,6 +83,8 @@ class User extends Authenticatable
         'google_id',
         'facebook_id',
         'apple_id',
+        'skills',
+        'interests',
     ];
 
     /**
@@ -116,6 +118,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
             'password' => 'hashed',
+            'skills' => 'array',
+            'interests' => 'array',
         ];
     }
 

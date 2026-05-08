@@ -12,6 +12,8 @@ class ActivityLog extends Model
 {
     use HasFactory;
 
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'user_id',
         'action',
