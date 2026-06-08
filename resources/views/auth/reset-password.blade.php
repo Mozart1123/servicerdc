@@ -7,7 +7,7 @@
     <!-- header -->
     <div class="mb-10 text-center lg:text-left">
         <h2 class="text-3xl font-bold text-white mb-2">Nouveau mot de passe</h2>
-        <p class="text-gray-400">Créez un mot de passe fort pour sécuriser votre compte <span class="text-[#007FFF] font-semibold">ServiceRDC</span>.</p>
+        <p class="text-gray-400">Créez un mot de passe fort pour sécuriser votre compte <span class="text-rdc-blue font-semibold">ProConnect</span>.</p>
     </div>
 
     @if ($errors->any())
@@ -46,7 +46,7 @@
         <div>
             <label for="password" class="block text-sm font-medium text-gray-300 mb-2 ml-1">Nouveau mot de passe</label>
             <div class="relative group">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#007FFF] transition-colors">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#29B6D1] transition-colors">
                     <i class="fas fa-lock"></i>
                 </span>
                 <input 
@@ -67,7 +67,7 @@
         <div>
             <label for="password_confirmation" class="block text-sm font-medium text-gray-300 mb-2 ml-1">Confirmer le mot de passe</label>
             <div class="relative group">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#007FFF] transition-colors">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#29B6D1] transition-colors">
                     <i class="fas fa-shield-check"></i>
                 </span>
                 <input 
@@ -81,7 +81,7 @@
             </div>
         </div>
 
-        <button type="submit" class="w-full py-4 px-6 btn-primary text-white font-bold rounded-2xl shadow-xl hover:shadow-[#007FFF]/20 transition-all flex items-center justify-center group">
+        <button type="submit" class="w-full py-4 px-6 btn-primary text-white font-bold rounded-2xl shadow-xl hover:shadow-[#29B6D1]/20 transition-all flex items-center justify-center group">
             <span>Réinitialiser le mot de passe</span>
             <i class="fas fa-check-circle ml-2 group-hover:scale-110 transition-transform"></i>
         </button>

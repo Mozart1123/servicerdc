@@ -9,6 +9,7 @@ class JobApplication extends Model
     protected $fillable = [
         'job_offer_id',
         'user_id',
+        'cv_id',
         'status',
         'message',
         'resume_url',
@@ -19,73 +20,80 @@ class JobApplication extends Model
     ];
 
     protected $casts = [
-        'applied_at' => 'datetime',
+        'applied_at'  => 'datetime',
         'reviewed_at' => 'datetime',
     ];
+
+    // Status constants
+    const STATUS_PENDING  = 'pending';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+    const STATUS_INTERVIEW = 'interview';
+    const STATUS_HIRED    = 'hired';
+    // Legacy
+    const STATUS_ACCEPTED = 'accepted';
 
     // ==========================================
     // Relationships
     // ==========================================
 
-    /**
-     * Get the user who applied.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the job offer applied for.
-     */
     public function jobOffer()
     {
         return $this->belongsTo(JobOffer::class);
+    }
+
+    public function cv()
+    {
+        return $this->belongsTo(Cv::class);
     }
 
     // ==========================================
     // Scopes
     // ==========================================
 
-    /**
-     * Filter pending applications.
-     */
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
-
-    /**
-     * Filter accepted applications.
-     */
-    public function scopeAccepted($query)
-    {
-        return $query->where('status', 'accepted');
-    }
-
-    /**
-     * Filter rejected applications.
-     */
-    public function scopeRejected($query)
-    {
-        return $query->where('status', 'rejected');
-    }
+    public function scopePending($query)   { return $query->where('status', self::STATUS_PENDING); }
+    public function scopeApproved($query)  { return $query->where('status', self::STATUS_APPROVED); }
+    public function scopeAccepted($query)  { return $query->whereIn('status', [self::STATUS_APPROVED, self::STATUS_ACCEPTED]); }
+    public function scopeRejected($query)  { return $query->where('status', self::STATUS_REJECTED); }
+    public function scopeInterview($query) { return $query->where('status', self::STATUS_INTERVIEW); }
+    public function scopeHired($query)     { return $query->where('status', self::STATUS_HIRED); }
 
     // ==========================================
     // Accessors
     // ==========================================
 
-    /**
-     * Get the status label in French.
-     */
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pending' => 'En attente',
-            'accepted' => 'Accepté',
-            'rejected' => 'Rejeté',
-            default => 'Inconnu',
+            'pending'   => 'En attente',
+            'approved'  => 'Approuvée',
+            'accepted'  => 'Acceptée',
+            'rejected'  => 'Refusée',
+            'interview' => 'Entretien',
+            'hired'     => 'Embauché(e)',
+            default     => 'Inconnu',
         };
     }
-}
 
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            'pending'   => 'amber',
+            'approved', 'accepted' => 'emerald',
+            'rejected'  => 'red',
+            'interview' => 'blue',
+            'hired'     => 'purple',
+            default     => 'slate',
+        };
+    }
+
+    public function canBeWithdrawnBy(int $userId): bool
+    {
+        return $this->user_id === $userId && $this->status === self::STATUS_PENDING;
+    }
+}

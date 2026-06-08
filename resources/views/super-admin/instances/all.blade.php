@@ -10,7 +10,7 @@
         <div class="absolute inset-0 opacity-20 pointer-events-none">
             <svg class="w-full h-full" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
                 <path d="M150,150 Q400,100 650,150" stroke="white" stroke-width="0.5" fill="none" class="animate-pulse" />
-                <circle cx="150" cy="150" r="2" fill="#007FFF" class="animate-ping" />
+                <circle cx="150" cy="150" r="2" fill="#29B6D1" class="animate-ping" />
                 <circle cx="650" cy="150" r="2" fill="#F0B800" />
             </svg>
         </div>

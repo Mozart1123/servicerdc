@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Authentification') | ServiceRDC</title>
+    <title>@yield('title', 'Authentification') | ProConnect</title>
 
     <!-- Preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,11 +34,11 @@
                         heading: ['Poppins', 'sans-serif'],
                     },
                     colors: {
-                        'rdc-blue': '#007FFF',
-                        'rdc-blue-dark': '#0066CC',
+                        'rdc-blue': '#29B6D1',
+                        'rdc-blue-dark': '#1E9CB5',
                         'rdc-yellow': '#F0B800',
                         'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#003366',
+                        'rdc-dark-blue': '#090D16',
                         'glass-border': 'rgba(255, 255, 255, 0.4)',
                         'glass-bg': 'rgba(255, 255, 255, 0.7)',
                     },
@@ -100,8 +100,8 @@
 
         .premium-input:focus {
             background: #FFFFFF;
-            border-color: #007FFF;
-            box-shadow: 0 0 0 4px rgba(0, 127, 255, 0.1);
+            border-color: #29B6D1;
+            box-shadow: 0 0 0 4px rgba(41, 182, 209, 0.1);
             transform: translateY(-1px);
         }
 
@@ -127,7 +127,7 @@
             left: 0.75rem;
             font-size: 0.7rem;
             font-weight: 800;
-            color: #007FFF;
+            color: #29B6D1;
             background: white;
             padding: 0 0.5rem;
             transform: translateY(-50%);
@@ -162,7 +162,7 @@
         }
 
         .orb-blue {
-            background: #007FFF;
+            background: #29B6D1;
             width: 400px;
             height: 400px;
             top: -100px;
@@ -201,7 +201,7 @@
         <div class="orb orb-red opacity-10"></div>
         
         <!-- Grid Overlay (Blue lines) -->
-        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMCwgMTI3LCAyNTUsIDAuMSkiLz48L3N2Zz4=')] opacity-50"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMCwgMjEwLCAyNTUsIDAuMSkiLz48L3N2Zz4=')] opacity-50"></div>
     </div>
 
     <!-- Main Container -->
@@ -211,12 +211,12 @@
         <div class="hidden lg:flex lg:w-5/12 relative flex-col justify-between p-12 z-10">
             <!-- Logo -->
             <a href="/" class="flex items-center gap-3 w-fit group" data-aos="fade-down">
-                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-rdc-blue/10 group-hover:scale-110 transition-transform duration-300 border border-slate-100 overflow-hidden p-2">
-                     <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
+                 <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-rdc-blue/10 group-hover:scale-110 transition-transform duration-300 border border-slate-100 overflow-hidden p-2">
+                     <img src="/assets/img/logo.png?v=1.2" alt="ProConnect Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
-                     <h1 class="text-2xl font-bold tracking-tight text-slate-900">Service<span class="text-rdc-blue">RDC</span></h1>
-                     <p class="text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">Plateforme Nationale</p>
+                     <h1 class="text-2xl font-bold tracking-tight text-slate-900">Pro<span class="text-rdc-blue">Connect</span></h1>
+                     <p class="text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">Plateforme Professionnelle</p>
                 </div>
             </a>
 
@@ -227,7 +227,7 @@
                 
                 <h2 class="text-5xl font-bold leading-tight mb-6 text-slate-900" data-aos="fade-right" data-aos-delay="100">
                     L'excellence <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-rdc-blue to-rdc-dark-blue animate-pulse-slow">Congolaise</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-rdc-blue to-rdc-dark-blue animate-pulse-slow">Professionnelle</span>
                     <br> à votre service.
                 </h2>
                 
@@ -261,7 +261,7 @@
 
             <!-- Footer -->
             <div class="text-xs text-slate-500 font-medium flex gap-6" data-aos="fade-up" data-aos-delay="400">
-                <span>&copy; {{ date('Y') }} ServiceRDC</span>
+                <span>&copy; {{ date('Y') }} ProConnect</span>
                 <a href="#" class="hover:text-rdc-blue transition-colors">Confidentialité</a>
                 <a href="#" class="hover:text-rdc-blue transition-colors">Conditions</a>
             </div>
@@ -273,9 +273,9 @@
             <div class="w-full max-w-md lg:hidden mb-4 sm:mb-8 flex justify-between items-center" data-aos="fade-down">
                 <a href="/" class="flex items-center gap-2">
                     <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-lg p-1.5 border border-slate-100 overflow-hidden">
-                        <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
+                        <img src="/assets/img/logo.png?v=1.2" alt="ProConnect Logo" class="w-full h-full object-contain">
                     </div>
-                    <span class="font-bold text-xl text-slate-900">Service<span class="text-rdc-blue">RDC</span></span>
+                    <span class="font-bold text-xl text-slate-900">Pro<span class="text-rdc-blue">Connect</span></span>
                 </a>
             </div>
 

@@ -19,6 +19,11 @@ use App\Http\Controllers\Admin\JobApplicationController as AdminJobApplicationCo
 use App\Http\Controllers\User\ServiceController as UserServiceController;
 use App\Http\Controllers\User\JobController as UserJobController;
 use App\Http\Controllers\User\ServiceRequestController as UserServiceRequestController;
+use App\Http\Controllers\User\SubscriptionController as UserSubscriptionController;
+use App\Http\Controllers\User\CvController as UserCvController;
+use App\Http\Controllers\User\MessageController as UserMessageController;
+use App\Http\Controllers\User\PhotoController as UserPhotoController;
+use App\Http\Controllers\User\NotificationController as UserNotificationController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
 use App\Http\Controllers\SuperAdmin\SystemController as SuperAdminSystemController;
@@ -96,27 +101,74 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/missions', [UserDashboardController::class, 'missions'])->name('missions.index');
         Route::get('/missions/{id}', [UserDashboardController::class, 'missionDetail'])->name('missions.show');
         Route::put('/missions/{id}/status', [UserDashboardController::class, 'updateMissionStatus'])->name('missions.update-status');
-        
-        // Notifications
-        Route::get('/notifications', [UserDashboardController::class, 'notifications'])->name('notifications.index');
-        Route::post('/notifications/{notificationId}/read', [UserDashboardController::class, 'markNotificationAsRead'])->name('notifications.read');
 
-        // Messages (Premium Demo)
-        Route::get('/messages', function() {
-            return view('user.messages.index');
-        })->name('messages.index');
-
-        // Placeholder Routes for Premium UX
-        Route::get('/favorites', [UserDashboardController::class, 'favorites'])->name('favorites');
-        Route::get('/new', [UserDashboardController::class, 'newOpportunities'])->name('new');
-        Route::get('/security', [UserDashboardController::class, 'security'])->name('security');
-        Route::get('/help', [UserDashboardController::class, 'help'])->name('help');
-        Route::get('/report', [UserDashboardController::class, 'report'])->name('report');
-
-        // Service Requests (Custom service requests from users)
+        // Service Requests
         Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
         Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
         Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
+        // Artisan: accept / reject incoming service requests
+        Route::post('/service-requests/{serviceRequest}/accept', [UserServiceRequestController::class, 'accept'])->name('service-requests.accept');
+        Route::post('/service-requests/{serviceRequest}/reject', [UserServiceRequestController::class, 'reject'])->name('service-requests.reject');
+        Route::post('/service-requests/{serviceRequest}/complete', [UserServiceRequestController::class, 'complete'])->name('service-requests.complete');
+        Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
+        // Artisan – incoming requests
+        Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
+
+        // CV Management
+        Route::get('/cv', [\App\Http\Controllers\User\CvController::class, 'index'])->name('cv.index');
+        Route::post('/cv', [\App\Http\Controllers\User\CvController::class, 'store'])->name('cv.store');
+        Route::delete('/cv', [\App\Http\Controllers\User\CvController::class, 'destroy'])->name('cv.destroy');
+
+        // Jobs — recruiter publishes offers
+        Route::get('/my-job-offers', [UserJobController::class, 'myJobOffers'])->name('jobs.my-offers');
+        Route::get('/job-offers/create', [UserJobController::class, 'create'])->name('jobs.create');
+        Route::post('/job-offers', [UserJobController::class, 'storeOffer'])->name('jobs.store');
+        Route::get('/job-offers/{id}/edit', [UserJobController::class, 'editOffer'])->name('jobs.edit');
+        Route::put('/job-offers/{id}', [UserJobController::class, 'updateOffer'])->name('jobs.update');
+        Route::delete('/job-offers/{id}', [UserJobController::class, 'destroyOffer'])->name('jobs.destroy');
+        // Recruiter sees & manages received applications
+        Route::get('/received-applications', [UserJobController::class, 'receivedApplications'])->name('applications.received');
+        Route::get('/received-applications/{id}/details', [UserJobController::class, 'applicationDetails'])->name('applications.details');
+        Route::post('/applications/{application}/approve', [UserJobController::class, 'approveApplication'])->name('applications.approve');
+        Route::post('/applications/{application}/reject', [UserJobController::class, 'rejectApplication'])->name('applications.reject');
+        Route::post('/applications/{application}/interview', [UserJobController::class, 'interviewApplication'])->name('applications.interview');
+        Route::post('/applications/{application}/hire', [UserJobController::class, 'hireApplication'])->name('applications.hire');
+
+        // Artisan public profile
+        Route::get('/artisans/{artisan}', [UserServiceController::class, 'artisanProfile'])->name('artisans.show');
+
+        // Notifications
+        Route::get('/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [UserNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::delete('/notifications/{notification}', [UserNotificationController::class, 'destroy'])->name('notifications.destroy');
+        Route::get('/notifications/unread-count', [UserNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+
+        // Messages
+        Route::get('/messages', [UserMessageController::class, 'index'])->name('messages.index');
+        Route::post('/messages', [UserMessageController::class, 'store'])->name('messages.store');
+        Route::post('/messages/start', [UserMessageController::class, 'start'])->name('messages.start');
+        Route::get('/messages/start/{user}', [UserMessageController::class, 'startConversation'])->name('messages.start.user');
+        Route::post('/messages/{conversation}/send', [UserMessageController::class, 'send'])->name('messages.send');
+        Route::post('/messages/{conversation}/read', [UserMessageController::class, 'markRead'])->name('messages.read');
+        Route::post('/messages/{conversation}/attachment', [UserMessageController::class, 'send'])->name('messages.attachment');
+
+        // Photo uploads
+        Route::post('/profile/photo', [UserPhotoController::class, 'updateProfilePhoto'])->name('profile.photo'); // updated to spec
+        Route::post('/services/{service}/image', [UserPhotoController::class, 'updateServiceImage'])->name('services.image');
+        Route::post('/services/{service}/gallery', [UserPhotoController::class, 'updateServiceGallery'])->name('services.gallery');
+        Route::delete('/services/{service}/gallery/{index}', [UserPhotoController::class, 'deleteGalleryImage'])->name('services.gallery.delete');
+        Route::post('/jobs/{job}/logo', [UserPhotoController::class, 'updateJobLogo'])->name('jobs.logo');
+        Route::post('/jobs/{job}/cover', [UserPhotoController::class, 'updateJobCover'])->name('jobs.cover');
+        Route::post('/cv/photo', [UserPhotoController::class, 'updateCvPhoto'])->name('cv.photo');
+        Route::post('/cv/file', [UserPhotoController::class, 'uploadCvFile'])->name('cv.file');
+
+        // Subscriptions
+        Route::get('/subscription', [UserSubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('/subscription/checkout', [UserSubscriptionController::class, 'checkout'])->name('subscription.checkout');
+        Route::post('/subscription/subscribe', [UserSubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+        Route::post('/subscription/cancel', [UserSubscriptionController::class, 'cancel'])->name('subscription.cancel');
+
     });
 
 // Admin Routes

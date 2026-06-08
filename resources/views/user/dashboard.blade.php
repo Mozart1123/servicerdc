@@ -3,156 +3,198 @@
 @section('header_title', 'Tableau de bord')
 
 @section('content')
-<div class="space-y-12 pb-20">
-    <!-- Quick Actions / Search Bar -->
-    <div class="relative">
-        <div class="absolute inset-0 bg-rdc-blue/5 rounded-[3rem] blur-3xl opacity-50"></div>
-        <div class="relative bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm flex flex-col md:flex-row items-center gap-6">
-            <div class="flex-1 w-full relative">
-                <i class="fas fa-magnifying-glass absolute left-6 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" placeholder="QUEL SERVICE OU EMPLOI RECHERCHEZ-VOUS ?" 
-                       class="w-full pl-16 pr-8 py-5 bg-slate-50 border-none rounded-3xl text-xs font-black uppercase tracking-widest focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
-            </div>
-            <div class="flex gap-4 w-full md:w-auto">
-                <button class="flex-1 md:flex-none px-8 py-5 bg-rdc-blue text-white font-black rounded-3xl text-[10px] uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-105 transition-all">
-                    Rechercher
-                </button>
-            </div>
-        </div>
-    </div>
+<div class="space-y-8 pb-20">
 
-    <!-- Main Discovery Section -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
-        
-        <!-- 1. SERVICES DISPONIBLES -->
-        <div class="space-y-6">
-            <div class="flex items-center justify-between px-4">
+  <!-- WELCOME -->
+  <section class="bg-gradient-to-r from-rdc-blue to-rdc-dark-blue rounded-[2.5rem] overflow-hidden shadow-sm" data-aos="fade-down">
+    <div class="max-w-7xl mx-auto px-6 sm:px-10 py-12 text-white">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">Bienvenue, {{ auth()->user()->name ?? 'Client' }} 👋</h2>
+      <p class="text-blue-100 max-w-2xl text-lg mb-8">
+        Gérez vos demandes de services, suivez vos candidatures et trouvez rapidement les meilleurs artisans près de vous.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4">
+        <a href="{{ route('user.service-requests.index') }}" class="px-6 py-3.5 bg-rdc-yellow text-gray-900 font-bold rounded-xl hover:bg-yellow-400 transition inline-flex items-center justify-center shadow-lg shadow-yellow-500/20">
+          <i class="fas fa-plus-circle mr-2"></i>Faire une demande
+        </a>
+        <a href="{{ route('user.services.index') }}" class="px-6 py-3.5 bg-white/10 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition inline-flex items-center justify-center backdrop-blur-sm">
+          <i class="fas fa-search mr-2"></i>Trouver un service
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="max-w-7xl mx-auto">
+      
+      <!-- STATS -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="100">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 font-medium">Demandes envoyées</p>
+              <h3 class="text-3xl font-bold text-gray-900 mt-1">{{ auth()->check() ? auth()->user()->serviceRequests()->count() : 0 }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-xl bg-cyan-50 text-rdc-blue border border-cyan-100 flex items-center justify-center">
+              <i class="fas fa-paper-plane text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="200">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 font-medium">Services actifs</p>
+              <h3 class="text-3xl font-bold text-gray-900 mt-1">{{ $stats['active_missions'] ?? 0 }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-xl bg-yellow-50 text-rdc-yellow border border-yellow-100 flex items-center justify-center">
+              <i class="fas fa-tools text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="300">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 font-medium">Candidatures</p>
+              <h3 class="text-3xl font-bold text-gray-900 mt-1">{{ $stats['applied_jobs_count'] ?? 0 }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+              <i class="fas fa-briefcase text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition" data-aos="fade-up" data-aos-delay="400">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 font-medium">Messages non lus</p>
+              <h3 class="text-3xl font-bold text-gray-900 mt-1">{{ $stats['unread_notifications'] ?? 0 }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-xl bg-red-50 text-rdc-red border border-red-100 flex items-center justify-center">
+              <i class="fas fa-envelope text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GRID -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- LEFT -->
+    <div class="lg:col-span-2 space-y-8">
+
+      <!-- QUICK ACTIONS -->
+      <div class="bg-white rounded-2xl shadow-sm border p-6" data-aos="fade-up">
+        <h2 class="text-xl font-bold mb-6">Actions rapides</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <a href="{{ route('user.services.index') }}" class="p-5 rounded-xl bg-cyan-50 hover:bg-cyan-100 transition text-center block">
+            <i class="fas fa-search text-2xl text-rdc-blue mb-3"></i>
+            <h3 class="font-semibold text-slate-800">Chercher artisan</h3>
+          </a>
+
+          <a href="{{ route('user.service-requests.index') }}" class="p-5 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition text-center block">
+            <i class="fas fa-file-circle-plus text-2xl text-rdc-yellow mb-3"></i>
+            <h3 class="font-semibold text-slate-800">Nouvelle demande</h3>
+          </a>
+
+          <a href="{{ route('user.jobs.index') }}" class="p-5 rounded-xl bg-blue-50 hover:bg-blue-100 transition text-center block">
+            <i class="fas fa-briefcase text-2xl text-blue-600 mb-3"></i>
+            <h3 class="font-semibold text-slate-800">Voir emplois</h3>
+          </a>
+        </div>
+      </div>
+
+      <!-- RECENT REQUESTS -->
+      <div class="bg-white rounded-2xl shadow-sm border p-6" data-aos="fade-up">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold">Mes demandes récentes</h2>
+          <a href="{{ route('user.service-requests.index') }}" class="text-rdc-blue font-semibold text-sm hover:underline">Voir tout</a>
+        </div>
+
+        <div class="space-y-4">
+          @if(auth()->check() && auth()->user()->serviceRequests()->count() > 0)
+              @foreach(auth()->user()->serviceRequests()->latest()->take(3)->get() as $request)
+              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
-                        <i class="fas fa-hand-holding-heart"></i>
-                    </div>
-                    <h3 class="text-xl font-heading font-black text-slate-900 uppercase">Services Populaires</h3>
+                  <div class="w-11 h-11 bg-cyan-100 text-rdc-blue rounded-xl flex items-center justify-center">
+                    <i class="fas fa-bolt"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold">{{ $request->title }}</h3>
+                    <p class="text-sm text-gray-500">{{ $request->location ?? 'En ligne' }} • {{ $request->created_at->diffForHumans() }}</p>
+                  </div>
                 </div>
-                <a href="{{ route('user.services.index') }}" class="text-[10px] font-black text-rdc-blue uppercase tracking-widest hover:underline">Voir tout</a>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                @php
-                    $services = [
-                        ['title' => 'Ménage & Nettoyage', 'count' => '42 offres', 'icon' => 'fas fa-broom', 'color' => 'blue'],
-                        ['title' => 'Plomberie & Réparation', 'count' => '18 offres', 'icon' => 'fas fa-wrench', 'color' => 'amber'],
-                        ['title' => 'Transport & Livraison', 'count' => '35 offres', 'icon' => 'fas fa-truck', 'color' => 'emerald'],
-                        ['title' => 'Cours à Domicile', 'count' => '12 offres', 'icon' => 'fas fa-book-open', 'color' => 'purple'],
-                    ];
-                @endphp
-                @foreach($services as $s)
-                <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
-                    <div class="w-12 h-12 rounded-2xl bg-{{ $s['color'] }}-50 text-{{ $s['color'] }}-500 flex items-center justify-center text-xl mb-4 group-hover:bg-{{ $s['color'] }}-500 group-hover:text-white transition-all shadow-inner">
-                        <i class="{{ $s['icon'] }}"></i>
-                    </div>
-                    <h4 class="font-heading font-black text-slate-900 text-sm uppercase tracking-tight">{{ $s['title'] }}</h4>
-                    <p class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">{{ $s['count'] }} à proximité</p>
+                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">{{ ucfirst($request->status ?? 'En attente') }}</span>
+              </div>
+              @endforeach
+          @else
+              <div class="text-center py-6">
+                <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center text-xl mx-auto mb-3">
+                    <i class="fas fa-inbox"></i>
                 </div>
-                @endforeach
-            </div>
+                <p class="text-gray-500 font-medium">Vous n'avez effectué aucune demande pour le moment.</p>
+              </div>
+          @endif
         </div>
-
-        <!-- 2. TROUVER DES EMPLOIS -->
-        <div class="space-y-6">
-            <div class="flex items-center justify-between px-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-rdc-blue text-white flex items-center justify-center shadow-lg">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <h3 class="text-xl font-heading font-black text-slate-900 uppercase">Opportunités d'Emploi</h3>
-                </div>
-                <a href="{{ route('user.jobs.index') }}" class="text-[10px] font-black text-rdc-blue uppercase tracking-widest hover:underline">Voir tout</a>
-            </div>
-
-            <div class="space-y-4">
-                @php
-                    $jobs = [
-                        ['title' => 'Développeur FullStack Laravel', 'company' => 'Vodacom RDC', 'loc' => 'Kinshasa, Gombe', 'salary' => '2,500$'],
-                        ['title' => 'Responsable Marketing', 'company' => 'Orange RDC', 'loc' => 'Kinshasa, 30 Juin', 'salary' => '1,800$'],
-                    ];
-                @endphp
-                @foreach($jobs as $j)
-                <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group flex items-center gap-6">
-                    <div class="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-2xl text-slate-300 group-hover:bg-rdc-blue group-hover:text-white transition-all shadow-inner">
-                        <i class="fas fa-building-columns"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-heading font-black text-slate-900 text-sm uppercase group-hover:text-rdc-blue transition-colors">{{ $j['title'] }}</h4>
-                        <div class="flex items-center gap-4 mt-2">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter"><i class="fas fa-building mr-1.5 opacity-50"></i>{{ $j['company'] }}</span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter"><i class="fas fa-location-dot mr-1.5 opacity-50"></i>{{ $j['loc'] }}</span>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm font-black text-slate-900">{{ $j['salary'] }}</p>
-                        <button class="mt-2 px-4 py-1.5 bg-slate-900 text-white text-[9px] font-black rounded-lg uppercase tracking-widest hover:bg-rdc-blue transition-all shadow-lg">Postuler</button>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Secondary Context: Activity & Suggestions -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-10">
-        
-        <!-- Activity Timeline -->
-        <div class="lg:col-span-2 bg-white rounded-[3.5rem] p-10 shadow-sm border border-slate-100">
-            <h3 class="text-lg font-heading font-black text-slate-900 uppercase mb-10 flex items-center gap-3">
-                <i class="fas fa-bolt text-amber-500"></i>
-                Activité Récente
-            </h3>
-            
-            <div class="relative pl-8 border-l-2 border-slate-50 space-y-10">
-                <div class="relative">
-                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full shadow-lg shadow-emerald-500/20"></div>
-                    <p class="text-sm font-bold text-slate-900">Vous avez postulé à l'offre <span class="text-rdc-blue underline">"Senior Designer"</span></p>
-                    <p class="text-[10px] text-slate-400 mt-1 font-mono uppercase tracking-widest">Il y a 2 heures • VODACOM RDC</p>
-                </div>
-                <div class="relative">
-                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-blue-500 border-4 border-white rounded-full shadow-lg shadow-blue-500/20"></div>
-                    <p class="text-sm font-bold text-slate-900">Nouveau service ajouté aux favoris: <span class="text-amber-600 underline">"Plomberie Express"</span></p>
-                    <p class="text-[10px] text-slate-400 mt-1 font-mono uppercase tracking-widest">Hier à 14:30 • CATÉGORIE: DEPANNAGE</p>
-                </div>
-            </div>
+    <!-- RIGHT -->
+    <aside class="space-y-8" data-aos="fade-left">
+
+      <!-- PROFILE -->
+      <div class="bg-white rounded-2xl shadow-sm border p-6">
+        <div class="text-center">
+          <div class="w-20 h-20 mx-auto rounded-full shadow-sm border-2 border-white mb-4 relative">
+             <img src="{{ auth()->user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name ?? 'Client').'&background=29B6D1&color=fff&size=80' }}" class="w-full h-full rounded-full object-cover" alt="Profile">
+          </div>
+          <h2 class="text-lg font-bold">{{ auth()->user()->name ?? 'Client ProConnect' }}</h2>
+          <p class="text-sm text-gray-500">{{ auth()->user()->email ?? 'client@email.com' }}</p>
+
+          <a href="{{ route('user.profile') }}" class="mt-5 w-full block py-3 bg-rdc-blue text-white rounded-xl font-semibold hover:bg-rdc-blue-dark transition text-center">
+            Modifier profil
+          </a>
         </div>
+      </div>
 
-        <!-- Professional Completion HUD -->
-        <div class="bg-slate-900 rounded-[3.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-            <div class="absolute -right-20 -top-20 w-60 h-60 bg-rdc-blue/10 rounded-full blur-3xl group-hover:bg-rdc-blue/20 transition-all"></div>
-            
-            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Statut du Citoyen Pro</h4>
-            
-            <div class="space-y-8 relative z-10">
-                <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full border-4 border-white/5 relative">
-                        <svg class="w-full h-full transform -rotate-90">
-                            <circle cx="48" cy="48" r="42" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
-                            <circle cx="48" cy="48" r="42" stroke="#007FFF" stroke-width="6" fill="transparent" stroke-dasharray="264" stroke-dashoffset="39.6" class="transition-all duration-1000" />
-                        </svg>
-                        <span class="absolute text-2xl font-black">85%</span>
-                    </div>
-                </div>
+      <!-- RECOMMENDED -->
+      <div class="bg-white rounded-2xl shadow-sm border p-6">
+        <h2 class="text-xl font-bold mb-5">Services recommandés</h2>
 
-                <div class="space-y-4">
-                    <p class="text-sm font-medium text-slate-300 text-center leading-relaxed italic">"Votre profil est presque complet. Ajoutez un portfolio pour augmenter vos chances de conversion de 40%."</p>
-                    <button class="w-full py-4 bg-white text-slate-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all">
-                        Optimiser ma Réalité
-                    </button>
+        <div class="space-y-4">
+          @if(isset($recentServices) && $recentServices->count() > 0)
+              @foreach($recentServices->take(3) as $service)
+              <div class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition">
+                <div class="w-10 h-10 rounded-lg bg-cyan-100 text-rdc-blue flex items-center justify-center">
+                  <i class="fas {{ $service->category->icon ?? 'fa-bolt' }}"></i>
                 </div>
-            </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-sm line-clamp-1"><a href="{{ route('user.services.show', $service->id) }}">{{ $service->title }}</a></h3>
+                  <p class="text-xs text-gray-500">{{ Str::limit($service->location ?? 'Disponibles près de vous', 25) }}</p>
+                </div>
+              </div>
+              @endforeach
+          @else
+              <p class="text-gray-500 text-sm text-center">Aucun service recommandé pour l'instant.</p>
+          @endif
         </div>
+      </div>
 
-    </div>
-</div>
+      <!-- TIP -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-5" data-aos="zoom-in">
+        <h3 class="font-bold text-yellow-800 mb-2">
+          <i class="fas fa-lightbulb mr-2"></i>Conseil
+        </h3>
+        <p class="text-sm text-yellow-700">
+          Complétez votre profil pour recevoir de meilleures recommandations.
+        </p>
+      </div>
 
-<style>
-    .animate-pulse-soft { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
-</style>
+    </aside>
+  </section>
+
+  </div> <!-- Close max-w-7xl container -->
+</div> <!-- Close space-y-8 container -->
 @endsection

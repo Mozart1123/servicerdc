@@ -3,7 +3,7 @@
 @section('title', 'Suggestion & Feedback')
 @section('header_title', 'Voix de la Communauté')
 @section('page_title', 'Boîte à Idées')
-@section('page_subtitle', 'Consultez les suggestions d\'amélioration soumises par les utilisateurs pour faire évoluer ServiceRDC.')
+@section('page_subtitle', 'Consultez les suggestions d\'amélioration soumises par les utilisateurs pour faire évoluer ProConnect.')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="{

@@ -37,7 +37,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'user_type' => ['required', 'string', 'in:client,artisan,job_seeker'],
+            'user_type' => ['required', 'string', 'in:client,artisan,recruiter,job_seeker'],
             'terms' => ['required', 'accepted'],
         ], [
             'name.required' => 'Le nom complet est requis.',
@@ -67,6 +67,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route('user.dashboard')
-            ->with('success', 'Bienvenue sur ServiceRDC ! Votre compte a été créé avec succès.');
+            ->with('success', 'Bienvenue sur ProConnect ! Votre compte a été créé avec succès.');
     }
 }

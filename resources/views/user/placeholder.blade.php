@@ -14,7 +14,7 @@
     <h2 class="text-3xl font-heading font-extrabold text-slate-900 mb-4 tracking-tight">Cette page arrive bientôt !</h2>
     <p class="text-slate-500 max-w-md mx-auto leading-relaxed mb-8">
         Nous travaillons dur pour vous offrir la meilleure expérience possible. 
-        Revenez très bientôt pour découvrir cette nouvelle fonctionnalité de <span class="text-rdc-blue font-bold">ServiceRDC</span>.
+        Revenez très bientôt pour découvrir cette nouvelle fonctionnalité de <span class="text-rdc-blue font-bold">ProConnect</span>.
     </p>
     
     <a href="{{ route('user.dashboard') }}" class="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-rdc-blue shadow-lg shadow-slate-200 transition-all flex items-center gap-2">

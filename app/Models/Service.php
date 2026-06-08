@@ -12,11 +12,16 @@ class Service extends Model
     protected $fillable = [
         'artisan_id',
         'category_id',
+        'provider_name',
+        'profession',
+        'city',
+        'phone_number',
         'title',
         'description',
         'price',
         'location',
-        'images',
+        'service_image',
+        'gallery_images',
         'is_verified',
         'status',
         'rating',
@@ -25,6 +30,7 @@ class Service extends Model
     protected $casts = [
         'is_verified' => 'boolean',
         'rating' => 'decimal:2',
+        'gallery_images' => 'array',
         'images' => 'array',
     ];
 

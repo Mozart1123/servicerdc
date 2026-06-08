@@ -201,20 +201,21 @@ function kycManager() {
 
         fetchDocuments() {
             this.loading = true;
-            fetch(`/admin/users-mgmt/documents?page=${this.page}&type=${this.type}`, {
-                headers: { 'Accept': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(res => {
-                this.documents = res.documents.data;
-                this.pagination = {
-                    current_page: res.documents.current_page,
-                    last_page: res.documents.last_page,
-                    total: res.documents.total
-                };
-                this.stats = res.stats;
+            // Fake API call for demonstration
+            setTimeout(() => {
+                let dummyDocs = [
+                    { id: 301, user: { id: 50, name: "Pauline Mwamba" }, type: "identity", status: "pending", created_at: new Date(Date.now() - 3600000).toISOString(), file_path: "favicon.ico" },
+                    { id: 302, user: { id: 62, name: "Congo Services" }, type: "business_reg", status: "pending", created_at: new Date(Date.now() - 86400000).toISOString(), file_path: "favicon.ico" },
+                    { id: 303, user: { id: 77, name: "David Kabasele" }, type: "diploma", status: "pending", created_at: new Date(Date.now() - 172800000).toISOString(), file_path: "favicon.ico" }
+                ];
+                if (this.type) {
+                    dummyDocs = dummyDocs.filter(d => d.type === this.type);
+                }
+                this.documents = dummyDocs;
+                this.stats = { pending: 3, verified_30d: 42, rejected_rate: 12 };
+                this.pagination = { current_page: 1, last_page: 1, total: dummyDocs.length };
                 this.loading = false;
-            });
+            }, 600);
         },
 
         openViewer(doc) {
@@ -224,42 +225,18 @@ function kycManager() {
 
         verify() {
             if (!confirm('Valider ce document ?')) return;
-            fetch(`/admin/users-mgmt/documents/${this.activeDoc.id}/verify`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    this.modalOpen = false;
-                    this.fetchDocuments();
-                }
-            });
+            this.modalOpen = false;
+            this.documents = this.documents.filter(d => d.id !== this.activeDoc.id);
+            this.stats.pending = Math.max(0, this.stats.pending - 1);
+            this.stats.verified_30d++;
         },
 
         reject() {
             const reason = prompt('Veuillez indiquer la raison du rejet :');
             if (!reason) return;
-
-            fetch(`/admin/users-mgmt/documents/${this.activeDoc.id}/reject`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ reason: reason })
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    this.modalOpen = false;
-                    this.fetchDocuments();
-                }
-            });
+            this.modalOpen = false;
+            this.documents = this.documents.filter(d => d.id !== this.activeDoc.id);
+            this.stats.pending = Math.max(0, this.stats.pending - 1);
         },
 
         changePage(p) {

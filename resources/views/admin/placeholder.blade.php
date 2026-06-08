@@ -15,7 +15,7 @@
     
     <h2 class="text-2xl sm:text-4xl font-heading font-extrabold text-slate-900 mb-4 sm:mb-6 tracking-tight leading-tight">Module en Déploiement</h2>
     <p class="text-slate-500 max-w-xl mx-auto leading-relaxed mb-8 sm:mb-10 text-sm sm:text-lg">
-        Ce module de <span class="text-rdc-blue font-bold">ServiceRDC HQ</span> est en phase de synchronisation. 
+        Ce module de <span class="text-rdc-blue font-bold">ProConnect HQ</span> est en phase de synchronisation. 
         L'infrastructure est en cours de mise à jour pour assurer une sécurité maximale.
     </p>
     

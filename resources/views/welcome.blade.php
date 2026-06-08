@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="ServiceRDC - Plateforme de services et d'emplois en République Démocratique du Congo">
-    <title>ServiceRDC | Trouvez artisans et emplois en RDC</title>
+        content="ProConnect - Plateforme de services et d'emplois en République Démocratique du Congo">
+    <title>ProConnect | Trouvez artisans et emplois en RDC</title>
 
     <!-- Preload critical resources -->
     <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
@@ -25,12 +25,12 @@
                         'xs': '400px',
                     },
                     colors: {
-                        // Couleurs officielles drapeau RDC
-                        'rdc-blue': '#007FFF',
-                        'rdc-blue-dark': '#0066CC',
+                        // Couleurs ProConnect
+                        'rdc-blue': '#29B6D1',
+                        'rdc-blue-dark': '#1E9CB5',
                         'rdc-yellow': '#F0B800',
                         'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#003366',
+                        'rdc-dark-blue': '#090D16',
                         // Couleurs utilitaires
                         'rdc-success': '#10B981',
                         'rdc-warning': '#F59E0B',
@@ -79,11 +79,11 @@
 
     <style>
         :root {
-            --primary-blue: #007FFF;
-            --primary-blue-dark: #0066CC;
+            --primary-blue: #29B6D1;
+            --primary-blue-dark: #1E9CB5;
             --accent-yellow: #F0B800;
             --accent-red: #FF4757;
-            --dark-blue: #003366;
+            --dark-blue: #090D16;
             --light-bg: #F8FAFC;
         }
 
@@ -126,11 +126,8 @@
             height: 5px;
             background: linear-gradient(90deg,
                     var(--primary-blue) 0%,
-                    var(--primary-blue) 33%,
-                    var(--accent-yellow) 33%,
-                    var(--accent-yellow) 66%,
-                    var(--accent-red) 66%,
-                    var(--accent-red) 100%);
+                    #00F5FF 50%,
+                    var(--primary-blue-dark) 100%);
         }
 
         /* Animations personnalisées */
@@ -414,10 +411,10 @@
     <!-- Écran de chargement -->
     <div id="loading-screen">
         <div class="loader-logo">
-            <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="loader-img w-full h-full object-contain rounded-full overflow-hidden">
+            <img src="/assets/img/logo.png?v=1.2" alt="ProConnect Logo" class="loader-img w-full h-full object-contain rounded-full overflow-hidden">
         </div>
-        <div class="loader-text text-xl sm:text-2xl md:text-3xl">Service<span class="text-yellow-300">RDC</span></div>
-        <div class="loader-subtext">La plateforme congolaise pour vos services et emplois</div>
+        <div class="loader-text text-xl sm:text-2xl md:text-3xl">Pro<span class="text-rdc-blue">Connect</span></div>
+        <div class="loader-subtext">La plateforme moderne pour vos services et emplois</div>
         <div class="loader-subtext mt-2 animate-pulse">Chargement en cours...</div>
         <div class="progress-bar">
             <div class="progress-fill" id="progress-fill"></div>
@@ -435,10 +432,10 @@
                     <a href="/" class="flex items-center space-x-2 sm:space-x-3 group min-w-0">
                         <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-white flex items-center justify-center 
                                     group-hover:scale-105 transition-transform duration-300 shadow-lg shrink-0">
-                            <img src="/assets/img/logo.png?v=1.1" alt="Logo" class="w-full h-full object-contain">
+                            <img src="/assets/img/logo.png?v=1.2" alt="Logo" class="w-full h-full object-contain">
                         </div>
                         <div class="truncate">
-                            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">Service<span class="text-rdc-blue">RDC</span></h1>
+                            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">Pro<span class="text-rdc-blue">Connect</span></h1>
                             <p class="text-[10px] text-gray-600 hidden xs:block truncate">Plateforme de services & emplois</p>
                         </div>
                     </a>
@@ -792,7 +789,7 @@
 
                                 <!-- CTA Carte -->
                                 <div class="text-center">
-                                    <a href="#services" class="inline-flex items-center px-8 py-4 bg-gradient-to-r 
+                                    <a href="{{ route('user.services.index') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r 
                                               from-white to-gray-100 text-rdc-dark-blue font-bold 
                                               rounded-xl hover:shadow-2xl transition-all duration-300 
                                               hover:scale-105 group">
@@ -848,7 +845,7 @@
                                     stroke-width="4" />
                                 <defs>
                                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stop-color="#007FFF" />
+                                        <stop offset="0%" stop-color="#29B6D1" />
                                         <stop offset="100%" stop-color="#F0B800" />
                                     </linearGradient>
                                 </defs>
@@ -882,7 +879,7 @@
                                 Décrivez votre besoin et nous trouverons la solution.
                             </p>
                         </div>
-                        <a href="{{ route('login') }}" class="px-6 py-3 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
+                        <a href="{{ route('user.services.index') }}" class="px-6 py-3 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
                                   text-white font-semibold rounded-lg hover:shadow-lg 
                                   transition-all duration-300 hover:scale-105 whitespace-nowrap 
                                   flex items-center space-x-2">
@@ -910,7 +907,7 @@
                     </h2>
                     <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                         Postulez facilement à des offres d'emploi dans toute la République
-                        et développez votre carrière avec ServiceRDC.
+                            et développez votre carrière avec ProConnect.
                     </p>
                 </div>
 
@@ -921,7 +918,7 @@
 
                 <!-- CTA Emplois -->
                 <div class="text-center" data-aos="fade-up" data-aos-delay="200">
-                    <a href="{{ route('login') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r 
+                    <a href="{{ route('user.jobs.index') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r 
                               from-rdc-blue to-rdc-blue-dark text-white font-bold 
                               rounded-xl hover:shadow-2xl transition-all duration-300 
                               hover:scale-105 group">
@@ -1024,7 +1021,7 @@
                         Prêt à commencer votre aventure ?
                     </h3>
                     <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                        Rejoignez la communauté ServiceRDC et accédez à des milliers
+                        Rejoignez la communauté ProConnect et accédez à des milliers
                         d'opportunités dans toute la République Démocratique du Congo.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1071,7 +1068,7 @@
                         <span class="text-rdc-blue">confiance</span>
                     </h2>
                     <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                        Découvrez les expériences de ceux qui utilisent déjà ServiceRDC
+                        Découvrez les expériences de ceux qui utilisent déjà ProConnect
                         pour leurs besoins quotidiens en RDC.
                     </p>
                 </div>
@@ -1105,7 +1102,7 @@
                             </div>
                             <p class="text-gray-700 italic leading-relaxed">
                                 "J'ai trouvé un électricien qualifié en moins de 30 minutes
-                                pour réparer ma panne. ServiceRDC a sauvé ma soirée !"
+                                pour réparer ma panne. ProConnect a sauvé ma soirée !"
                             </p>
                         </div>
                         <div class="pt-6 border-t border-gray-100">
@@ -1142,7 +1139,7 @@
                                 <i class="fas fa-star-half-alt"></i>
                             </div>
                             <p class="text-gray-700 italic leading-relaxed">
-                                "Depuis que je me suis inscrite sur ServiceRDC, j'ai triplé
+                                "Depuis que je me suis inscrite sur ProConnect, j'ai triplé
                                 mon nombre de clients. C'est indispensable pour les artisans !"
                             </p>
                         </div>
@@ -1180,7 +1177,7 @@
                                 <i class="fas fa-star"></i>
                             </div>
                             <p class="text-gray-700 italic leading-relaxed">
-                                "J'ai trouvé mon premier emploi grâce à ServiceRDC.
+                                "J'ai trouvé mon premier emploi grâce à ProConnect.
                                 L'interface est intuitive et les offres sont régulièrement mises à jour."
                             </p>
                         </div>
@@ -1223,10 +1220,10 @@
                     <div>
                         <div class="flex items-center space-x-3 mb-6">
                             <div class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center">
-                                <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
+                                <img src="/assets/img/logo.png?v=1.2" alt="ProConnect Logo" class="w-full h-full object-contain">
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold">Service<span class="text-yellow-300">RDC</span></h2>
+                                <h2 class="text-2xl font-bold">Pro<span class="text-rdc-blue">Connect</span></h2>
                                 <p class="text-sm text-gray-400">Fierté congolaise</p>
                             </div>
                         </div>
@@ -1336,7 +1333,7 @@
                         </h3>
                         <p class="text-gray-400 mb-6 text-sm">
                             Inscrivez-vous à notre newsletter pour recevoir les dernières
-                            offres et actualités ServiceRDC.
+                            offres et actualités ProConnect.
                         </p>
                         <form class="mb-6">
                             <div class="flex">
@@ -1356,7 +1353,7 @@
                             </div>
                             <div class="flex items-center text-gray-400">
                                 <i class="fas fa-envelope mr-3 text-rdc-yellow"></i>
-                                <span>contact@servicerdc.cd</span>
+                                <span>contact@proconnect.cd</span>
                             </div>
                             <div class="flex items-center text-gray-400">
                                 <i class="fas fa-map-marker-alt mr-3 text-rdc-yellow"></i>
@@ -1371,7 +1368,7 @@
                     <div class="flex flex-col md:flex-row justify-between items-center">
                         <div class="mb-4 md:mb-0">
                             <p class="text-gray-500 text-sm">
-                                &copy; 2024 ServiceRDC. Tous droits réservés.
+                                &copy; 2024 ProConnect. Tous droits réservés.
                                 <span class="text-rdc-yellow">🇨🇩 Fièrement congolais</span>
                             </p>
                         </div>
@@ -1499,10 +1496,10 @@
                             <h4 class="text-lg font-bold text-gray-900 text-center mb-2 group-hover:text-rdc-blue transition-colors">${category.name}</h4>
                             <p class="text-sm text-gray-600 text-center mb-4">${category.desc}</p>
                             <div class="text-center">
-                                <span class="inline-flex items-center text-rdc-blue text-sm font-semibold group-hover:translate-x-1 transition-transform">
+                                <a href="{{ route('user.services.index') }}" class="inline-flex items-center text-rdc-blue text-sm font-semibold group-hover:translate-x-1 transition-transform">
                                     Voir les artisans
                                     <i class="fas fa-arrow-right ml-1 text-xs"></i>
-                                </span>
+                                </a>
                             </div>
                         </div>
                         <div class="absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
@@ -1613,14 +1610,14 @@
                             <span class="text-lg font-bold text-gray-900">${job.salary}</span>
                         </div>
                         
-                        <button class="w-full group/btn px-6 py-3.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
+                        <a href="{{ route('user.jobs.index') }}" class="w-full group/btn px-6 py-3.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
                                       text-white font-semibold rounded-xl hover:shadow-lg 
                                       transition-all duration-300 hover:scale-[1.02] 
                                       flex items-center justify-center space-x-3">
                             <i class="fas fa-paper-plane group-hover/btn:rotate-12 transition-transform"></i>
                             <span>Postuler maintenant</span>
                             <i class="fas fa-arrow-right group-hover/btn:translate-x-1 transition-transform"></i>
-                        </button>
+                        </a>
                         
                         <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-rdc-blue to-rdc-yellow transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     `;
@@ -1733,7 +1730,7 @@
                             searchBtn.innerHTML = originalHtml;
                             searchBtn.disabled = false;
                             // Redirection vers résultats de recherche
-                            window.location.href = `{{ route('login') }}?search=${encodeURIComponent(query)}`;
+                            window.location.href = `{{ route('user.services.index') }}?search=${encodeURIComponent(query)}`;
                         }, 1000);
                     }
                 }

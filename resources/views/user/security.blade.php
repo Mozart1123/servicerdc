@@ -11,7 +11,7 @@
         </div>
         <div>
             <h2 class="text-3xl font-heading font-black text-slate-900 uppercase">Coffre-fort <span class="text-rdc-blue">Numérique</span></h2>
-            <p class="text-slate-500 font-medium">Gérez votre mot de passe, vos sessions actives et protégez votre identité sur ServiceRDC.</p>
+            <p class="text-slate-500 font-medium">Gérez votre mot de passe, vos sessions actives et protégez votre identité sur ProConnect.</p>
         </div>
     </div>
 
@@ -94,7 +94,7 @@
                 <i class="fas fa-skull-crossbones"></i>
                 Zone de Danger
             </h3>
-            <p class="text-sm font-medium text-red-600/70 max-w-md">Une fois votre compte supprimé, toutes vos données (profil, favoris, historique) seront définitivement effacées du Nexus ServiceRDC.</p>
+            <p class="text-sm font-medium text-red-600/70 max-w-md">Une fois votre compte supprimé, toutes vos données (profil, favoris, historique) seront définitivement effacées du Nexus ProConnect.</p>
             <button class="mt-4 px-10 py-4 bg-red-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-500/20">
                 Supprimer mon compte
             </button>

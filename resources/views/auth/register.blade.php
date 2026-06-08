@@ -12,7 +12,7 @@
     <!-- Header -->
     <div class="mb-6 sm:mb-8 text-center lg:text-left">
         <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-1.5 sm:mb-2 font-heading">Créer un compte</h2>
-        <p class="text-slate-500 text-xs sm:text-sm">Rejoignez la communauté <span class="text-rdc-blue font-semibold">ServiceRDC</span>.</p>
+        <p class="text-slate-500 text-xs sm:text-sm">Rejoignez la communauté <span class="text-rdc-blue font-semibold">ProConnect</span>.</p>
     </div>
 
     <!-- Error Messages -->
@@ -116,10 +116,10 @@
                     </div>
                 </label>
                 <label class="relative cursor-pointer group">
-                    <input type="radio" name="user_type" value="job_seeker" class="peer sr-only" {{ old('user_type') == 'job_seeker' ? 'checked' : '' }}>
+                    <input type="radio" name="user_type" value="recruiter" class="peer sr-only" {{ old('user_type') == 'recruiter' ? 'checked' : '' }}>
                     <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 text-center transition-all peer-checked:border-rdc-red peer-checked:bg-rdc-red/10 group-hover:bg-white group-hover:shadow-sm">
-                        <i class="fas fa-briefcase mb-1 text-sm block text-slate-400 peer-checked:text-rdc-red"></i>
-                        <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-red uppercase tracking-tighter">Emploi</span>
+                        <i class="fas fa-building mb-1 text-sm block text-slate-400 peer-checked:text-rdc-red"></i>
+                        <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-red uppercase tracking-tighter">Recruteur</span>
                     </div>
                 </label>
             </div>

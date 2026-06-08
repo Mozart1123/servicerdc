@@ -106,54 +106,24 @@ function flaggedManager() {
 
         fetchUsers() {
             this.loading = true;
-            fetch(`/admin/users-mgmt/flagged?page=${this.page}`, {
-                headers: { 'Accept': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(data => {
-                this.users = data.data;
-                this.pagination = {
-                    current_page: data.current_page,
-                    last_page: data.last_page,
-                    total: data.total
-                };
+            // Fake API call for demonstration
+            setTimeout(() => {
+                this.users = [
+                    { id: 201, name: "Marc Kamanda", email: "marc.kamanda@spam.cd", created_at: new Date(Date.now() - 5000000).toISOString() },
+                    { id: 202, name: "Arnaque Express", email: "fake.service@xyz.com", created_at: new Date(Date.now() - 15000000).toISOString() }
+                ];
+                this.pagination = { current_page: 1, last_page: 1, total: 2 };
                 this.loading = false;
-            });
+            }, 600);
         },
 
         reactivate(user) {
-            fetch(`/admin/users/${user.id}/toggle-status-api`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    this.users = this.users.filter(u => u.id !== user.id);
-                    window.dispatchEvent(new CustomEvent('users-updated'));
-                    if (this.users.length === 0 && this.page > 1) {
-                        this.page--;
-                        this.fetchUsers();
-                    }
-                }
-            });
+            this.users = this.users.filter(u => u.id !== user.id);
         },
 
         confirmDelete(id) {
             if (confirm('Supprimer définitivement ce compte ? Cette action est irréversible.')) {
-                fetch(`/admin/users/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
-                    }
-                }).then(() => {
-                    this.fetchUsers();
-                    window.dispatchEvent(new CustomEvent('users-updated'));
-                });
+                this.users = this.users.filter(u => u.id !== id);
             }
         },
 

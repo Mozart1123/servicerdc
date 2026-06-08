@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOD MODE | MAÎTRE ABSOLU | SRDC-DIVINE</title>
+    <title>GOD MODE | MAÎTRE ABSOLU | PROCONNECT-DIVINE</title>
     
     <!-- Premium Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,11 +26,11 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        'rdc-blue': '#007FFF',
-                        'rdc-blue-dark': '#0066CC',
+                        'rdc-blue': '#29B6D1',
+                        'rdc-blue-dark': '#1E9CB5',
                         'rdc-yellow': '#F0B800',
                         'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#0F172A',
+                        'rdc-dark-blue': '#090D16',
                         'divine-gold': '#FFD700',
                         'cosmic-purple': '#A855F7',
                     }
@@ -106,7 +106,7 @@
             <div class="flex flex-col gap-5 relative z-10">
                 <div class="flex items-center gap-4">
                     <div class="w-16 h-16 rounded-3xl bg-white flex items-center justify-center shadow-xl shadow-amber-500/30 divine-glow relative overflow-hidden p-2">
-                        <img src="/assets/img/logo.png?v=1.1" alt="ServiceRDC Logo" class="w-full h-full object-contain">
+                        <img src="/assets/img/logo.png?v=1.2" alt="ProConnect Logo" class="w-full h-full object-contain">
                         <div class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
                     </div>
                     <div>

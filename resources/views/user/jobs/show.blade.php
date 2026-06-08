@@ -1,140 +1,143 @@
 @extends('layouts.user')
 
-@section('title', $job->title)
+@section('title', $job->title . ' | ProConnect')
 @section('header_title', 'Détails de l\'offre')
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-8 pb-20">
     
-    <!-- Success/Error Messages -->
-    @if(session('success'))
-        <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 rounded-xl shadow-sm animate-fade-in" role="alert">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-check-circle text-xl"></i>
-                <p class="font-bold">{{ session('success') }}</p>
+    {{-- Success/Error Messages --}}
+    @foreach(['success' => 'emerald', 'error' => 'red', 'info' => 'blue'] as $type => $color)
+        @if(session($type))
+            <div class="bg-{{ $color }}-50 border-l-4 border-{{ $color }}-500 text-{{ $color }}-700 p-5 rounded-2xl shadow-sm flex items-center gap-4" data-aos="fade-down">
+                <i class="fas {{ $type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' }} text-2xl"></i>
+                <p class="font-bold">{{ session($type) }}</p>
             </div>
-        </div>
-    @endif
+        @endif
+    @endforeach
 
-    @if(session('error'))
-        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-xl shadow-sm animate-fade-in" role="alert">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-exclamation-circle text-xl"></i>
-                <p class="font-bold">{{ session('error') }}</p>
-            </div>
-        </div>
-    @endif
-
-    <!-- Back Button -->
+    {{-- Back Button --}}
     <div>
-        <a href="{{ route('user.jobs.index') }}" class="inline-flex items-center gap-2 text-slate-600 hover:text-rdc-blue font-bold transition-colors">
+        <a href="{{ route('user.jobs.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-100 rounded-2xl text-slate-600 hover:text-rdc-blue font-black text-[10px] uppercase tracking-widest transition-all shadow-sm">
             <i class="fas fa-arrow-left"></i>
-            <span>Retour aux offres</span>
+            <span>Retour aux opportunités</span>
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
         
         <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-8">
             
             <!-- Job Header Card -->
-            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                <!-- Header with Gradient -->
-                <div class="bg-gradient-to-r from-rdc-blue to-blue-600 px-8 py-10 text-white">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <h1 class="text-3xl font-heading font-extrabold mb-3">{{ $job->title }}</h1>
-                            <div class="flex flex-wrap items-center gap-4 text-white/90">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-building"></i>
-                                    <span class="font-bold">{{ $job->company_name }}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span>{{ $job->location }}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-clock"></i>
-                                    <span>{{ $job->created_at->diffForHumans() }}</span>
-                                </div>
-                            </div>
+            <div class="bg-white rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden" data-aos="fade-up">
+                {{-- Cover Image --}}
+                <div class="h-48 w-full bg-slate-900 relative overflow-hidden">
+                    @if($job->cover_image)
+                        <img src="{{ Storage::url($job->cover_image) }}" class="w-full h-full object-cover opacity-60">
+                    @else
+                        <div class="absolute inset-0 bg-gradient-to-r from-rdc-blue to-blue-900 opacity-40"></div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-10">
+                            <i class="fas fa-briefcase text-[10rem] text-white"></i>
                         </div>
-                        
-                        @if($job->logo_url)
-                            <img src="{{ $job->logo_url }}" class="w-20 h-20 rounded-xl bg-white p-2 shadow-lg" alt="Logo">
+                    @endif
+                    
+                    <div class="absolute -bottom-10 left-10 w-24 h-24 rounded-3xl bg-white p-3 shadow-2xl border border-slate-100 z-10">
+                        @if($job->company_logo)
+                            <img src="{{ Storage::url($job->company_logo) }}" class="w-full h-full object-contain" alt="Logo">
                         @else
-                            <div class="w-20 h-20 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                                <i class="fas fa-briefcase text-3xl text-white/80"></i>
+                            <div class="w-full h-full rounded-2xl bg-slate-50 flex items-center justify-center">
+                                <i class="fas fa-building text-3xl text-slate-300"></i>
                             </div>
                         @endif
                     </div>
                 </div>
 
-                <!-- Job Details -->
-                <div class="px-8 py-6 space-y-6">
-                    <!-- Quick Info -->
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div class="bg-slate-50 rounded-xl p-4">
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Type de contrat</p>
-                            <p class="font-heading font-extrabold text-slate-900">{{ $job->contract_type }}</p>
+                <div class="px-10 pt-16 pb-10 space-y-8">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-3 mb-4">
+                            <span class="px-3 py-1.5 bg-rdc-blue/10 text-rdc-blue text-[10px] font-black uppercase tracking-widest rounded-lg">{{ $job->category ?? 'Secteur non spécifié' }}</span>
+                            <span class="px-3 py-1.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-lg">{{ $job->contract_type }}</span>
                         </div>
-                        <div class="bg-slate-50 rounded-xl p-4">
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Catégorie</p>
-                            <p class="font-heading font-extrabold text-slate-900">{{ $job->category }}</p>
-                        </div>
-                        @if($job->salary_range)
-                            <div class="bg-slate-50 rounded-xl p-4">
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Salaire</p>
-                                <p class="font-heading font-extrabold text-rdc-blue">{{ $job->salary_range }}</p>
+                        <h1 class="text-4xl font-heading font-black text-slate-900 tracking-tight leading-tight">{{ $job->title }}</h1>
+                        <div class="flex flex-wrap items-center gap-6 mt-6">
+                            <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
+                                <i class="fas fa-building text-rdc-blue opacity-70"></i>
+                                <span>{{ $job->company_name }}</span>
                             </div>
-                        @endif
+                            <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
+                                <i class="fas fa-map-marker-alt text-rdc-blue opacity-70"></i>
+                                <span>{{ $job->location }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
+                                <i class="fas fa-clock opacity-50"></i>
+                                <span>{{ $job->created_at->diffForHumans() }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 border-y border-slate-100 py-8">
+                        <div class="p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Salaire</p>
+                            <p class="font-heading font-black text-rdc-blue text-lg">{{ $job->salary_range ?? 'À négocier' }}</p>
+                        </div>
+                        <div class="p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Candidatures</p>
+                            <p class="font-heading font-black text-slate-800 text-lg">{{ $job->applications->count() }}</p>
+                        </div>
+                        <div class="p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date Limite</p>
+                            <p class="font-heading font-black text-slate-800 text-lg">{{ $job->deadline ? $job->deadline->format('d M Y') : 'Ouverte' }}</p>
+                        </div>
                     </div>
 
                     <!-- Description -->
-                    <div>
-                        <h3 class="text-lg font-heading font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-                            <i class="fas fa-align-left text-rdc-blue"></i>
-                            Description du poste
-                        </h3>
-                        <div class="prose prose-slate max-w-none">
-                            <p class="text-slate-700 leading-relaxed whitespace-pre-wrap">{{ $job->description }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Requirements -->
-                    @if($job->requirements)
+                    <div class="space-y-6">
                         <div>
-                            <h3 class="text-lg font-heading font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-                                <i class="fas fa-list-check text-rdc-blue"></i>
-                                Exigences
+                            <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-3">
+                                <span class="w-8 h-1 bg-rdc-blue rounded-full"></span>
+                                Missions et Responsabilités
                             </h3>
-                            <div class="prose prose-slate max-w-none">
-                                <p class="text-slate-700 leading-relaxed whitespace-pre-wrap">{{ $job->requirements }}</p>
+                            <div class="text-slate-600 leading-relaxed text-lg whitespace-pre-line">
+                                {{ $job->description }}
                             </div>
                         </div>
-                    @endif
+
+                        @if($job->requirements)
+                        <div class="pt-6">
+                            <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-3">
+                                <span class="w-8 h-1 bg-amber-400 rounded-full"></span>
+                                Profil recherché / Exigences
+                            </h3>
+                            <div class="text-slate-600 leading-relaxed text-lg whitespace-pre-line">
+                                {{ $job->requirements }}
+                            </div>
+                        </div>
+                        @endif
+                    </div>
                 </div>
             </div>
 
             <!-- Related Jobs -->
             @if($relatedJobs->isNotEmpty())
-                <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
-                    <h3 class="text-xl font-heading font-extrabold text-slate-900 mb-6 flex items-center gap-2">
-                        <i class="fas fa-sparkles text-rdc-blue"></i>
-                        Autres opportunités
-                    </h3>
-                    <div class="grid grid-cols-1 gap-4">
+                <div class="space-y-6">
+                    <h3 class="text-xl font-heading font-black text-slate-900 uppercase tracking-tight ml-2">Opportunités Similaires</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @foreach($relatedJobs as $relatedJob)
                             <a href="{{ route('user.jobs.show', $relatedJob->id) }}" 
-                               class="block p-4 rounded-xl border border-slate-200 hover:border-rdc-blue hover:shadow-md transition-all group">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h4 class="font-bold text-slate-900 group-hover:text-rdc-blue transition-colors">{{ $relatedJob->title }}</h4>
-                                        <p class="text-sm text-slate-500 mt-1">{{ $relatedJob->company_name }} • {{ $relatedJob->location }}</p>
-                                    </div>
-                                    <i class="fas fa-arrow-right text-slate-400 group-hover:text-rdc-blue group-hover:translate-x-1 transition-all"></i>
+                               class="flex items-center gap-4 p-5 bg-white border border-slate-100 rounded-3xl hover:border-rdc-blue hover:shadow-xl transition-all group">
+                                <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 p-2">
+                                    @if($relatedJob->company_logo)
+                                        <img src="{{ Storage::url($relatedJob->company_logo) }}" class="w-full h-full object-contain">
+                                    @else
+                                        <i class="fas fa-briefcase text-slate-200 text-2xl"></i>
+                                    @endif
                                 </div>
+                                <div class="min-w-0">
+                                    <h4 class="font-bold text-slate-900 truncate group-hover:text-rdc-blue transition-colors text-sm">{{ $relatedJob->title }}</h4>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{{ $relatedJob->company_name }} • {{ $relatedJob->location }}</p>
+                                </div>
+                                <i class="fas fa-chevron-right ml-auto text-slate-200 group-hover:text-rdc-blue transition-colors text-xs"></i>
                             </a>
                         @endforeach
                     </div>
@@ -143,124 +146,122 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="space-y-6">
+        <div class="space-y-8">
             
-            <!-- Application Card -->
-            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sticky top-24">
+            <!-- Application Form Card -->
+            <div class="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden" data-aos="fade-left">
+                <div class="absolute -right-20 -bottom-20 w-60 h-60 bg-rdc-blue/20 rounded-full blur-3xl"></div>
+                
                 @if($userApplication)
-                    <!-- Already Applied -->
-                    <div class="text-center py-6">
-                        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-check-circle text-4xl text-rdc-blue"></i>
+                    <div class="relative z-10 text-center py-6">
+                        <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/5">
+                            <i class="fas fa-file-signature text-4xl text-rdc-blue"></i>
                         </div>
-                        <h3 class="font-heading font-extrabold text-xl text-slate-900 mb-2">Candidature envoyée</h3>
-                        <p class="text-slate-600 mb-4">Vous avez déjà postulé à cette offre</p>
+                        <h3 class="font-heading font-black text-2xl mb-2">Candidature Déposée</h3>
+                        <p class="text-slate-400 text-sm mb-8">Nous avons bien reçu votre dossier.</p>
                         
-                        <!-- Application Status -->
-                        @if($userApplication->status === 'pending')
-                            <div class="px-4 py-3 bg-amber-50 rounded-xl border border-amber-200 mb-4">
-                                <p class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1">Statut</p>
-                                <p class="font-heading font-extrabold text-amber-600">
-                                    <i class="fas fa-clock mr-2"></i>En attente
-                                </p>
-                            </div>
-                        @elseif($userApplication->status === 'accepted' || $userApplication->status === 'approved')
-                            <div class="px-4 py-3 bg-emerald-50 rounded-xl border border-emerald-200 mb-4">
-                                <p class="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-1">Statut</p>
-                                <p class="font-heading font-extrabold text-emerald-600">
-                                    <i class="fas fa-check-circle mr-2"></i>Acceptée
-                                </p>
-                            </div>
-                        @elseif($userApplication->status === 'rejected')
-                            <div class="px-4 py-3 bg-red-50 rounded-xl border border-red-200 mb-4">
-                                <p class="text-xs font-bold text-red-700 uppercase tracking-wide mb-1">Statut</p>
-                                <p class="font-heading font-extrabold text-red-600">
-                                    <i class="fas fa-times-circle mr-2"></i>Rejetée
-                                </p>
-                            </div>
+                        @php
+                            $st = match($userApplication->status) {
+                                'approved','accepted' => ['bg'=>'bg-emerald-500/10','text'=>'text-emerald-400','border'=>'border-emerald-500/20','icon'=>'fa-check-circle','label'=>'Acceptée'],
+                                'rejected'  => ['bg'=>'bg-red-500/10','text'=>'text-red-400','border'=>'border-red-500/20','icon'=>'fa-times-circle','label'=>'Non retenue'],
+                                'interview' => ['bg'=>'bg-blue-500/10','text'=>'text-blue-400','border'=>'border-blue-500/20','icon'=>'fa-calendar-check','label'=>'Entretien prévu'],
+                                'hired'     => ['bg'=>'bg-purple-500/10','text'=>'text-purple-400','border'=>'border-purple-500/20','icon'=>'fa-trophy','label'=>'Embauché(e) !'],
+                                default     => ['bg'=>'bg-amber-500/10','text'=>'text-amber-400','border'=>'border-amber-500/20','icon'=>'fa-clock','label'=>'En attente de revue'],
+                            };
+                        @endphp
+                        
+                        <div class="px-6 py-5 {{ $st['bg'] }} {{ $st['border'] }} rounded-3xl mb-8 border">
+                             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">État de votre dossier</p>
+                             <div class="flex items-center justify-center gap-3 {{ $st['text'] }} font-heading font-black text-lg uppercase tracking-tight">
+                                <i class="fas {{ $st['icon'] }}"></i>
+                                <span>{{ $st['label'] }}</span>
+                             </div>
+                        </div>
+
+                        @if(in_array($userApplication->status, ['approved', 'accepted', 'interview']))
+                        <a href="{{ route('user.messages.start.user', $job->employer_id) }}" 
+                           class="flex items-center justify-center gap-3 w-full py-5 bg-rdc-blue text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rdc-blue-dark transition-all shadow-xl shadow-blue-500/20 mb-3">
+                            <i class="fas fa-comments text-lg"></i> Discuter avec le recruteur
+                        </a>
                         @endif
 
-                        <a href="{{ route('user.applications.index') }}" 
-                           class="block w-full px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-all">
-                            Voir mes candidatures
+                        <a href="{{ route('user.applications.index') }}" class="block w-full text-center text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition">
+                            Gérer mes candidatures
                         </a>
                     </div>
                 @else
-                    <!-- Apply Form -->
-                    <h3 class="font-heading font-extrabold text-xl text-slate-900 mb-6 text-center">Postuler maintenant</h3>
-                    
-                    <form method="POST" action="{{ route('user.jobs.apply', $job->id) }}" enctype="multipart/form-data" class="space-y-4">
-                        @csrf
+                    <div class="relative z-10">
+                        <h3 class="font-heading font-black text-2xl mb-8 text-center">Postuler à ce poste</h3>
                         
-                        <!-- Cover Letter -->
-                        <div>
-                            <label for="cover_letter" class="block text-sm font-bold text-slate-700 mb-2">
-                                Lettre de motivation
-                            </label>
-                            <textarea 
-                                name="cover_letter" 
-                                id="cover_letter" 
-                                rows="5" 
-                                class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rdc-blue/20 focus:border-rdc-blue transition-all resize-none"
-                                placeholder="Pourquoi êtes-vous le candidat idéal pour ce poste ?"></textarea>
-                        </div>
+                        @if(!auth()->user()->cv)
+                            <div class="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 text-center mb-6">
+                                <div class="w-16 h-16 bg-amber-400/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-exclamation-triangle text-2xl"></i>
+                                </div>
+                                <p class="text-sm font-bold text-slate-200 leading-relaxed">Attention ! Vous devez créer votre CV ProConnect avant de pouvoir postuler.</p>
+                                <a href="{{ route('user.cv.index') }}" class="inline-block mt-6 px-8 py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-rdc-yellow transition transform hover:scale-105">
+                                    Créer mon CV
+                                </a>
+                            </div>
+                        @else
+                            <form method="POST" action="{{ route('user.jobs.apply', $job->id) }}" class="space-y-6">
+                                @csrf
+                                
+                                <div class="space-y-3">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Lettre de motivation</label>
+                                    <textarea name="cover_letter" rows="6" required
+                                              class="w-full px-6 py-5 bg-white/5 border border-white/10 rounded-3xl text-sm focus:ring-2 focus:ring-rdc-blue outline-none placeholder-white/20 transition-all resize-none"
+                                              placeholder="Précisez vos motivations pour ce poste..."></textarea>
+                                </div>
 
-                        <!-- Resume Upload -->
-                        <div>
-                            <label for="resume_url" class="block text-sm font-bold text-slate-700 mb-2">
-                                CV (facultatif)
-                            </label>
-                            <input 
-                                type="file" 
-                                name="resume_url" 
-                                id="resume_url" 
-                                accept=".pdf,.doc,.docx"
-                                class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rdc-blue/20 focus:border-rdc-blue transition-all">
-                            <p class="text-xs text-slate-500 mt-2">PDF, DOC ou DOCX (max 2MB)</p>
-                        </div>
+                                <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <i class="fas fa-paperclip text-rdc-blue"></i> Dossier Joint
+                                    </p>
+                                    <p class="text-xs font-bold text-slate-200">Votre CV ProConnect sera automatiquement joint à cette candidature.</p>
+                                </div>
 
-                        <!-- Submit Button -->
-                        <button 
-                            type="submit" 
-                            class="w-full px-6 py-4 bg-gradient-to-r from-rdc-blue to-blue-600 text-white font-heading font-extrabold text-lg rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all">
-                            <i class="fas fa-paper-plane mr-2"></i>
-                            Envoyer ma candidature
-                        </button>
-                    </form>
+                                <button type="submit" 
+                                        class="w-full py-5 bg-rdc-blue text-white font-heading font-black text-sm uppercase tracking-[0.2em] rounded-[2rem] shadow-2xl shadow-rdc-blue/30 hover:bg-rdc-blue-dark transform hover:scale-[1.02] transition-all">
+                                    Envoyer ma candidature
+                                </button>
+                            </form>
+                        @endif
+                    </div>
                 @endif
             </div>
 
-            <!-- Job Info -->
-            <div class="bg-slate-50 rounded-2xl border border-slate-200 p-6">
-                <h4 class="font-heading font-extrabold text-slate-900 mb-4">Informations</h4>
-                <div class="space-y-3 text-sm">
-                    <div class="flex items-center gap-3 text-slate-600">
-                        <i class="fas fa-calendar-plus w-5 text-slate-400"></i>
-                        <span>Publié le {{ $job->created_at->format('d/m/Y') }}</span>
+            <!-- Employer Details -->
+            <div class="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl" data-aos="fade-up">
+                <h4 class="font-heading font-black text-slate-900 text-lg mb-6 uppercase tracking-tight">À propos de l'employeur</h4>
+                
+                <div class="flex flex-col items-center text-center">
+                    <div class="w-20 h-20 rounded-3xl bg-slate-50 border border-slate-100 p-4 mb-4">
+                        @if($job->company_logo)
+                            <img src="{{ Storage::url($job->company_logo) }}" class="w-full h-full object-contain">
+                        @else
+                            <i class="fas fa-building text-3xl text-slate-200"></i>
+                        @endif
                     </div>
-                    @if($job->deadline)
-                        <div class="flex items-center gap-3 text-slate-600">
-                            <i class="fas fa-calendar-xmark w-5 text-slate-400"></i>
-                            <span>Date limite: {{ $job->deadline->format('d/m/Y') }}</span>
+                    <h5 class="font-bold text-slate-900 text-lg leading-none">{{ $job->company_name }}</h5>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Recruteur vérifié ProConnect</p>
+                    
+                    <div class="w-full h-px bg-slate-100 my-8"></div>
+                    
+                    <div class="space-y-4 w-full">
+                        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-widest">
+                            <span class="text-slate-400">Offres actives</span>
+                            <span class="text-rdc-blue">{{ $job->employer->jobOffers->count() ?? 1 }}</span>
                         </div>
-                    @endif
-                    <div class="flex items-center gap-3 text-slate-600">
-                        <i class="fas fa-users w-5 text-slate-400"></i>
-                        <span>{{ $job->applications->count() }} candidature(s)</span>
+                        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-widest">
+                            <span class="text-slate-400">Membre depuis</span>
+                            <span class="text-slate-800">{{ $job->employer->created_at->format('M Y') ?? 'Juin 2024' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
-
-<style>
-    @keyframes fade-in {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in {
-        animation: fade-in 0.3s ease-out;
-    }
-</style>
 @endsection

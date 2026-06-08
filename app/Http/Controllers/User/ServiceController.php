@@ -7,17 +7,14 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Service;
+use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-/**
- * User Service Controller
- * 
- * Handles service-related functionality for artisans and clients.
- */
 class ServiceController extends Controller
 {
     /**
@@ -68,7 +65,35 @@ class ServiceController extends Controller
     }
 
     /**
-     * Show form to create a new service (artisans only).
+     * Artisan profile view (triggers notification).
+     */
+    public function artisanProfile(User $artisan): View
+    {
+        if ($artisan->user_type !== 'artisan') {
+            abort(404);
+        }
+
+        $services = $artisan->services()->active()->verified()->get();
+
+        // Notify artisan
+        if (Auth::id() !== $artisan->id) {
+            Notification::create([
+                'user_id'      => $artisan->id,
+                'type'         => 'service_view',
+                'related_type' => 'user',
+                'related_id'   => Auth::id(),
+                'title'        => 'Nouveau prospect',
+                'message'      => Auth::user()->name . ' a consulté votre profil.',
+                'action_url'   => route('user.dashboard'),
+                'is_read'      => false,
+            ]);
+        }
+
+        return view('user.artisans.show', compact('artisan', 'services'));
+    }
+
+    /**
+     * Show form to create a new service.
      */
     public function create(): View
     {
@@ -89,37 +114,57 @@ class ServiceController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'description' => ['required', 'string', 'min:50'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'location' => ['required', 'string', 'max:255'],
-            'images' => ['nullable', 'array', 'max:5'],
-            'images.*' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+        $validated = $request->validate([
+            'title'       => ['required', 'string', 'max:255'],
+            'category_id' => ['nullable', 'exists:categories,id'],
+            'description' => ['nullable', 'string'],
+            'price'       => ['required', 'numeric', 'min:0'],
+            'location'    => ['required', 'string', 'max:255'],
+            'images.*'    => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $images = [];
+        $user = Auth::user();
+        $gallery = [];
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('services', 'public');
-                $images[] = $path;
+            foreach ($request->file('images') as $file) {
+                $gallery[] = $file->store('service-gallery', 'public');
             }
         }
 
-        Service::create([
-            'artisan_id' => Auth::id(),
-            'category_id' => $request->category_id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'price' => $request->price,
-            'location' => $request->location,
-            'images' => $images,
-            'status' => 'active',
-            'is_verified' => false,
+        $service = Service::create([
+            'artisan_id'     => $user->id,
+            'category_id'    => $validated['category_id'] ?? null,
+            'provider_name'  => $user->name,
+            'profession'     => $user->profession ?? 'Artisan',
+            'city'           => $validated['location'],
+            'phone_number'   => $user->phone ?? '—',
+            'title'          => $validated['title'],
+            'description'    => $validated['description'] ?? null,
+            'price'          => $validated['price'],
+            'location'       => $validated['location'],
+            'service_image'  => $gallery[0] ?? null,
+            'gallery_images' => $gallery,
+            'images'         => $gallery,
+            'status'         => 'active',
+            'is_verified'    => true,
         ]);
 
-        return redirect()->route('user.services.my')->with('success', 'Service créé avec succès. En attente de vérification.');
+        // Notify Admins
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'      => $admin->id,
+                'type'         => 'service_created',
+                'related_type' => 'service',
+                'related_id'   => $service->id,
+                'title'        => 'Nouveau service publié',
+                'message'      => "{$user->name} a publié : {$service->title}",
+                'action_url'   => route('admin.services.index'),
+                'is_read'      => false,
+            ]);
+        }
+
+        return redirect()->route('user.services.my')->with('success', 'Votre service a été publié avec succès.');
     }
 
     /**
@@ -128,10 +173,7 @@ class ServiceController extends Controller
     public function edit(int $id): View
     {
         $service = Service::findOrFail($id);
-        
-        if (Auth::id() !== $service->artisan_id) {
-            abort(403, 'Unauthorized');
-        }
+        if (Auth::id() !== $service->artisan_id) { abort(403); }
         
         $categories = Category::all();
         return view('user.services.edit', compact('service', 'categories'));
@@ -143,41 +185,74 @@ class ServiceController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         $service = Service::findOrFail($id);
-        
-        if (Auth::id() !== $service->artisan_id) {
-            abort(403, 'Unauthorized');
-        }
+        if (Auth::id() !== $service->artisan_id) { abort(403); }
 
-        $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'description' => ['required', 'string', 'min:50'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'location' => ['required', 'string', 'max:255'],
-            'status' => ['required', 'in:active,inactive'],
-            'images' => ['nullable', 'array', 'max:5'],
-            'images.*' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+        $validated = $request->validate([
+            'title'         => ['required', 'string', 'max:255'],
+            'category_id'   => ['nullable', 'exists:categories,id'],
+            'description'   => ['nullable', 'string'],
+            'price'         => ['required', 'numeric', 'min:0'],
+            'location'      => ['required', 'string', 'max:255'],
+            'status'        => ['required', 'in:active,inactive'],
+            'service_image' => ['nullable', 'image', 'max:2048'],
+            'images.*'      => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $images = $service->images ?? [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('services', 'public');
-                $images[] = $path;
+        $service->update(array_diff_key($validated, ['images' => 1, 'service_image' => 1]));
+
+        // Handle Primary Image Update
+        if ($request->hasFile('service_image')) {
+            if ($service->service_image) {
+                Storage::disk('public')->delete($service->service_image);
             }
+            $service->service_image = $request->file('service_image')->store('service-gallery', 'public');
+            $service->save();
         }
 
-        $service->update([
-            'category_id' => $request->category_id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'price' => $request->price,
-            'location' => $request->location,
-            'images' => array_unique($images),
-            'status' => $request->status,
-        ]);
+        // Handle gallery updates
+        if ($request->hasFile('images')) {
+            $gallery = $service->gallery_images ?? $service->images ?? [];
+            if (!is_array($gallery)) { $gallery = []; }
 
-        return redirect()->route('user.services.my')->with('success', 'Service mis à jour.');
+            foreach ($request->file('images') as $file) {
+                $gallery[] = $file->store('service-gallery', 'public');
+            }
+
+            $service->update(['gallery_images' => $gallery, 'images' => $gallery]);
+        }
+
+        return redirect()->route('user.services.my')->with('success', 'Service mis à jour avec succès.');
+    }
+
+    /**
+     * Remove a single image from the service gallery.
+     */
+    public function removeImage(Request $request, int $id): RedirectResponse
+    {
+        $service = Service::findOrFail($id);
+        if (Auth::id() !== $service->artisan_id) { abort(403); }
+
+        $index = $request->input('image_index');
+        $gallery = $service->gallery_images ?? $service->images ?? [];
+
+        if (is_array($gallery) && isset($gallery[$index])) {
+            $path = $gallery[$index];
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            unset($gallery[$index]);
+            $newGallery = array_values($gallery);
+            
+            $service->update([
+                'gallery_images' => $newGallery,
+                'images' => $newGallery
+            ]);
+
+            return back()->with('success', 'Image supprimée.');
+        }
+
+        return back()->with('error', 'Image introuvable.');
     }
 
     /**
@@ -186,15 +261,14 @@ class ServiceController extends Controller
     public function destroy(int $id): RedirectResponse
     {
         $service = Service::findOrFail($id);
-        
-        if (Auth::id() !== $service->artisan_id) {
-            abort(403, 'Unauthorized');
-        }
+        if (Auth::id() !== $service->artisan_id) { abort(403); }
 
-        // Delete images
-        if ($service->images) {
-            foreach ($service->images as $image) {
-                Storage::disk('public')->delete($image);
+        if ($service->service_image) {
+            Storage::disk('public')->delete($service->service_image);
+        }
+        if ($service->gallery_images) {
+            foreach ($service->gallery_images as $img) {
+                Storage::disk('public')->delete($img);
             }
         }
 
@@ -207,48 +281,15 @@ class ServiceController extends Controller
      */
     public function myServices(): View
     {
-        if (!Auth::user()->isArtisan()) {
-            abort(403, 'Seuls les artisans peuvent voir leurs services.');
-        }
-        
-        $services = Auth::user()->services()
-                               ->with('category')
-                               ->latest()
-                               ->paginate(10);
+        $user = Auth::user();
+        $services = $user->services()->with('category')->latest()->paginate(10);
 
         $stats = [
-            'total' => Auth::user()->services()->count(),
-            'verified' => Auth::user()->services()->where('is_verified', true)->count(),
-            'active' => Auth::user()->services()->where('status', 'active')->count(),
+            'total'    => $user->services()->count(),
+            'verified' => $user->services()->where('is_verified', true)->count(),
+            'active'   => $user->services()->where('status', 'active')->count(),
         ];
 
         return view('user.services.my-services', compact('services', 'stats'));
-    }
-
-    /**
-     * Remove image from service.
-     */
-    public function removeImage(Request $request, int $id): RedirectResponse
-    {
-        $service = Service::findOrFail($id);
-        
-        if (Auth::id() !== $service->artisan_id) {
-            abort(403, 'Unauthorized');
-        }
-
-        $request->validate([
-            'image_path' => ['required', 'string'],
-        ]);
-
-        $images = $service->images ?? [];
-        $key = array_search($request->image_path, $images);
-        
-        if ($key !== false) {
-            Storage::disk('public')->delete($images[$key]);
-            unset($images[$key]);
-            $service->update(['images' => array_values($images)]);
-        }
-
-        return redirect()->back()->with('success', 'Image supprimée.');
     }
 }

@@ -15,7 +15,7 @@
                 <div>
                     <h2 class="text-4xl font-heading font-black tracking-tighter uppercase mb-4">ZONE DE DANGER CRITIQUE</h2>
                     <p class="text-white/80 font-medium leading-relaxed max-w-2xl">
-                        Vous accédez à la structure génétique de l'univers SRDC. Une modification erronée ici peut entraîner une désintégration totale du système ou une corruption irréparable de la réalité digitale.
+                        Vous accédez à la structure génétique de l'univers PROCONNECT. Une modification erronée ici peut entraîner une désintégration totale du système ou une corruption irréparable de la réalité digitale.
                     </p>
                 </div>
             </div>
@@ -75,11 +75,11 @@
                 <div class="p-12 bg-white space-y-8">
                     @php
                         $vars = [
-                            ['key' => 'APP_NAME', 'value' => 'ServiceRDC Master', 'type' => 'TEXT', 'locked' => false],
+                            ['key' => 'APP_NAME', 'value' => 'ProConnect Master', 'type' => 'TEXT', 'locked' => false],
                             ['key' => 'APP_ENV', 'value' => 'production', 'type' => 'ENUM', 'locked' => true],
                             ['key' => 'APP_KEY', 'value' => 'base64:ak3kYWaAgyEqh... [ENCRYPTED]', 'type' => 'SECRET', 'locked' => true],
                             ['key' => 'APP_DEBUG', 'value' => 'false', 'type' => 'BOOLEAN', 'locked' => false],
-                            ['key' => 'APP_URL', 'value' => 'https://servicedrc.com', 'type' => 'URL', 'locked' => false],
+                            ['key' => 'APP_URL', 'value' => 'https://proconnect.cd', 'type' => 'URL', 'locked' => false],
                         ];
                     @endphp
                     @foreach($vars as $var)

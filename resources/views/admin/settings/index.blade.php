@@ -48,11 +48,11 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div class="space-y-1 sm:space-y-2">
                                     <label class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3 sm:ml-4">Nom</label>
-                                    <input type="text" name="app_name" value="{{ $settings['app_name'] ?? 'ServiceRDC HQ' }}" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                                    <input type="text" name="app_name" value="{{ $settings['app_name'] ?? 'ProConnect HQ' }}" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
                                 </div>
                                 <div class="space-y-1 sm:space-y-2">
                                     <label class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3 sm:ml-4">Email</label>
-                                    <input type="email" name="contact_email" value="{{ $settings['contact_email'] ?? 'admin@servicerdc.cd' }}" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                                    <input type="email" name="contact_email" value="{{ $settings['contact_email'] ?? 'admin@proconnect.cd' }}" class="w-full px-5 sm:px-8 py-3.5 sm:py-4 bg-slate-50 border-none rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
                                 </div>
                             </div>
                         </div>

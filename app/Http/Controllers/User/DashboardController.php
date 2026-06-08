@@ -31,48 +31,114 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
+        // Base shared stats (all user types)
+        $unreadMessages = 0;
+        $conversations = $user->conversations()->get();
+        foreach ($conversations as $conv) {
+            /** @var \App\Models\Conversation $conv */
+            $unreadMessages += $conv->unreadCountFor($user->id);
+        }
+
         $stats = [
-            'applied_jobs_count' => $user->jobApplications()->count(),
-            'total_jobs' => JobOffer::active()->count(),
-            'total_services' => Service::active()->count(),
-            'active_missions' => $user->missionsAsArtisan()->inProgress()->count() + 
-                                $user->missionsAsClient()->inProgress()->count(),
-            'unread_notifications' => $user->notifications()->unread()->count(),
+            'applied_jobs_count'     => $user->jobApplications()->count(),
+            'total_jobs'             => JobOffer::active()->count(),
+            'total_services'         => Service::active()->count(),
+            'active_missions'        => $user->missionsAsArtisan()->where('status', 'in_progress')->count() +
+                                        $user->missionsAsClient()->where('status', 'in_progress')->count(),
+            'unread_notifications'   => $user->notifications()->where('is_read', false)->count(),
+            'unread_messages'        => $unreadMessages,
+            'service_requests_count' => $user->serviceRequests()->count(),
+            'my_services_count'      => $user->services()->count(),
+            'pending_demands_count'  => 0,
+            'accepted_applications'  => $user->jobApplications()->whereIn('status', ['accepted', 'approved'])->count(),
+            'rejected_applications'  => $user->jobApplications()->where('status', 'rejected')->count(),
+            'pending_applications'   => $user->jobApplications()->where('status', 'pending')->count(),
         ];
 
-        // Fetch recent job offers with proper eager loading
-        $recentJobs = JobOffer::where('status', 'active')
-                              ->where(function($q) {
-                                  $q->where('deadline', '>=', now())
-                                    ->orWhereNull('deadline');
-                              })
-                              ->with('user')
-                              ->latest()
-                              ->take(6)
-                              ->get();
-        
-        $allJobs = JobOffer::where('status', 'active')
-                          ->where(function($q) {
-                              $q->where('deadline', '>=', now())
-                                ->orWhereNull('deadline');
-                          })
-                          ->with('user')
-                          ->latest()
-                          ->get();
-        
-        $recentServices = Service::where('status', 'active')->latest()->take(6)->get();
-        $categories = Category::all();
-        $myApplications = $user->jobApplications()->with('jobOffer')->latest()->get();
-        $notifications = $user->notifications()->latest()->take(5)->get();
+        // Fetch recent data
+        $recentJobs = JobOffer::active()
+            ->where(function ($q) {
+                $q->where('deadline', '>=', now())->orWhereNull('deadline');
+            })
+            ->with('user')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $allJobs = JobOffer::active()
+            ->where(function ($q) {
+                $q->where('deadline', '>=', now())->orWhereNull('deadline');
+            })
+            ->with('user')
+            ->latest()
+            ->get();
+
+        $recentServices  = Service::active()->latest()->take(6)->get();
+        $categories      = Category::all();
+        $myApplications  = $user->jobApplications()->with('jobOffer')->latest()->get();
+        $notifications   = $user->notifications()->latest()->take(5)->get();
+
+        // --- ARTISAN ---
+        if ($user->user_type === 'artisan') {
+            $serviceIds = $user->services()->pluck('id');
+            $pendingDemandsCount = \App\Models\ServiceRequest::whereIn('service_id', $serviceIds)
+                ->orWhere('artisan_id', $user->id)
+                ->where('status', 'pending')->count();
+
+            $stats['my_services_count']   = $user->services()->count();
+            $stats['pending_demands_count'] = $pendingDemandsCount;
+
+            $artisanMissions = $user->missionsAsArtisan()
+                ->with('client', 'service')
+                ->latest()
+                ->take(3)
+                ->get();
+
+            $recentDemands = \App\Models\ServiceRequest::whereIn('service_id', $serviceIds)
+                ->orWhere('artisan_id', $user->id)
+                ->where('status', 'pending')
+                ->with('user', 'service')
+                ->latest()
+                ->take(3)
+                ->get();
+
+            return view('user.dashboards.artisan', compact(
+                'stats', 'recentJobs', 'allJobs', 'recentServices',
+                'categories', 'myApplications', 'notifications',
+                'artisanMissions', 'recentDemands'
+            ));
+        }
+
+        // --- RECRUITER (formerly job_seeker) ---
+        if (in_array($user->user_type, ['recruiter', 'job_seeker'], true)) {
+            $myJobOffers = $user->jobOffers()->count();
+            $myApplicationsReceived = JobApplication::whereHas('jobOffer', function ($q) use ($user) {
+                $q->where('employer_id', $user->id);
+            })->count();
+            $pendingApplications = JobApplication::whereHas('jobOffer', function ($q) use ($user) {
+                $q->where('employer_id', $user->id);
+            })->where('status', 'pending')->count();
+
+            $stats['my_job_offers_count']       = $myJobOffers;
+            $stats['applications_received']     = $myApplicationsReceived;
+            $stats['pending_applications_count']= $pendingApplications;
+
+            $recentApplications = JobApplication::whereHas('jobOffer', function ($q) use ($user) {
+                $q->where('employer_id', $user->id);
+            })->with(['user', 'jobOffer'])->latest()->take(5)->get();
+
+            return view('user.dashboards.recruiter', compact(
+                'stats', 'recentJobs', 'allJobs', 'recentServices',
+                'categories', 'notifications', 'recentApplications'
+            ));
+        }
+
+        // --- CLIENT ---
+        $stats['service_requests_count'] = $user->serviceRequests()->count();
 
         return view('user.dashboard', compact(
-            'stats',
-            'recentJobs',
-            'allJobs',
-            'recentServices',
-            'categories',
-            'myApplications',
-            'notifications'
+            'stats', 'recentJobs', 'allJobs', 'recentServices',
+            'categories', 'myApplications', 'notifications'
         ));
     }
 
@@ -441,5 +507,12 @@ class DashboardController extends Controller
     {
         return view('user.security');
     }
-}
 
+    /**
+     * Display the Visitors page for Job Seekers.
+     */
+    public function visitors(): View
+    {
+        return view('user.visitors');
+    }
+}

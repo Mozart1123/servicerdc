@@ -107,7 +107,7 @@
                             <!-- Candidate -->
                             <td class="px-4 sm:px-6 py-4">
                                 <div class="flex items-center gap-2 sm:gap-3 overflow-hidden">
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($application->user->name ?? 'User') }}&background=007FFF&color=fff&size=128" 
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($application->user->name ?? 'User') }}&background=29B6D1&color=fff&size=128" 
                                          class="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-full border-2 border-white shadow-sm shrink-0" 
                                          alt="Avatar">
                                     <div class="overflow-hidden">

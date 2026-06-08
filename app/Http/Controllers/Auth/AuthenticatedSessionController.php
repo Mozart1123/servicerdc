@@ -96,7 +96,7 @@ class AuthenticatedSessionController extends Controller
         $message = match ($user->role) {
             User::ROLE_SUPER_ADMIN => 'Bienvenue Super Administrateur !',
             User::ROLE_ADMIN => 'Bienvenue Administrateur !',
-            default => 'Connexion réussie. Bienvenue sur ServiceRDC !',
+            default => 'Connexion réussie. Bienvenue sur ProConnect !',
         };
 
         return redirect()->intended(route($route))

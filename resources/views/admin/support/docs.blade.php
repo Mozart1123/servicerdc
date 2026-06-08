@@ -3,7 +3,7 @@
 @section('title', 'Gestion Documentation')
 @section('header_title', 'Base de Connaissances HQ')
 @section('page_title', 'Manuels & Tutoriels')
-@section('page_subtitle', 'Rédigez et organisez les guides d\'utilisation pour les artisans et les clients de ServiceRDC.')
+@section('page_subtitle', 'Rédigez et organisez les guides d\'utilisation pour les artisans et les clients de ProConnect.')
 
 @section('content')
 <div class="space-y-8 pb-20">

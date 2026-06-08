@@ -88,7 +88,7 @@
             <h4 class="font-bold text-slate-900 uppercase text-xs tracking-wider">Note de Sécurité</h4>
             <p class="text-xs text-slate-500 leading-relaxed font-medium">
                 Toutes les fausses alertes répétées pourront entraîner une suspension temporaire de votre compte. 
-                Utilisez ce service avec responsabilité pour nous aider à maintenir <strong>ServiceRDC</strong> sûr pour tous.
+                Utilisez ce service avec responsabilité pour nous aider à maintenir <strong>ProConnect</strong> sûr pour tous.
             </p>
         </div>
     </div>

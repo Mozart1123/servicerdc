@@ -1,109 +1,105 @@
 @extends('layouts.user')
 
-@section('title', 'Centre de Notifications')
-@section('header_title', 'Notifications')
+@section('title', 'Mes Notifications')
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-8">
-    <!-- Header with Tabs -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="max-w-5xl mx-auto space-y-8 pb-20">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6" data-aos="fade-down">
         <div>
-            <h2 class="text-2xl font-heading font-extrabold text-slate-900 mb-1">Centre de Notifications</h2>
-            <p class="text-slate-500 font-medium">Vous avez <span class="text-rdc-blue font-bold">3 nouveaux</span> messages non lus.</p>
+            <h2 class="text-3xl font-black text-slate-900 font-heading tracking-tight uppercase">Centre de Notifications</h2>
+            <p class="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">Restez informé de vos activités sur ProConnect</p>
         </div>
-        <button class="text-sm font-bold text-rdc-blue hover:text-blue-700 transition-colors flex items-center gap-2">
-            <i class="fas fa-check-double"></i> Tout marquer comme lu
-        </button>
+        
+        <div class="flex items-center gap-3">
+            <form action="{{ route('user.notifications.read-all') }}" method="POST">
+                @csrf
+                <button type="submit" class="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <i class="fas fa-check-double text-emerald-500"></i> Tout marquer comme lu
+                </button>
+            </form>
+        </div>
     </div>
 
-    <!-- Filter Pills -->
-    <div class="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
-        <button class="px-6 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-full shadow-lg shadow-slate-200">Tous</button>
-        <button class="px-6 py-2.5 bg-white border border-slate-200 text-slate-500 text-xs font-bold rounded-full hover:border-rdc-blue hover:text-rdc-blue transition-all">Non lus</button>
-        <button class="px-6 py-2.5 bg-white border border-slate-200 text-slate-500 text-xs font-bold rounded-full hover:border-rdc-blue hover:text-rdc-blue transition-all">Emplois</button>
-        <button class="px-6 py-2.5 bg-white border border-slate-200 text-slate-500 text-xs font-bold rounded-full hover:border-rdc-blue hover:text-rdc-blue transition-all">Système</button>
-    </div>
+    <!-- Notifications List -->
+    <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden" data-aos="fade-up">
+        @if($notifications->count() > 0)
+            <div class="divide-y divide-slate-50">
+                @foreach($notifications as $n)
+                    @php
+                        $icon = match($n->type) {
+                            'service_request' => ['fa-bell', 'bg-blue-50', 'text-blue-600'],
+                            'service_accepted' => ['fa-check-circle', 'bg-emerald-50', 'text-emerald-600'],
+                            'service_rejected' => ['fa-times-circle', 'bg-red-50', 'text-red-500'],
+                            'job_application' => ['fa-briefcase', 'bg-indigo-50', 'text-indigo-600'],
+                            'application_approved' => ['fa-trophy', 'bg-amber-50', 'text-amber-600'],
+                            'message' => ['fa-comment-alt', 'bg-cyan-50', 'text-cyan-600'],
+                            'service_view' => ['fa-eye', 'bg-slate-50', 'text-slate-600'],
+                            default => ['fa-info-circle', 'bg-slate-50', 'text-slate-600']
+                        };
+                    @endphp
+                    <div class="p-6 md:p-8 flex items-start gap-4 md:gap-6 transition-all hover:bg-slate-50/50 group {{ !$n->is_read ? 'bg-blue-50/30' : '' }}">
+                        <div class="w-12 h-12 {{ $icon[1] }} {{ $icon[2] }} rounded-2xl flex items-center justify-center shrink-0 text-xl shadow-sm">
+                            <i class="fas {{ $icon[0] }}"></i>
+                        </div>
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <h4 class="font-black text-slate-900 text-sm md:text-base {{ !$n->is_read ? 'font-black' : 'font-bold' }}">
+                                    {{ $n->title }}
+                                    @if(!$n->is_read)
+                                        <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-1"></span>
+                                    @endif
+                                </h4>
+                                <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap uppercase tracking-tighter">{{ $n->created_at->diffForHumans() }}</span>
+                            </div>
+                            
+                            <p class="text-slate-600 text-sm leading-relaxed mb-4 {{ !$n->is_read ? 'font-medium' : '' }}">
+                                {{ $n->message }}
+                            </p>
+                            
+                            <div class="flex items-center gap-3">
+                                @if($n->action_url)
+                                    <a href="{{ $n->action_url }}" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rdc-blue transition-all">
+                                        Voir l'élément
+                                    </a>
+                                @endif
+                                
+                                @if(!$n->is_read)
+                                <form action="{{ route('user.notifications.read', $n->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline px-2 py-2">
+                                        Marquer comme lu
+                                    </button>
+                                </form>
+                                @endif
 
-    <!-- Notification Feed -->
-    <div class="space-y-4">
-        <!-- New Notification -->
-        <div class="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 shadow-sm relative group cursor-pointer hover:bg-white hover:shadow-md transition-all duration-300">
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-rdc-blue rounded-r-full shadow-lg"></div>
+                                <form action="{{ route('user.notifications.destroy', $n->id) }}" method="POST" onsubmit="return confirm('Supprimer cette notification ?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-[10px] font-black text-red-400 uppercase tracking-widest hover:text-red-600 px-2 py-2">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
             
-            <div class="flex gap-6">
-                <div class="w-12 h-12 rounded-2xl bg-white border border-blue-200 flex items-center justify-center text-rdc-blue text-xl shrink-0 shadow-sm">
-                    <i class="fas fa-briefcase"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-bold text-slate-900">Nouvelle Offre Correspondante</h4>
-                        <span class="text-[10px] font-bold text-rdc-blue uppercase tracking-widest">Nouveau</span>
-                    </div>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-3">Une nouvelle offre pour <span class="font-bold text-slate-900">"Senior Product Designer"</span> à Kinshasa vient d'être publiée.</p>
-                    <div class="flex items-center gap-4 text-xs font-medium text-slate-400">
-                        <span class="flex items-center gap-1.5"><i class="far fa-clock"></i> Il y a 15 minutes</span>
-                        <a href="#" class="text-rdc-blue hover:underline font-bold">Voir l'offre</a>
-                    </div>
-                </div>
-                <button class="text-slate-300 hover:text-slate-600 transition-colors shrink-0">
-                    <i class="fas fa-times"></i>
-                </button>
+            <div class="p-6 border-t border-slate-50">
+                {{ $notifications->links() }}
             </div>
-        </div>
-
-        <!-- Normal Notification -->
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative group cursor-pointer hover:shadow-md transition-all duration-300">
-            <div class="flex gap-6">
-                <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 text-xl shrink-0">
-                    <i class="fas fa-user-check"></i>
+        @else
+            <div class="py-24 text-center px-6">
+                <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-bell-slash text-4xl text-slate-200"></i>
                 </div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-bold text-slate-900">Candidature mise à jour</h4>
-                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">12 Janv</span>
-                    </div>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-3">Votre candidature pour le poste de <span class="font-bold text-slate-900">Analyste Financier</span> chez Rawbank a été mise à jour par le recruteur.</p>
-                    <div class="flex items-center gap-4 text-xs font-medium text-slate-400">
-                        <span class="flex items-center gap-1.5"><i class="far fa-clock"></i> Hier à 14:30</span>
-                        <a href="#" class="text-rdc-blue hover:underline font-bold">Voir les détails</a>
-                    </div>
-                </div>
-                <button class="text-slate-300 hover:text-slate-600 transition-colors shrink-0">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h3 class="text-xl font-black text-slate-900 uppercase">Boîte vide</h3>
+                <p class="text-slate-400 text-sm mt-2 max-w-sm mx-auto">Vous n'avez aucune notification pour le moment. Nous vous préviendrons dès qu'il y aura du nouveau !</p>
             </div>
-        </div>
-
-        <!-- System Notification -->
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative group cursor-pointer hover:shadow-md transition-all duration-300">
-            <div class="flex gap-6">
-                <div class="w-12 h-12 rounded-2xl bg-rdc-yellow/10 border border-yellow-200 flex items-center justify-center text-rdc-yellow text-xl shrink-0">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-bold text-slate-900">Sécurité du Compte</h4>
-                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">10 Janv</span>
-                    </div>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-3">Un nouvel appareil s'est connecté à votre compte ServiceRDC à partir de Kinshasa.</p>
-                    <div class="flex items-center gap-4 text-xs font-medium text-slate-400">
-                        <span class="flex items-center gap-1.5"><i class="far fa-calendar-alt"></i> 10 Janv 2024 à 09:12</span>
-                    </div>
-                </div>
-                <button class="text-slate-300 hover:text-slate-600 transition-colors shrink-0">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Empty State Placeholder (Hidden) -->
-    <div class="hidden flex flex-col items-center justify-center py-24 text-center">
-        <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 text-4xl mb-6">
-            <i class="fas fa-bell-slash"></i>
-        </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">Aucune nouvelle notification</h3>
-        <p class="text-slate-500 max-w-xs">Nous vous préviendrons dès qu'il y aura du nouveau sur votre compte.</p>
+        @endif
     </div>
 </div>
 @endsection

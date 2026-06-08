@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | ServiceRDC - @yield('title', 'Console de Gestion')</title>
+    <title>Admin Panel | ProConnect - @yield('title', 'Console de Gestion')</title>
     
     <!-- Premium Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,11 +26,11 @@
                         heading: ['Plus Jakarta Sans', 'sans-serif'],
                     },
                     colors: {
-                        'rdc-blue': '#007FFF',
-                        'rdc-blue-dark': '#0066CC',
+                        'rdc-blue': '#29B6D1',
+                        'rdc-blue-dark': '#1E9CB5',
                         'rdc-yellow': '#F0B800',
                         'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#0F172A',
+                        'rdc-dark-blue': '#090D16',
                     }
                 }
             }
@@ -87,35 +87,14 @@
             <!-- Logo Section -->
             <div class="flex items-center gap-3 mb-6 px-2">
                 <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1.5 bg-white border border-slate-100">
-                    <img src="/assets/img/logo.png?v=1.1" alt="Logo" class="w-full h-full object-contain">
+                    <img src="/assets/img/logo.png?v=1.2" alt="Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
-                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Service<span class="text-rdc-blue">RDC</span></h2>
-                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Plateforme Nationale</p>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Pro<span class="text-rdc-blue">Connect</span></h2>
+                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Plateforme Professionnelle</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                <div class="relative">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=007FFF&color=fff&size=128" 
-                         class="w-16 h-16 rounded-2xl border-2 border-white shadow-lg object-cover" alt="Profile">
-                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                    <h2 class="font-heading font-black text-slate-900 text-sm uppercase tracking-tight truncate w-40">{{ auth()->user()->name }}</h2>
-                    <div class="flex flex-col gap-1 mt-1">
-                        <span class="text-[9px] font-black text-rdc-blue uppercase tracking-widest flex items-center gap-1.5">
-                            <i class="fas fa-crown"></i> Admin Principal
-                        </span>
-                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <i class="fas fa-building"></i> ServiceRDC Admin
-                        </span>
-                        <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
-                            <i class="fas fa-check-circle"></i> Système actif
-                        </span>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Navigation Menu -->
@@ -126,10 +105,9 @@
                 <div class="px-4 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-2">
                     <i class="fas fa-grid-2 text-[8px]"></i> DASHBOARD
                 </div>
-                <ul class="space-y-1" x-data="{ alertCount: 0, init() { this.updateCount(); setInterval(() => this.updateCount(), 30000); document.addEventListener('alerts-updated', (e) => this.alertCount = e.detail); }, updateCount() { fetch('{{ route('admin.api.alerts.unread-count') }}').then(r => r.json()).then(d => { this.alertCount = d.count; window.dispatchEvent(new CustomEvent('alerts-updated', { detail: d.count })); }) } }">
+                <ul class="space-y-1">
                     <x-admin-nav-item route="admin.dashboard" icon="fas fa-chart-bar" label="Vue globale" />
                     <x-admin-nav-item route="admin.stats" icon="fas fa-chart-line" label="Stats temps réel" />
-                    <x-admin-nav-item route="admin.alerts" icon="fas fa-triangle-exclamation" label="Alertes système" ::badge="alertCount > 0 ? alertCount : null" badgeColor="bg-rdc-red" />
                 </ul>
             </section>
             
@@ -207,7 +185,7 @@
                 </x-admin-dropdown-nav>
 
                 <!-- [SUPPORT CLIENT] -->
-                <x-admin-dropdown-nav icon="fas fa-headset" label="Support ServiceRDC" :activePrefixes="['admin.support-hq']">
+                <x-admin-dropdown-nav icon="fas fa-headset" label="Support ProConnect" :activePrefixes="['admin.support-hq']">
                     <x-admin-dropdown-item route="admin.support-hq.tickets" label="Tickets ouverts" />
                     <x-admin-dropdown-item route="admin.support-hq.docs" label="Base de connaissances" />
                     <x-admin-dropdown-item route="admin.support-hq.suggestions" label="Boîte à idées" />
@@ -235,10 +213,6 @@
                 Mon compte
             </a>
             
-            <a href="{{ route('user.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-black text-slate-600 hover:bg-white hover:text-rdc-blue hover:shadow-sm transition-all mb-1 group uppercase tracking-widest">
-                <i class="fas fa-repeat w-5 text-center text-slate-400 group-hover:text-rdc-blue transition-colors"></i>
-                Basculer en mode user
-            </a>
             
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
@@ -274,15 +248,7 @@
                     <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-rdc-blue transition-colors"></i>
                 </div>
 
-                <!-- Notifications -->
-                <a href="{{ route('admin.alerts') }}" 
-                   x-data="{ count: 0, init() { this.poll(); setInterval(() => this.poll(), 30000); document.addEventListener('alerts-updated', (e) => this.count = e.detail); }, poll() { fetch('{{ route('admin.api.alerts.unread-count') }}').then(r => r.json()).then(d => { this.count = d.count; window.dispatchEvent(new CustomEvent('alerts-updated', { detail: d.count })); }) } }"
-                   class="relative p-2.5 text-slate-400 hover:text-rdc-blue transition-colors rounded-full hover:bg-blue-50">
-                    <i class="far fa-bell text-xl"></i>
-                    <template x-if="count > 0">
-                        <span class="absolute top-2.5 right-2.5 w-4 h-4 bg-rdc-red text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animate-bounce-short" x-text="count"></span>
-                    </template>
-                </a>
+
                 
                 <!-- Profile Toggle -->
                 <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
@@ -290,7 +256,7 @@
                         <p class="text-xs font-extrabold text-slate-900 leading-none">{{ auth()->user()->name }}</p>
                         <p class="text-[9px] font-bold text-rdc-blue uppercase mt-1 tracking-widest">HQ Station</p>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=007FFF&color=fff" 
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=29B6D1&color=fff" 
                          class="w-10 h-10 rounded-xl shadow-lg border-2 border-white ring-1 ring-slate-100" alt="Admin">
                 </div>
             </div>
@@ -309,7 +275,7 @@
                     @endif
                     <div>
                         <h2 class="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">@yield('page_title', 'Vue d\'ensemble')</h2>
-                        <p class="text-slate-500 text-sm mt-1">@yield('page_subtitle', 'Bienvenue dans votre centre de contrôle ServiceRDC.')</p>
+                        <p class="text-slate-500 text-sm mt-1">@yield('page_subtitle', 'Bienvenue dans votre centre de contrôle ProConnect.')</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -374,9 +340,6 @@
         </div>
         
         <!-- Footer -->
-        <footer class="p-8 border-t border-slate-100 bg-white/50 text-center">
-            <p class="text-xs font-bold text-slate-400">© 2024 <span class="text-rdc-blue">ServiceRDC</span> Administrative HQ. Tous droits réservés.</p>
-        </footer>
     </div>
 
     @stack('scripts')

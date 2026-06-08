@@ -3,7 +3,7 @@
 @section('title', 'Flux Financiers')
 @section('header_title', 'Gestion des Transactions')
 @section('page_title', 'Régie Financière')
-@section('page_subtitle', 'Suivez l\'ensemble des flux monétaires et paiements transitant sur ServiceRDC.')
+@section('page_subtitle', 'Suivez l\'ensemble des flux monétaires et paiements transitant sur ProConnect.')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="{ 

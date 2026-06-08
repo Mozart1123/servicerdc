@@ -12,86 +12,62 @@ class Notification extends Model
     protected $fillable = [
         'user_id',
         'type',
+        'related_type',
         'title',
         'message',
         'data',
         'is_read',
         'read_at',
+        'related_id',
+        'action_url',
     ];
 
     protected $casts = [
-        'data' => 'array',
+        'data'    => 'array',
         'is_read' => 'boolean',
         'read_at' => 'datetime',
     ];
 
-    // ==========================================
-    // Relationships
-    // ==========================================
+    // ─── Relationships ────────────────────────────────────────────────────────
 
-    /**
-     * Get the user who receives this notification.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // ==========================================
-    // Scopes
-    // ==========================================
+    // ─── Scopes ───────────────────────────────────────────────────────────────
 
-    /**
-     * Filter unread notifications.
-     */
     public function scopeUnread($query)
     {
         return $query->where('is_read', false);
     }
 
-    /**
-     * Filter read notifications.
-     */
     public function scopeRead($query)
     {
         return $query->where('is_read', true);
     }
 
-    /**
-     * Filter by notification type.
-     */
-    public function scopeByType($query, $type)
+    public function scopeByType($query, string $type)
     {
         return $query->where('type', $type);
     }
 
-    // ==========================================
-    // Methods
-    // ==========================================
-
-    /**
-     * Mark notification as read.
-     */
-    public function markAsRead()
+    public function scopeForUser($query, int $userId)
     {
-        $this->update([
-            'is_read' => true,
-            'read_at' => now(),
-        ]);
+        return $query->where('user_id', $userId);
+    }
 
+    // ─── Methods ──────────────────────────────────────────────────────────────
+
+    public function markAsRead(): static
+    {
+        $this->update(['is_read' => true, 'read_at' => now()]);
         return $this;
     }
 
-    /**
-     * Mark notification as unread.
-     */
-    public function markAsUnread()
+    public function markAsUnread(): static
     {
-        $this->update([
-            'is_read' => false,
-            'read_at' => null,
-        ]);
-
+        $this->update(['is_read' => false, 'read_at' => null]);
         return $this;
     }
 }

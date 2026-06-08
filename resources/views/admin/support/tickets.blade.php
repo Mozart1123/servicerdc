@@ -3,7 +3,7 @@
 @section('title', 'Centre de Support')
 @section('header_title', 'Tickets & Assistance')
 @section('page_title', 'Support Utilisateurs')
-@section('page_subtitle', 'Gérez les demandes d\'assistance et les tickets techniques de la communauté ServiceRDC.')
+@section('page_subtitle', 'Gérez les demandes d\'assistance et les tickets techniques de la communauté ProConnect.')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="{

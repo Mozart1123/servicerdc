@@ -3,7 +3,7 @@
 @section('title', 'Alertes Système')
 @section('header_title', 'Sécurité & Intégrité')
 @section('page_title', 'Gestion des Incidents')
-@section('page_subtitle', 'Identifiez et résolvez les anomalies détectées par ServiceRDC Active Guard.')
+@section('page_subtitle', 'Identifiez et résolvez les anomalies détectées par ProConnect Active Guard.')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="alertManager()">

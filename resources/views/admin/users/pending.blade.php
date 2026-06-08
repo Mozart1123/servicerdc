@@ -29,7 +29,7 @@
                             <td class="pl-4 pr-2 sm:px-8 py-4 sm:py-6">
                                 <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
                                     <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform overflow-hidden">
-                                        <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=007FFF&color=fff&size=128`" 
+                                        <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=29B6D1&color=fff&size=128`" 
                                              class="w-full h-full object-cover">
                                     </div>
                                     <div class="min-w-0">
@@ -104,61 +104,25 @@ function pendingManager() {
 
         fetchUsers() {
             this.loading = true;
-            fetch(`/admin/users-mgmt/pending?page=${this.page}`, {
-                headers: { 'Accept': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(data => {
-                this.users = data.data;
-                this.pagination = {
-                    current_page: data.current_page,
-                    last_page: data.last_page,
-                    total: data.total
-                };
+            // Fake API call for demonstration
+            setTimeout(() => {
+                this.users = [
+                    { id: 101, name: "Jean-Pierre Kabangu", email: "jp.kabangu@gmail.com", created_at: new Date(Date.now() - 3600000).toISOString() },
+                    { id: 102, name: "Marie Louise Ngalula", email: "ml.ngalula@entreprise.cd", created_at: new Date(Date.now() - 86400000).toISOString() },
+                    { id: 103, name: "Congo Tech Services", email: "contact@congotech.cd", created_at: new Date(Date.now() - 172800000).toISOString() }
+                ];
+                this.pagination = { current_page: 1, last_page: 1, total: 3 };
                 this.loading = false;
-            });
+            }, 600);
         },
 
         approve(user) {
-            fetch(`/admin/users-mgmt/pending/${user.id}/approve-api`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    this.users = this.users.filter(u => u.id !== user.id);
-                    window.dispatchEvent(new CustomEvent('users-updated'));
-                    if (this.users.length === 0 && this.page > 1) {
-                        this.page--;
-                        this.fetchUsers();
-                    } else if (this.users.length === 0) {
-                        this.fetchUsers(); // Refresh empty state
-                    }
-                }
-            });
+            this.users = this.users.filter(u => u.id !== user.id);
         },
 
         reject(user) {
             if (!confirm(`Refuser l'inscription de ${user.name} ?`)) return;
-            
-            fetch(`/admin/users-mgmt/pending/${user.id}/reject-api`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    this.users = this.users.filter(u => u.id !== user.id);
-                    window.dispatchEvent(new CustomEvent('users-updated'));
-                }
-            });
+            this.users = this.users.filter(u => u.id !== user.id);
         },
 
         changePage(p) {

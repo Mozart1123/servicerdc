@@ -74,7 +74,7 @@
                 <div class="flex-1">
                     <div class="flex items-center gap-3 sm:gap-5 mb-6">
                         <div class="relative shrink-0">
-                            <img src="https://ui-avatars.com/api/?name=Serge+Kasongo&background=007FFF&color=fff" class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl shadow-lg group-hover:scale-105 transition-transform">
+                            <img src="https://ui-avatars.com/api/?name=Serge+Kasongo&background=29B6D1&color=fff" class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl shadow-lg group-hover:scale-105 transition-transform">
                             <div class="absolute -bottom-1 -right-1 w-4 h-4 sm:w-6 sm:h-6 bg-emerald-500 border-4 border-white rounded-full"></div>
                         </div>
                         <div class="min-w-0">

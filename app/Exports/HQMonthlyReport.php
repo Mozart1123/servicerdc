@@ -44,7 +44,7 @@ class HQMonthlyReport
     public function download(): StreamedResponse
     {
         $spreadsheet = $this->build();
-        $filename = 'Rapport_HQ_ServiceRDC_' . now()->format('Y-m') . '.xlsx';
+        $filename = 'Rapport_HQ_ProConnect_' . now()->format('Y-m') . '.xlsx';
 
         return new StreamedResponse(function () use ($spreadsheet) {
             $writer = new Xlsx($spreadsheet);
@@ -68,7 +68,7 @@ class HQMonthlyReport
 
         // ── COVER HEADER ────────────────────────────────────────────────────
         $ws->mergeCells("A{$r}:F{$r}");
-        $this->setCellValue($ws, "A{$r}", 'SERVICE RDC — RAPPORT HQ STATION');
+        $this->setCellValue($ws, "A{$r}", 'PROCONNECT — RAPPORT HQ STATION');
         $this->styleCell($ws, "A{$r}:F{$r}", [
             'font'  => ['bold' => true, 'size' => 14, 'color' => self::C_WHITE, 'name' => 'Arial'],
             'fill'  => self::C_DARKEST,
@@ -96,10 +96,10 @@ class HQMonthlyReport
         $meta = [
             ['ID Rapport',        $reportId],
             ['Type',              $this->report->type ?? 'FULL (MONTH)'],
-            ['Généré par',        $this->report->generator->name ?? 'Admin ServiceRDC'],
+            ['Généré par',        $this->report->generator->name ?? 'Admin ProConnect'],
             ['Date de génération',now()->format('d/m/Y H:i')],
             ['Période couverte',  '01/' . now()->format('m/Y') . ' — ' . now()->endOfMonth()->format('d/m/Y')],
-            ['Plateforme',        'ServiceRDC · HQ Station'],
+            ['Plateforme',        'ProConnect · HQ Station'],
         ];
         foreach ($meta as $i => [$label, $value]) {
             $ws->mergeCells("A{$r}:B{$r}");
@@ -306,7 +306,7 @@ class HQMonthlyReport
 
         // ── FOOTER ────────────────────────────────────────────────────────────
         $ws->mergeCells("A{$r}:F{$r}");
-        $footerText = '— FIN DU RAPPORT · ServiceRDC Administrative HQ · ' . $reportId . ' · Confidentiel —';
+        $footerText = '— FIN DU RAPPORT · ProConnect Administrative HQ · ' . $reportId . ' · Confidentiel —';
         $ws->getCell("A{$r}")->setValue($footerText);
         $ws->getStyle("A{$r}:F{$r}")->applyFromArray([
             'font'      => ['bold' => true, 'italic' => true, 'size' => 10, 'name' => 'Arial', 'color' => ['rgb' => self::C_WHITE]],

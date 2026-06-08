@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Tableau de bord') | ServiceRDC</title>
+    <title>@yield('title', 'Tableau de bord') | ProConnect</title>
 
     <!-- Tailwind CSS Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,6 +18,9 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -28,11 +31,11 @@
                         heading: ['Plus Jakarta Sans', 'sans-serif'],
                     },
                     colors: {
-                        'rdc-blue': '#007FFF',
-                        'rdc-blue-dark': '#0066CC',
+                        'rdc-blue': '#29B6D1',
+                        'rdc-blue-dark': '#1E9CB5',
                         'rdc-yellow': '#F0B800',
                         'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#003366',
+                        'rdc-dark-blue': '#090D16',
                     }
                 }
             }
@@ -55,9 +58,9 @@
         }
         
         .nav-item-active {
-            background: linear-gradient(90deg, rgba(0, 127, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
-            border-left: 3px solid #007FFF;
-            color: #007FFF;
+            background: linear-gradient(90deg, rgba(41, 182, 209, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+            border-left: 3px solid #29B6D1;
+            color: #29B6D1;
         }
 
         .nav-item {
@@ -70,6 +73,8 @@
             background: rgba(248, 250, 252, 0.8);
         }
     </style>
+
+    @stack('styles')
 </head>
 <body class="h-full font-sans antialiased text-slate-800" x-data="{ sidebarOpen: false }">
 
@@ -87,18 +92,18 @@
             <!-- Logo Branding Integration -->
             <div class="flex items-center gap-3 mb-8 px-1">
                 <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1.5 bg-white border border-slate-100">
-                    <img src="/assets/img/logo.png?v=1.1" alt="Logo" class="w-full h-full object-contain">
+                    <img src="/assets/img/logo.png?v=1.2" alt="Logo" class="w-full h-full object-contain">
                 </div>
                 <div>
-                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Service<span class="text-rdc-blue">RDC</span></h2>
-                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Dashboard Citoyen</p>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Pro<span class="text-rdc-blue">Connect</span></h2>
+                    <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Dashboard Professionnel</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
                 <div class="relative flex-shrink-0 group">
                     <div class="absolute -inset-1 bg-gradient-to-r from-rdc-blue to-blue-400 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-500"></div>
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=007FFF&color=fff&size=128" 
+                    <img src="{{ auth()->user()->photo_url }}"
                          class="relative w-14 h-14 rounded-2xl border-2 border-white shadow-sm object-cover" alt="Profile">
                     <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
                 </div>
@@ -114,142 +119,164 @@
         </div>
 
         <!-- Navigation Menu -->
-        <nav class="flex-1 overflow-y-auto px-6 py-8 space-y-10 custom-scrollbar">
-            
-            <!-- [DASHBOARD] -->
-            <div>
-                <div class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                    Dashboard
-                </div>
+        <nav class="flex-1 overflow-y-auto px-6 py-8 space-y-8 custom-scrollbar">
+            @php
+                $userType = auth()->user()->user_type ?? 'client';
+            @endphp
+
+            @if($userType === 'client')
+                <!-- [CLIENT MENU] -->
                 <ul class="space-y-2">
                     <li>
-                        <a href="{{ route('user.dashboard') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.dashboard') ? 'bg-rdc-blue text-white shadow-xl shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                        <a href="{{ route('user.dashboard') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.dashboard') ? 'bg-rdc-blue text-white shadow-xl shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-border-all text-lg {{ request()->routeIs('user.dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Vue d'ensemble
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.services.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.services.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-wand-magic-sparkles text-lg {{ request()->routeIs('user.services.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Services
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.jobs.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.jobs.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-briefcase text-lg {{ request()->routeIs('user.jobs.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Emplois
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.applications.index') ?? '#' }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.applications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-history text-lg {{ request()->routeIs('user.applications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Candidatures
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.service-requests.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.service-requests.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-concierge-bell text-lg {{ request()->routeIs('user.service-requests.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Demandes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.messages.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.messages.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-inbox text-lg {{ request()->routeIs('user.messages.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Messages
                         </a>
                     </li>
                     <li>
                         <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-bolt text-lg text-slate-400 group-hover:text-amber-500"></i>
-                            Activité récente
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- [SERVICES/EMPLOIS] -->
-            <div>
-                <div class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                    Services & Emplois
-                </div>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('user.services.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.services.index') ? 'bg-rdc-blue text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-wand-magic-sparkles text-lg {{ request()->routeIs('user.services.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Découvrir Services
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.jobs.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.jobs.index') ? 'bg-rdc-blue text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-briefcase text-lg {{ request()->routeIs('user.jobs.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Trouver un Job
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.applications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-box-archive text-lg text-slate-400 group-hover:text-rdc-blue"></i>
-                            Historique
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.favorites') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-heart text-lg text-slate-400 group-hover:text-red-500"></i>
+                            <i class="fas fa-heart text-lg {{ request()->routeIs('user.favorites') ? 'text-white' : 'text-slate-400 group-hover:text-red-500' }}"></i>
                             Favoris
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('user.new') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-plus-circle text-lg text-slate-400 group-hover:text-rdc-blue"></i>
-                            Nouveau
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- [MESSAGERIE] -->
-            <div>
-                <div class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                    Messagerie
-                </div>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('user.messages.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-inbox text-lg text-slate-400 group-hover:text-rdc-blue"></i>
-                            Boîte de réception
-                            <span class="ml-auto bg-rdc-red text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-lg shadow-lg shadow-red-500/20">2</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-comments text-lg text-slate-400 group-hover:text-rdc-blue"></i>
-                            Conversations
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- [PARAMÈTRES] -->
-            <div>
-                <div class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                    Paramètres
-                </div>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('user.profile') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-user-cog text-lg text-slate-400 group-hover:text-rdc-blue"></i>
-                            Profil
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.security') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-shield-halved text-lg text-slate-400 group-hover:text-rdc-blue"></i>
-                            Sécurité
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.notifications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-bell text-lg text-slate-400 group-hover:text-rdc-blue"></i>
+                        <a href="{{ route('user.notifications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.notifications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-bell text-lg {{ request()->routeIs('user.notifications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
                             Notifications
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('user.subscription.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.subscription.*') ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-crown text-lg {{ request()->routeIs('user.subscription.*') ? 'text-white' : 'text-slate-400 group-hover:text-emerald-500' }}"></i>
+                            Abonnement
+                        </a>
+                    </li>
                 </ul>
-            </div>
 
-            <!-- [AIDE & SUPPORT] -->
-            <div>
-                <div class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                    Aide & Support
-                </div>
+            @elseif($userType === 'artisan')
+                <!-- [ARTISAN MENU] -->
                 <ul class="space-y-2">
                     <li>
-                        <a href="{{ route('user.help') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-question-circle text-lg text-slate-400 group-hover:text-rdc-blue"></i>
-                            Centre d'aide
+                        <a href="{{ route('user.dashboard') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.dashboard') ? 'bg-rdc-blue text-white shadow-xl shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-border-all text-lg {{ request()->routeIs('user.dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Dashboard
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('user.report') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-                            <i class="fas fa-triangle-exclamation text-lg text-slate-400 group-hover:text-red-500"></i>
-                            Signaler un problème
+                        <a href="{{ route('user.services.my') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.services.my') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-box-open text-lg {{ request()->routeIs('user.services.my') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Services
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.artisan.service-requests.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.service-requests.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-inbox text-lg {{ request()->routeIs('user.artisan.service-requests.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Demandes reçues
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.missions.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.missions.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-handshake text-lg {{ request()->routeIs('user.missions.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Missions
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.messages.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.messages.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-inbox text-lg {{ request()->routeIs('user.messages.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Messages
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.notifications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.notifications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-bell text-lg {{ request()->routeIs('user.notifications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Notifications
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.subscription.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.subscription.*') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-crown text-lg {{ request()->routeIs('user.subscription.*') ? 'text-white' : 'text-slate-400 group-hover:text-amber-500' }}"></i>
+                            Abonnement Pro
                         </a>
                     </li>
                 </ul>
-            </div>
+
+            @elseif($userType === 'recruiter' || $userType === 'job_seeker')
+                <!-- [RECRUTEUR MENU] -->
+                <ul class="space-y-2">
+                    <li>
+                        <a href="{{ route('user.dashboard') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.dashboard') ? 'bg-rdc-blue text-white shadow-xl shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-border-all text-lg {{ request()->routeIs('user.dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.jobs.my-offers') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.jobs.my-offers') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-briefcase text-lg {{ request()->routeIs('user.jobs.my-offers') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Offres d'Emploi
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.jobs.create') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.jobs.create') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-plus-circle text-lg {{ request()->routeIs('user.jobs.create') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Publier une Offre
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.applications.received') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.applications.received') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-users text-lg {{ request()->routeIs('user.applications.received') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Candidatures Reçues
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.messages.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.messages.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-inbox text-lg {{ request()->routeIs('user.messages.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Messages
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.notifications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.notifications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-bell text-lg {{ request()->routeIs('user.notifications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Notifications
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.subscription.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.subscription.*') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-crown text-lg {{ request()->routeIs('user.subscription.*') ? 'text-white' : 'text-slate-400 group-hover:text-amber-500' }}"></i>
+                            Abonnement Pro
+                        </a>
+                    </li>
+                </ul>
+            @endif
         </nav>
         
         <!-- [BAS] - Footer Actions -->
@@ -298,7 +325,12 @@
                 <!-- Notifications -->
                 <a href="{{ route('user.notifications.index') }}" class="relative p-2 text-slate-400 hover:text-rdc-blue transition-colors rounded-full hover:bg-blue-50">
                     <i class="far fa-bell text-xl"></i>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-rdc-red rounded-full border-2 border-white"></span>
+                    @php $unreadCount = \App\Models\Notification::where('user_id', auth()->id())->where('is_read', false)->count(); @endphp
+                    @if($unreadCount > 0)
+                        <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rdc-red text-[8px] font-black text-white flex items-center justify-center rounded-full border-2 border-white animate-pulse">
+                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                        </span>
+                    @endif
                 </a>
             </div>
         </header>
@@ -309,6 +341,16 @@
         </main>
         
     </div>
+    
+    <!-- AOS Initialization -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+        });
+    </script>
 
+    @stack('scripts')
 </body>
 </html>

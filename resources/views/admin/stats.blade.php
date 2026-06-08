@@ -3,7 +3,7 @@
 @section('title', 'Statistiques Temps Réel')
 @section('header_title', 'Surveillance Live')
 @section('page_title', 'Pulse du Système')
-@section('page_subtitle', 'Monitoring en direct des interactions et des flux de données sur ServiceRDC.')
+@section('page_subtitle', 'Monitoring en direct des interactions et des flux de données sur ProConnect.')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="statPulse()" x-init="init()">
@@ -27,7 +27,7 @@
     </template>
 
     <!-- Banner for Server Load -->
-    <div x-show="cpuLoad > 85" x-transition 
+    <div x-show="cpuLoad >= 80" x-transition 
          class="mb-4 p-4 bg-red-600 text-white rounded-2xl flex items-center justify-between shadow-lg shadow-red-500/20">
         <div class="flex items-center gap-4">
             <i class="fas fa-warning text-xl animate-bounce"></i>
@@ -80,19 +80,23 @@
         </div>
 
         <!-- Metric: Server Load -->
-        <div :class="cpuLoad > 85 ? 'bg-red-600 border-red-400' : 'bg-slate-900 border-transparent'" 
+        <div :class="cpuLoad >= 80 ? 'bg-red-600 border-red-400' : 'bg-slate-900 border-transparent'" 
              class="p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-xl relative overflow-hidden group border transition-colors duration-500">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest" :class="cpuLoad > 85 ? 'text-white/60' : 'text-white/40'">Charge</span>
-                <i class="fas fa-microchip text-xs" :class="cpuLoad > 85 ? 'text-white animate-spin' : 'text-rdc-blue'"></i>
+                <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest" :class="cpuLoad >= 80 ? 'text-white/60' : 'text-white/40'">Charge</span>
+                <i class="fas fa-microchip text-xs" :class="cpuLoad >= 80 ? 'text-white animate-spin' : 'text-rdc-blue'"></i>
             </div>
             <div class="flex items-baseline gap-2 relative z-10">
                 <h3 class="text-3xl sm:text-4xl font-heading font-black text-white" x-text="cpuLoad + '%'">14%</h3>
             </div>
+            <!-- Message Rouge -->
+            <div x-show="cpuLoad >= 80" class="mt-2 text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                <i class="fas fa-exclamation-triangle"></i> Surcharge ponctuelle
+            </div>
             <div class="mt-4 bg-white/5 h-1.5 sm:h-2 rounded-full overflow-hidden">
                 <div class="h-full bg-rdc-blue transition-all duration-1000" :style="'width: ' + cpuLoad + '%'"></div>
             </div>
-            <div x-show="cpuLoad > 85" class="absolute inset-0 bg-red-500/10 animate-pulse pointer-events-none"></div>
+            <div x-show="cpuLoad >= 80" class="absolute inset-0 bg-red-500/10 animate-pulse pointer-events-none"></div>
         </div>
 
         <!-- Metric: Security -->
@@ -296,7 +300,7 @@
                 { id: 26, name: 'Haut-Katanga', active: true, cities: ['Lubumbashi', 'Kipushi', 'Kasenga', 'Sakania'] }
             ],
             events: [
-                { id: 1, time: '17:20:01', label: 'AUTH', type: 'info', message: 'Connexion réussie: superadmin@servicerdc.com' },
+                { id: 1, time: '17:20:01', label: 'AUTH', type: 'info', message: 'Connexion réussie: superadmin@proconnect.com' },
                 { id: 2, time: '17:20:12', label: 'JOB', type: 'info', message: 'Nouvelle offre publiée: Développeur PHP à Gombe' },
                 { id: 3, time: '17:20:15', label: 'SEC', type: 'error', message: 'Tentative d\'injection SQL bloquée (Source: IP 105.x.x.x)' },
                 { id: 4, time: '17:20:22', label: 'SERV', type: 'info', message: 'Service validé: Plomberie Express' }
@@ -313,8 +317,11 @@
                     // 1. Simuler fluctuation stats basic
                     this.activeUsers += Math.floor(Math.random() * 5) - 2;
                     
-                    if (Math.random() > 0.95) {
-                        this.cpuLoad = Math.floor(Math.random() * 15) + 85; 
+                    if (this.cpuLoad >= 80) {
+                        // Keep it high until user clicks "Simuler retour normal"
+                        this.cpuLoad = Math.max(80, Math.min(100, this.cpuLoad + (Math.floor(Math.random() * 5) - 2)));
+                    } else if (Math.random() > 0.95) {
+                        this.cpuLoad = Math.floor(Math.random() * 15) + 80; 
                     } else {
                         this.cpuLoad = Math.floor(Math.random() * 10) + 10;
                     }
@@ -332,8 +339,6 @@
                         window.liveChart.data.datasets[0].data.push(Math.floor(Math.random() * 50) + 50);
                         window.liveChart.update('none');
                     }
-
-                    this.checkThresholds();
 
                     if (Math.random() > 0.8) {
                         const idx = Math.floor(Math.random() * 26);
@@ -371,11 +376,6 @@
             },
 
             checkThresholds() {
-                // Brute-force detection
-                if (this.authFailures >= 5 && !this.hasAlert('brute-force')) {
-                    this.triggerAlert('critical', 'fa-user-shield', '🚨 ATTAQUE BRUTE-FORCE DÉTECTÉE', `Plus de 5 échecs de connexion en moins de 60s.`, 'brute-force');
-                }
-
                 // Payment issues
                 if (this.consecutivePayFailures >= 3 && !this.hasAlert('pay-fail')) {
                     this.triggerAlert('warning', 'fa-credit-card', '⚠️ PROBLÈME PAIEMENT DÉTECTÉ', '3 transactions consécutives ont échoué.', 'pay-fail');
@@ -419,7 +419,7 @@
                     datasets: [{
                         label: 'Requêtes / sec',
                         data: [65, 59, 80, 81, 56, 55, 40, 60, 75, 80, 70, 65, 85, 90, 80],
-                        borderColor: '#007FFF',
+                        borderColor: '#29B6D1',
                         borderWidth: 4,
                         pointRadius: 0,
                         tension: 0.4,
@@ -429,8 +429,8 @@
                             const {ctx, chartArea} = chart;
                             if (!chartArea) return null;
                             const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                            gradient.addColorStop(0, 'rgba(0, 127, 255, 0)');
-                            gradient.addColorStop(1, 'rgba(0, 127, 255, 0.1)');
+                            gradient.addColorStop(0, 'rgba(0, 210, 255, 0)');
+                            gradient.addColorStop(1, 'rgba(0, 210, 255, 0.1)');
                             return gradient;
                         }
                     }]

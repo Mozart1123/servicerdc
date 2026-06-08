@@ -3,7 +3,7 @@
 @section('title', 'Analytique Avancé')
 @section('header_title', 'HQ Business Intelligence')
 @section('page_title', 'Exploration des Données')
-@section('page_subtitle', 'Analysez les tendances de croissance et le comportement des utilisateurs sur ServiceRDC.')
+@section('page_subtitle', 'Analysez les tendances de croissance et le comportement des utilisateurs sur ProConnect.')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="{ activeTab: 'growth' }">

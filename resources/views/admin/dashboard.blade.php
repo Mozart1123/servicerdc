@@ -257,8 +257,8 @@
         
         // Gradient fill for chart
         let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(0, 127, 255, 0.2)');
-        gradient.addColorStop(1, 'rgba(0, 127, 255, 0)');
+        gradient.addColorStop(0, 'rgba(41, 182, 209, 0.2)');
+        gradient.addColorStop(1, 'rgba(41, 182, 209, 0)');
 
         new Chart(ctx, {
             type: 'line',
@@ -267,11 +267,11 @@
                 datasets: [{
                     label: 'Visiteurs Uniques',
                     data: [120, 190, 300, 250, 280, 420, 380],
-                    borderColor: '#007FFF',
+                    borderColor: '#29B6D1',
                     backgroundColor: gradient,
                     borderWidth: 3,
                     pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#007FFF',
+                    pointBorderColor: '#29B6D1',
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     fill: true,

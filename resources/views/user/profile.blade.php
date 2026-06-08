@@ -12,7 +12,7 @@
         </div>
         <div class="px-8 pb-8 flex flex-col items-center sm:items-start text-center sm:text-left">
             <div class="relative -mt-16 group">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=007FFF&color=fff&size=200" 
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=29B6D1&color=fff&size=200" 
                      class="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover" alt="Profile">
                 <label class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-xl">
                     <i class="fas fa-camera"></i>

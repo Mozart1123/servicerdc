@@ -3,7 +3,7 @@
 @section('title', 'Notifications Push')
 @section('header_title', 'Communication Live')
 @section('page_title', 'Console Broadcast')
-@section('page_subtitle', 'Envoyez des notifications en temps réel à l\'ensemble des utilisateurs de l\'écosystème ServiceRDC.')
+@section('page_subtitle', 'Envoyez des notifications en temps réel à l\'ensemble des utilisateurs de l\'écosystème ProConnect.')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="{

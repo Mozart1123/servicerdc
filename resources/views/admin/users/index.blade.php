@@ -97,7 +97,7 @@
                             <td class="pl-4 pr-2 sm:px-8 py-4 sm:py-6">
                                 <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
                                     <div class="relative shrink-0">
-                                        <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=${user.role === 'admin' || user.role === 'super_admin' ? '007FFF' : 'F1F5F9'}&color=${user.role === 'admin' || user.role === 'super_admin' ? 'fff' : '64748B'}`" 
+                                        <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=${user.role === 'admin' || user.role === 'super_admin' ? '29B6D1' : 'F1F5F9'}&color=${user.role === 'admin' || user.role === 'super_admin' ? 'fff' : '64748B'}`" 
                                              class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl shadow-sm border border-slate-100" alt="">
                                         <template x-if="user.status === 'active'">
                                             <span class="absolute -bottom-0.5 -right-0.5 w-2 sm:w-4 h-2 sm:h-4 bg-emerald-500 border-2 border-white rounded-full"></span>

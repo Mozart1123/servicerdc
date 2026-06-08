@@ -22,10 +22,10 @@ class AdminUsersSeeder extends Seeder
     {
         // Create Super Admin
         User::updateOrCreate(
-            ['email' => 'superadmin@servicerdc.com'],
+            ['email' => 'superadmin@proconnect.com'],
             [
                 'name' => 'Super Admin',
-                'email' => 'superadmin@servicerdc.com',
+                'email' => 'superadmin@proconnect.com',
                 'phone' => '+243 999 000 001',
                 'password' => Hash::make('SuperAdmin123!'),
                 'role' => User::ROLE_SUPER_ADMIN,
@@ -37,10 +37,10 @@ class AdminUsersSeeder extends Seeder
 
         // Create Admin
         User::updateOrCreate(
-            ['email' => 'admin@servicerdc.com'],
+            ['email' => 'admin@proconnect.com'],
             [
-                'name' => 'Admin ServiceRDC',
-                'email' => 'admin@servicerdc.com',
+                'name' => 'Admin ProConnect',
+                'email' => 'admin@proconnect.com',
                 'phone' => '+243 999 000 002',
                 'password' => Hash::make('Admin123!'),
                 'role' => User::ROLE_ADMIN,
@@ -52,10 +52,10 @@ class AdminUsersSeeder extends Seeder
 
         // Create Test User
         User::updateOrCreate(
-            ['email' => 'user@servicerdc.com'],
+            ['email' => 'user@proconnect.com'],
             [
                 'name' => 'Jean Kabongo',
-                'email' => 'user@servicerdc.com',
+                'email' => 'user@proconnect.com',
                 'phone' => '+243 999 000 003',
                 'password' => Hash::make('User123!'),
                 'role' => User::ROLE_USER,
@@ -65,13 +65,45 @@ class AdminUsersSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Admin users seeded successfully!');
-        $this->command->table(
-            ['Email', 'Password', 'Role'],
+        // Create Artisan Test User
+        User::updateOrCreate(
+            ['email' => 'artisan@proconnect.com'],
             [
-                ['superadmin@servicerdc.com', 'SuperAdmin123!', 'Super Admin'],
-                ['admin@servicerdc.com', 'Admin123!', 'Admin'],
-                ['user@servicerdc.com', 'User123!', 'User'],
+                'name' => 'Artisan Test',
+                'email' => 'artisan@proconnect.com',
+                'phone' => '+243 999 111 222',
+                'password' => Hash::make('Artisan123!'),
+                'role' => User::ROLE_USER,
+                'user_type' => User::TYPE_ARTISAN,
+                'terms_accepted_at' => now(),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Create Job Seeker Test User
+        User::updateOrCreate(
+            ['email' => 'chercheur@proconnect.com'],
+            [
+                'name' => 'Candidat Test',
+                'email' => 'chercheur@proconnect.com',
+                'phone' => '+243 999 333 444',
+                'password' => Hash::make('Candidat123!'),
+                'role' => User::ROLE_USER,
+                'user_type' => User::TYPE_JOB_SEEKER,
+                'terms_accepted_at' => now(),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $this->command->info('Admin and test users seeded successfully!');
+        $this->command->table(
+            ['Email', 'Password', 'Type / Role'],
+            [
+                ['superadmin@proconnect.com', 'SuperAdmin123!', 'Super Admin'],
+                ['admin@proconnect.com', 'Admin123!', 'Admin'],
+                ['user@proconnect.com', 'User123!', 'Client'],
+                ['artisan@proconnect.com', 'Artisan123!', 'Artisan'],
+                ['chercheur@proconnect.com', 'Candidat123!', 'Chercheur d\'emploi'],
             ]
         );
     }
