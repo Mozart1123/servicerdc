@@ -51,6 +51,8 @@ class User extends Authenticatable
         'apple_id',
         'profile_photo',
         'bio',
+        'skills',
+        'interests',
     ];
 
     protected $hidden = [
@@ -69,6 +71,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
             'password'          => 'hashed',
+            'skills'            => 'array',
+            'interests'         => 'array',
         ];
     }
 

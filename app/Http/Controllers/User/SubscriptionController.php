@@ -29,7 +29,7 @@ class SubscriptionController extends Controller
                                               $q->whereNull('ends_at')
                                                 ->orWhere('ends_at', '>=', now());
                                           })
-                                          ->with('plan')
+                                          ->with('subscriptionPlan')
                                           ->latest()
                                           ->first();
 

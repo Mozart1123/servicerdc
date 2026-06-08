@@ -1,171 +1,228 @@
 @extends('layouts.super-admin')
 
-@section('header_title', 'Hiérarchie Administrative | ARCHITECTURE DES MAÎTRES')
+@section('page_title', 'Users')
 
 @section('content')
-<div class="space-y-10 pb-20">
-    <!-- Hierarchy Stats HUD -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group">
-            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all"></div>
-            <div class="relative z-10">
-                <div class="w-16 h-16 rounded-[2rem] bg-amber-500 text-slate-900 flex items-center justify-center text-3xl mb-6 shadow-xl divine-glow">
-                    <i class="fas fa-crown"></i>
-                </div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Super Masters</p>
-                <div class="flex items-end gap-4">
-                    <h3 class="text-5xl font-heading font-black text-white leading-none">{{ $users->where('role', 'super_admin')->count() }}</h3>
-                    <span class="text-amber-500 text-[10px] font-black uppercase mb-1 tracking-widest">Autorité Totale</span>
-                </div>
-            </div>
-        </div>
 
-        <div class="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 relative overflow-hidden group hover:border-rdc-blue/30 transition-all">
-            <div class="relative z-10">
-                <div class="w-16 h-16 rounded-[2rem] bg-rdc-blue/10 text-rdc-blue flex items-center justify-center text-3xl mb-6 shadow-sm group-hover:bg-rdc-blue group-hover:text-white transition-all">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Admin Stations</p>
-                <div class="flex items-end gap-4">
-                    <h3 class="text-5xl font-heading font-black text-slate-900 leading-none">{{ $users->where('role', 'admin')->count() }}</h3>
-                    <span class="text-rdc-blue text-[10px] font-black uppercase mb-1 tracking-widest">Gardiens Actifs</span>
-                </div>
-            </div>
+    {{-- ─── PAGE HEADER ─── --}}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <div>
+            <h1 style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:-.3px;">All Users</h1>
+            <p style="font-size:13px;color:var(--text-muted);margin-top:2px;">Manage all platform users, roles, and access
+            </p>
         </div>
+        <a href="{{ route('super-admin.users.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add User
+        </a>
+    </div>
 
-        <div class="bg-emerald-500 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent"></div>
-            <div class="relative z-10 text-white">
-                <div class="w-16 h-16 rounded-[2rem] bg-white/20 backdrop-blur-md flex items-center justify-center text-3xl mb-6 shadow-sm">
-                    <i class="fas fa-microchip"></i>
-                </div>
-                <p class="text-[10px] font-black text-white/60 uppercase tracking-[0.2em] mb-2">Status Synchronisation</p>
-                <h3 class="text-3xl font-heading font-black text-white leading-tight uppercase">INTÉGRITÉ <br>ABSOLUE</h3>
-            </div>
+    {{-- ─── STAT ROW ─── --}}
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+        @php
+            $total = \App\Models\User::count();
+            $active = \App\Models\User::where('status', 'active')->count();
+            $suspended = \App\Models\User::where('status', 'suspended')->count();
+            $admins = \App\Models\User::whereIn('role', ['admin', 'super_admin'])->count();
+        @endphp
+        <div class="stat-card">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">{{ $total }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active</div>
+            <div class="stat-value" style="color:var(--green);">{{ $active }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Suspended</div>
+            <div class="stat-value" style="color:var(--red);">{{ $suspended }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Admins & Super Admins</div>
+            <div class="stat-value" style="color:var(--accent);">{{ $admins }}</div>
         </div>
     </div>
 
-    <!-- Master Registry -->
-    <div class="bg-white rounded-[4rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div class="p-10 border-b border-slate-50 bg-slate-50/30 flex flex-wrap items-center justify-between gap-8">
-            <div class="flex items-center gap-6">
-                <div class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-xl shadow-xl">
-                    <i class="fas fa-dna"></i>
+    {{-- ─── USERS TABLE ─── --}}
+    <div class="card">
+        {{-- Filter Bar --}}
+        <form method="GET" action="{{ route('super-admin.users.index') }}">
+            <div class="filter-bar">
+                <div class="filter-input-wrap">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" class="filter-input"
+                        placeholder="Search by name or email...">
                 </div>
-                <div>
-                    <h3 class="text-xl font-bold text-slate-900 font-heading tracking-tight uppercase">REGISTRE DES HAUTS GRADÉS</h3>
-                    <p class="text-slate-400 text-[10px] font-mono uppercase tracking-[0.2em] mt-1">Gérez le code source humain du système.</p>
-                </div>
-            </div>
-            
-            <div class="flex gap-4">
-                <div class="relative group">
-                    <input type="text" placeholder="RECHERCHE BIOMÉTRIQUE..." class="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black w-80 focus:ring-4 focus:ring-amber-500/10 transition-all outline-none uppercase tracking-widest">
-                    <i class="fas fa-fingerprint absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-amber-500 transition-colors"></i>
-                </div>
-                <button class="px-10 py-5 bg-amber-500 text-slate-900 font-black rounded-2xl text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-3">
-                    <i class="fas fa-plus-circle"></i> INVOQUER UN NOUVEAU MAÎTRE
+                <select name="role" class="filter-select" onchange="this.form.submit()">
+                    <option value="">All Roles</option>
+                    <option value="user" {{ request('role') === 'user' ? 'selected' : '' }}>User</option>
+                    <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
+                </select>
+                <select name="status" class="filter-select" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="suspended" {{ request('status') === 'suspended' ? 'selected' : '' }}>Suspended</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-filter"></i> Filter
                 </button>
+                @if(request()->hasAny(['search', 'role', 'status']))
+                    <a href="{{ route('super-admin.users.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-xmark"></i> Clear
+                    </a>
+                @endif
+                <span style="margin-left:auto;font-size:12px;color:var(--text-muted);">{{ $users->total() }}
+                    result{{ $users->total() !== 1 ? 's' : '' }}</span>
             </div>
-        </div>
+        </form>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
+        <div class="table-wrap">
+            <table>
                 <thead>
-                    <tr class="bg-slate-50/50">
-                        <th class="px-12 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Identité Cosmique</th>
-                        <th class="px-12 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Niveau de Privilège</th>
-                        <th class="px-12 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Uplink Status</th>
-                        <th class="px-12 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Intervention Directe</th>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Type</th>
+                        <th>Joined</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-50">
-                    @foreach($users as $user)
-                    <tr class="hover:bg-slate-100/50 transition-all group">
-                        <td class="px-12 py-8">
-                            <div class="flex items-center gap-6">
-                                <div class="relative">
-                                    <div class="absolute -inset-1 bg-gradient-to-r {{ $user->isSuperAdmin() ? 'from-amber-500 to-amber-200' : 'from-rdc-blue to-blue-200' }} rounded-3xl blur opacity-0 group-hover:opacity-40 transition-all"></div>
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background={{ $user->isSuperAdmin() ? '000' : 'F1F5F9' }}&color={{ $user->isSuperAdmin() ? 'F59E0B' : '64748B' }}" 
-                                         class="relative w-16 h-16 rounded-3xl shadow-xl border-2 border-white transition-transform group-hover:scale-110" alt="">
-                                    @if($user->isSuperAdmin())
-                                    <div class="absolute -top-2 -right-2 w-7 h-7 bg-amber-500 rounded-2xl border-2 border-white flex items-center justify-center shadow-lg">
-                                        <i class="fas fa-crown text-[10px] text-white"></i>
+                <tbody>
+                    @forelse($users as $user)
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+                                    <div>
+                                        <div class="user-name">{{ $user->name }}</div>
+                                        <div class="user-email">{{ $user->email }}</div>
                                     </div>
-                                    @endif
                                 </div>
-                                <div class="space-y-1">
-                                    <p class="text-base font-black text-slate-900 group-hover:text-amber-600 transition-colors uppercase tracking-tight">{{ $user->name }}</p>
-                                    <p class="text-[10px] text-slate-400 font-mono tracking-widest lowercase">{{ $user->email }}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-12 py-8">
-                            @if($user->isSuperAdmin())
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-4">
-                                    <span class="text-[11px] font-black text-amber-600 uppercase tracking-[0.2em]">LEVEL : ∞</span>
-                                    <span class="px-3 py-1 bg-amber-500/10 text-amber-600 text-[8px] font-black rounded-lg uppercase">Omnipotent</span>
-                                </div>
-                                <div class="flex gap-1">
-                                    @for($i=0; $i<8; $i++) <div class="w-4 h-1.5 bg-amber-500 rounded-full"></div> @endfor
-                                </div>
-                            </div>
-                            @else
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-4">
-                                    <span class="text-[11px] font-black text-rdc-blue uppercase tracking-[0.2em]">LEVEL : 04</span>
-                                    <span class="px-3 py-1 bg-rdc-blue/10 text-rdc-blue text-[8px] font-black rounded-lg uppercase">Guardian</span>
-                                </div>
-                                <div class="flex gap-1">
-                                    @for($i=0; $i<4; $i++) <div class="w-4 h-1.5 bg-rdc-blue rounded-full"></div> @endfor
-                                    @for($i=0; $i<4; $i++) <div class="w-4 h-1.5 bg-slate-100 rounded-full"></div> @endfor
-                                </div>
-                            </div>
-                            @endif
-                        </td>
-                        <td class="px-12 py-8">
-                            <div class="space-y-2">
-                                <p class="text-[11px] font-black text-slate-800 uppercase tracking-tighter">HQ-MAIN-KINSHASA</p>
-                                <div class="flex items-center gap-3">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <span class="text-[9px] text-slate-400 font-mono uppercase tracking-widest">Dernier active: {{ $user->updated_at->diffForHumans() }}</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-12 py-8 text-right">
-                            <div class="flex items-center justify-end gap-3 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
-                                <button title="Accès total" class="w-12 h-12 rounded-2xl bg-white shadow-xl hover:bg-slate-900 hover:text-white transition-all border border-slate-100 flex items-center justify-center">
-                                    <i class="fas fa-eye text-sm"></i>
-                                </button>
-                                <button title="Modifier privilèges" class="w-12 h-12 rounded-2xl bg-white shadow-xl hover:bg-amber-500 hover:text-white transition-all border border-slate-100 flex items-center justify-center">
-                                    <i class="fas fa-key text-sm"></i>
-                                </button>
-                                @if($user->id !== auth()->id())
-                                <form action="{{ route('super-admin.users.destroy', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('RÉVOQUER CET ACCÈS MAÎTRE ? CETTE ACTION EST IRRÉVERSIBLE.')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="w-12 h-12 rounded-2xl bg-red-500 text-white shadow-xl hover:bg-red-600 transition-all flex items-center justify-center">
-                                        <i class="fas fa-user-xmark text-sm"></i>
-                                    </button>
-                                </form>
+                            </td>
+                            <td>
+                                @if($user->role === 'super_admin')
+                                    <span class="badge badge-blue"><span class="badge-dot"></span>Super Admin</span>
+                                @elseif($user->role === 'admin')
+                                    <span class="badge badge-amber"><span class="badge-dot"></span>Admin</span>
+                                @else
+                                    <span class="badge badge-gray"><span class="badge-dot"></span>User</span>
                                 @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
+                            </td>
+                            <td>
+                                @if($user->status === 'active')
+                                    <span class="badge badge-green"><span class="badge-dot"></span>Active</span>
+                                @else
+                                    <span class="badge badge-red"><span class="badge-dot"></span>Suspended</span>
+                                @endif
+                            </td>
+                            <td style="font-size:12px;color:var(--text-muted);">
+                                {{ ucfirst(str_replace('_', ' ', $user->user_type ?? 'client')) }}
+                            </td>
+                            <td style="font-size:12px;color:var(--text-muted);">
+                                {{ $user->created_at->format('M d, Y') }}
+                            </td>
+                            <td>
+                                <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;"
+                                    x-data="{ open: false }" @click.outside="open = false">
+
+                                    {{-- Edit Role Button (Opens Slide-over) --}}
+                                    <button class="btn btn-secondary btn-sm" @click='openEdit({
+                                                id: {{ $user->id }},
+                                                name: {{ json_encode($user->name) }},
+                                                email: {{ json_encode($user->email) }},
+                                                role: {{ json_encode($user->role) }},
+                                                status: {{ json_encode($user->status) }}
+                                            })'>
+                                        <i class="fas fa-pen" style="font-size:11px;"></i> Edit
+                                    </button>
+
+                                    {{-- Actions Dropdown --}}
+                                    <div class="action-menu">
+                                        <button class="btn btn-secondary btn-sm btn-icon" @click="open = !open">
+                                            <i class="fas fa-ellipsis" style="font-size:12px;"></i>
+                                        </button>
+                                        <div class="action-dropdown" x-show="open" x-cloak x-transition>
+                                            @if($user->id !== auth()->id())
+                                                <form method="POST" action="/super-admin/users/{{ $user->id }}/toggle-status">
+                                                    @csrf
+                                                    <button type="submit" class="action-item"
+                                                        style="width:100%;background:none;border:none;font-family:inherit;cursor:pointer;">
+                                                        <i class="fas {{ $user->status === 'active' ? 'fa-ban' : 'fa-check' }}"></i>
+                                                        {{ $user->status === 'active' ? 'Suspend User' : 'Activate User' }}
+                                                    </button>
+                                                </form>
+                                            @endif
+
+                                            <form method="POST" action="{{ route('super-admin.users.promote', $user->id) }}">
+                                                @csrf
+                                                <input type="hidden" name="role"
+                                                    value="{{ $user->role === 'admin' ? 'user' : 'admin' }}">
+                                                <button type="submit" class="action-item"
+                                                    style="width:100%;background:none;border:none;font-family:inherit;cursor:pointer;">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                    {{ $user->role === 'admin' ? 'Demote to User' : 'Promote to Admin' }}
+                                                </button>
+                                            </form>
+
+                                            @if($user->id !== auth()->id() && !$user->isSuperAdmin())
+                                                <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+                                                <form method="POST" action="{{ route('super-admin.users.destroy', $user->id) }}"
+                                                    onsubmit="return confirm('Permanently delete {{ addslashes($user->name) }}? This cannot be undone.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="action-item danger"
+                                                        style="width:100%;background:none;border:none;font-family:inherit;cursor:pointer;">
+                                                        <i class="fas fa-trash"></i> Delete User
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+                                <i class="fas fa-users" style="font-size:24px;margin-bottom:10px;display:block;opacity:.3;"></i>
+                                No users found matching your filters.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-        
-        <div class="p-12 border-t border-slate-50 bg-slate-50/50">
-            <div class="flex items-center justify-between">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Séquence Administrative v4.2.0-DIVINE</p>
-                <div class="flex gap-4">
-                    {{ $users->links() }}
-                </div>
+
+        {{-- Pagination --}}
+        @if($users->hasPages())
+            <div class="pagination">
+                <span class="page-info">
+                    Showing {{ $users->firstItem() }}–{{ $users->lastItem() }} of {{ $users->total() }} users
+                </span>
+                @if($users->onFirstPage())
+                    <span class="page-btn disabled"><i class="fas fa-chevron-left" style="font-size:10px;"></i></span>
+                @else
+                    <a href="{{ $users->previousPageUrl() }}" class="page-btn"><i class="fas fa-chevron-left"
+                            style="font-size:10px;"></i></a>
+                @endif
+
+                @foreach($users->getUrlRange(max(1, $users->currentPage() - 2), min($users->lastPage(), $users->currentPage() + 2)) as $page => $url)
+                    @if($page == $users->currentPage())
+                        <span class="page-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                @if($users->hasMorePages())
+                    <a href="{{ $users->nextPageUrl() }}" class="page-btn"><i class="fas fa-chevron-right"
+                            style="font-size:10px;"></i></a>
+                @else
+                    <span class="page-btn disabled"><i class="fas fa-chevron-right" style="font-size:10px;"></i></span>
+                @endif
             </div>
-        </div>
+        @endif
     </div>
-</div>
+
 @endsection
