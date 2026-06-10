@@ -193,6 +193,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Reviews left by this user as a client.
+     */
+    public function sentReviews()
+    {
+        return $this->hasMany(Review::class, 'client_id');
+    }
+
+    /**
+     * Reviews received by this user as an artisan.
+     */
+    public function receivedReviews()
+    {
+        return $this->hasMany(Review::class, 'artisan_id');
+    }
+
+    /**
      * All conversations this user participates in.
      */
     public function conversations()

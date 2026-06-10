@@ -165,12 +165,6 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('user.career-advisor.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.career-advisor.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-magic text-lg {{ request()->routeIs('user.career-advisor.index') ? 'text-white' : 'text-slate-400 group-hover:text-amber-500' }}"></i>
-                            Conseiller Carrière
-                        </a>
-                    </li>
-                    <li>
                         <a href="{{ route('user.applications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.applications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-history text-lg {{ request()->routeIs('user.applications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
                             Mes Candidatures
@@ -188,12 +182,14 @@
                             Messages
                         </a>
                     </li>
+
                     <li>
-                        <a href="{{ route('user.favorites') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.favorites') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-heart text-lg {{ request()->routeIs('user.favorites') ? 'text-white' : 'text-slate-400 group-hover:text-red-500' }}"></i>
-                            Favoris
+                        <a href="{{ route('user.missions.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.missions.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-handshake text-lg {{ request()->routeIs('user.missions.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Missions
                         </a>
                     </li>
+
                     <li>
                         <a href="{{ route('user.notifications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.notifications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-bell text-lg {{ request()->routeIs('user.notifications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
@@ -283,12 +279,6 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('user.career-advisor.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.career-advisor.index') ? 'bg-rdc-blue text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-magic text-lg {{ request()->routeIs('user.career-advisor.index') ? 'text-white' : 'text-slate-400 group-hover:text-amber-500' }}"></i>
-                            Conseiller Carrière
-                        </a>
-                    </li>
-                    <li>
                         <a href="{{ route('user.messages.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.messages.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-inbox text-lg {{ request()->routeIs('user.messages.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
                             Messages
@@ -309,35 +299,17 @@
                 </ul>
             @endif
 
-            <!-- [GÉNÉRAL / SUPPORT] -->
+            <!-- [PARAMÈTRES] -->
             <div>
                 <div class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-3">
                     <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                    Support & Sécurité
+                    Paramètres
                 </div>
                 <ul class="space-y-2">
                     <li>
                         <a href="{{ route('user.profile') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.profile') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-user-cog text-lg {{ request()->routeIs('user.profile') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Mon Profil
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.security') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.security') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-shield-halved text-lg {{ request()->routeIs('user.security') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Sécurité
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.help') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.help') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-question-circle text-lg {{ request()->routeIs('user.help') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Centre d'aide
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.report') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.report') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-triangle-exclamation text-lg {{ request()->routeIs('user.report') ? 'text-white' : 'text-slate-400 group-hover:text-red-500' }}"></i>
-                            Signaler un problème
+                            <i class="fas fa-cog text-lg {{ request()->routeIs('user.profile') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Settings
                         </a>
                     </li>
                 </ul>

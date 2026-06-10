@@ -10,6 +10,7 @@ use App\Models\JobApplication;
 use App\Models\JobOffer;
 use App\Models\Mission;
 use App\Models\Notification;
+use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use Illuminate\Http\RedirectResponse;
@@ -408,7 +409,10 @@ class DashboardController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        return view('user.missions.show', compact('mission'));
+        // Get review if exists
+        $review = Review::where('mission_id', $mission->id)->first();
+
+        return view('user.missions.show', compact('mission', 'review'));
     }
 
     /**
@@ -429,13 +433,60 @@ class DashboardController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $mission->update([
-            'status' => $request->status,
-            'feedback' => $request->feedback,
-            'rating' => $request->rating,
-        ]);
+        // Update mission status
+        $mission->update(['status' => $request->status]);
+
+        // If client submitted feedback/rating, create/update Review
+        if ($request->filled('rating') && Auth::id() === $mission->client_id) {
+            Review::updateOrCreate(
+                ['mission_id' => $mission->id, 'client_id' => Auth::id()],
+                [
+                    'artisan_id' => $mission->artisan_id,
+                    'rating' => $request->rating,
+                    'feedback' => $request->feedback,
+                    'status' => 'pending', // Reviews start as pending for moderation
+                ]
+            );
+
+            // Notify all admins about the new review
+            $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id'    => $admin->id,
+                    'type'       => 'admin_new_review',
+                    'title'      => 'Nouvel avis client en attente',
+                    'message'    => "Mission #{$mission->id} - Note: {$request->rating}/5 (En attente d'approbation)",
+                    'action_url' => route('admin.moderation.reviews'),
+                    'is_read'    => false,
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Votre avis a été enregistré et est en attente d\'approbation.');
+        }
 
         return redirect()->back()->with('success', 'Statut de la mission mis à jour.');
+    }
+
+    /**
+     * Display all reviews submitted by the user.
+     */
+    public function myReviews(): View
+    {
+        $user = Auth::user();
+        $reviews = Review::byClient($user->id)
+                        ->with('mission', 'artisan')
+                        ->latest()
+                        ->paginate(10);
+
+        $stats = [
+            'total' => Review::byClient($user->id)->count(),
+            'pending' => Review::byClient($user->id)->pending()->count(),
+            'approved' => Review::byClient($user->id)->approved()->count(),
+            'rejected' => Review::byClient($user->id)->rejected()->count(),
+            'avg_rating' => Review::byClient($user->id)->approved()->average('rating') ?? 0,
+        ];
+
+        return view('user.reviews.index', compact('reviews', 'stats'));
     }
 
     /**

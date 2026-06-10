@@ -191,6 +191,16 @@
                     <x-admin-dropdown-item route="admin.support-hq.suggestions" label="Boîte à idées" />
                 </x-admin-dropdown-nav>
 
+                <!-- [MESSAGES USERS] -->
+                <x-admin-dropdown-nav icon="fas fa-comments" label="Messages Users" :activePrefixes="['admin.messages']">
+                    <x-admin-dropdown-item route="admin.messages.index" label="Toutes les conversations" />
+                </x-admin-dropdown-nav>
+
+                <!-- [MISSIONS & AVIS] -->
+                <x-admin-dropdown-nav icon="fas fa-briefcase" label="Missions & Avis" :activePrefixes="['admin.missions']">
+                    <x-admin-dropdown-item route="admin.missions.index" label="Toutes les missions" />
+                </x-admin-dropdown-nav>
+
                 <!-- [CONFIGURATION TECHNIQUE] -->
                 <x-admin-dropdown-nav icon="fas fa-gears" label="Configuration Core" :activePrefixes="['admin.settings', 'admin.settings-hq', 'admin.tools']">
                     <x-admin-dropdown-item route="admin.settings.index" label="Paramètres généraux" />

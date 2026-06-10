@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
+use App\Models\Mission;
 use App\Models\Notification;
 use App\Models\Service;
 use App\Models\ServiceRequest;
@@ -63,6 +64,22 @@ class ServiceRequestController extends Controller
         $serviceRequest->update(['status' => 'accepted']);
         $artisan = Auth::user();
 
+        // Create a Mission to track the work (start/end dates, rating, feedback)
+        Mission::firstOrCreate(
+            [
+                'service_id'  => $serviceRequest->service_id,
+                'client_id'   => $serviceRequest->user_id,
+                'artisan_id'  => $artisan->id,
+                'title'       => $serviceRequest->requested_service_name ?? ($serviceRequest->service->title ?? 'Mission'),
+            ],
+            [
+                'description' => $serviceRequest->description,
+                'status'      => 'pending',
+                'amount'      => $serviceRequest->budget_max ?? 0,
+                'start_date'  => now(),
+            ]
+        );
+
         Notification::create([
             'user_id'      => $serviceRequest->user_id,
             'type'         => 'service_accepted',
@@ -76,7 +93,7 @@ class ServiceRequestController extends Controller
 
         Conversation::findOrCreateBetween($serviceRequest->user_id, $artisan->id, 'service', $serviceRequest->id);
 
-        return back()->with('success', 'Demande acceptée.');
+        return back()->with('success', 'Demande acceptée. Mission créée !');
     }
 
     public function reject(ServiceRequest $serviceRequest): RedirectResponse
@@ -144,5 +161,120 @@ class ServiceRequestController extends Controller
     {
         $serviceRequest->load('user', 'service.artisan');
         return view('user.service-requests.show', compact('serviceRequest'));
+    }
+
+    /**
+     * Artisan starts a mission (marks in_progress).
+     */
+    public function startMission(ServiceRequest $serviceRequest): RedirectResponse
+    {
+        $serviceRequest->update(['status' => 'accepted']);
+
+        $mission = Mission::where('artisan_id', Auth::id())
+            ->where(function ($q) use ($serviceRequest) {
+                $q->where('service_id', $serviceRequest->service_id)
+                  ->orWhere('title', $serviceRequest->requested_service_name);
+            })
+            ->where('status', 'pending')
+            ->first();
+
+        if ($mission) {
+            $mission->update([
+                'status'     => 'in_progress',
+                'start_date' => now(),
+            ]);
+        }
+
+        Notification::create([
+            'user_id'    => $serviceRequest->user_id,
+            'type'       => 'mission_started',
+            'title'      => 'Mission démarrée !',
+            'message'    => "L'artisan a commencé le travail sur votre demande.",
+            'action_url' => route('user.missions.index'),
+            'is_read'    => false,
+        ]);
+
+        return back()->with('success', 'Mission démarrée avec succès !');
+    }
+
+    /**
+     * Artisan marks the work as complete.
+     */
+    public function complete(ServiceRequest $serviceRequest): RedirectResponse
+    {
+        $serviceRequest->update(['status' => 'completed']);
+
+        $mission = Mission::where('artisan_id', Auth::id())
+            ->where(function ($q) use ($serviceRequest) {
+                $q->where('service_id', $serviceRequest->service_id)
+                  ->orWhere('title', $serviceRequest->requested_service_name);
+            })
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->first();
+
+        if ($mission) {
+            $mission->update([
+                'status'   => 'completed',
+                'end_date' => now(),
+            ]);
+        }
+
+        Notification::create([
+            'user_id'    => $serviceRequest->user_id,
+            'type'       => 'mission_completed',
+            'title'      => 'Mission terminée ✅',
+            'message'    => "L'artisan a terminé le travail. N'oubliez pas de laisser un avis !",
+            'action_url' => route('user.missions.index'),
+            'is_read'    => false,
+        ]);
+
+        // Notify all admins about the completed mission
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'    => $admin->id,
+                'type'       => 'admin_mission_completed',
+                'title'      => 'Mission terminée',
+                'message'    => "La mission #{$serviceRequest->id} a été complétée. En attente de l'avis client.",
+                'action_url' => route('admin.missions.index'),
+                'is_read'    => false,
+            ]);
+        }
+
+        return back()->with('success', 'Mission marquée comme terminée ! Le client peut maintenant laisser un avis.');
+    }
+
+    /**
+     * Cancel a service request.
+     */
+    public function cancel(ServiceRequest $serviceRequest): RedirectResponse
+    {
+        $serviceRequest->update(['status' => 'cancelled']);
+
+        $mission = Mission::where('artisan_id', Auth::id())
+            ->where(function ($q) use ($serviceRequest) {
+                $q->where('service_id', $serviceRequest->service_id)
+                  ->orWhere('title', $serviceRequest->requested_service_name);
+            })
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->first();
+
+        if ($mission) {
+            $mission->update([
+                'status'   => 'cancelled',
+                'end_date' => now(),
+            ]);
+        }
+
+        Notification::create([
+            'user_id'    => $serviceRequest->user_id,
+            'type'       => 'mission_cancelled',
+            'title'      => 'Mission annulée',
+            'message'    => "La mission a été annulée.",
+            'action_url' => route('user.service-requests.index'),
+            'is_read'    => false,
+        ]);
+
+        return back()->with('info', 'Mission annulée.');
     }
 }

@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\JobController as AdminJobController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\MessageController as AdminMessageController;
+use App\Http\Controllers\Admin\MissionController as AdminMissionController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\JobApplicationController as AdminJobApplicationController;
@@ -109,6 +111,7 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/missions', [UserDashboardController::class, 'missions'])->name('missions.index');
         Route::get('/missions/{id}', [UserDashboardController::class, 'missionDetail'])->name('missions.show');
         Route::put('/missions/{id}/status', [UserDashboardController::class, 'updateMissionStatus'])->name('missions.update-status');
+        Route::get('/reviews', [UserDashboardController::class, 'myReviews'])->name('reviews.index');
         // Service Requests
         Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
         Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
@@ -117,6 +120,7 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::post('/service-requests/{serviceRequest}/accept', [UserServiceRequestController::class, 'accept'])->name('service-requests.accept');
         Route::post('/service-requests/{serviceRequest}/reject', [UserServiceRequestController::class, 'reject'])->name('service-requests.reject');
         Route::post('/service-requests/{serviceRequest}/complete', [UserServiceRequestController::class, 'complete'])->name('service-requests.complete');
+        Route::post('/service-requests/{serviceRequest}/start', [UserServiceRequestController::class, 'startMission'])->name('service-requests.start');
         Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
         // Artisan – incoming requests
         Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
@@ -251,6 +255,8 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::prefix('moderation')->name('moderation.')->group(function () {
             Route::get('/services', [AdminServiceController::class, 'index'])->name('services');
             Route::get('/reviews', [ModerationController::class, 'reviews'])->name('reviews');
+            Route::post('/reviews/{id}/approve', [ModerationController::class, 'approveReview'])->name('reviews.approve');
+            Route::post('/reviews/{id}/reject', [ModerationController::class, 'rejectReview'])->name('reviews.reject');
         });
 
         Route::prefix('finances')->name('finances.')->group(function () {
@@ -317,6 +323,18 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+        // Admin Messages (view all user conversations)
+        Route::prefix('messages')->name('messages.')->group(function (): void {
+            Route::get('/', [AdminMessageController::class, 'index'])->name('index');
+            Route::get('/{conversation}', [AdminMessageController::class, 'show'])->name('show');
+        });
+
+        // Admin Missions & Reviews
+        Route::prefix('missions')->name('missions.')->group(function (): void {
+            Route::get('/', [AdminMissionController::class, 'index'])->name('index');
+            Route::get('/{mission}', [AdminMissionController::class, 'show'])->name('show');
+        });
     });
 
 // Super Admin Routes

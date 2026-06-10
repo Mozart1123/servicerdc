@@ -98,6 +98,16 @@
                     <div>
                         <h4 class="font-black text-slate-900">{{ $mission->service->title ?? 'Service' }}</h4>
                         <p class="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest"><i class="fas fa-hammer text-amber-500 mr-1"></i> Artisan: {{ $mission->artisan->name ?? 'Non assigné' }}</p>
+                        @if($mission->start_date || $mission->end_date)
+                        <div class="flex gap-4 mt-2">
+                            @if($mission->start_date)
+                            <span class="text-[9px] font-bold text-slate-400"><i class="fas fa-play text-amber-400 mr-1"></i>Démarrée: {{ $mission->start_date->format('d/m/Y H:i') }}</span>
+                            @endif
+                            @if($mission->end_date)
+                            <span class="text-[9px] font-bold text-slate-400"><i class="fas fa-flag-checkered text-emerald-400 mr-1"></i>Terminée: {{ $mission->end_date->format('d/m/Y H:i') }}</span>
+                            @endif
+                        </div>
+                        @endif
                     </div>
                     @if($mission->status == 'completed')
                         <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full">Terminée</span>
@@ -107,8 +117,27 @@
                         <span class="px-3 py-1 bg-slate-100 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-full">{{ $mission->status }}</span>
                     @endif
                 </div>
+
+                @if($mission->status == 'completed' && $mission->rating)
+                <div class="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100">
+                    <div class="flex items-center gap-1 mb-1">
+                        @for($i = 1; $i <= 5; $i++)
+                            <i class="fas fa-star text-sm {{ $i <= $mission->rating ? 'text-amber-400' : 'text-slate-200' }}"></i>
+                        @endfor
+                        <span class="text-xs font-bold text-slate-600 ml-1">{{ $mission->rating }}/5</span>
+                    </div>
+                    @if($mission->feedback)
+                    <p class="text-xs text-slate-500 italic">"{{ \Str::limit($mission->feedback, 100) }}"</p>
+                    @endif
+                </div>
+                @endif
                 
-                <div class="flex justify-end mt-4">
+                <div class="flex justify-end mt-4 gap-3">
+                    @if($mission->status == 'completed' && !$mission->rating)
+                        <a href="{{ route('user.missions.show', $mission->id) }}" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition flex items-center gap-1">
+                            <i class="fas fa-star"></i> Laisser un avis
+                        </a>
+                    @endif
                     <a href="{{ route('user.missions.show', $mission->id) }}" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition">Suivre ma commande</a>
                 </div>
             </div>

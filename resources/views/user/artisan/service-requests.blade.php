@@ -108,6 +108,13 @@
                     @endif
 
                     @if($req->status === 'accepted')
+                    <form action="{{ route('user.service-requests.start', $req->id) }}" method="POST"
+                          onsubmit="return confirm('Démarrer cette mission maintenant ?')">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-xl hover:bg-amber-600 transition shadow-sm">
+                            <i class="fas fa-play"></i> Démarrer
+                        </button>
+                    </form>
                     <a href="{{ route('user.messages.start.user', $req->user_id) }}"
                        class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white text-sm font-bold rounded-xl hover:bg-rdc-blue-dark transition">
                         <i class="fas fa-comments"></i> Discuter
@@ -119,13 +126,29 @@
                             <i class="fas fa-flag-checkered"></i> Terminé
                         </button>
                     </form>
+                    <form action="{{ route('user.service-requests.cancel', $req->id) }}" method="POST"
+                          onsubmit="return confirm('Annuler cette mission ?')">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 text-sm font-bold rounded-xl hover:bg-red-100 border border-red-200 transition">
+                            <i class="fas fa-ban"></i> Annuler
+                        </button>
+                    </form>
                     @endif
 
                     @if($req->status === 'completed')
+                    <span class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 text-sm font-bold rounded-xl border border-emerald-200">
+                        <i class="fas fa-star"></i> En attente d'avis client
+                    </span>
                     <a href="{{ route('user.messages.start.user', $req->user_id) }}"
                        class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-200 transition">
                         <i class="fas fa-comments"></i> Contacter
                     </a>
+                    @endif
+
+                    @if($req->status === 'cancelled')
+                    <span class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 text-sm font-bold rounded-xl border border-slate-200">
+                        <i class="fas fa-ban"></i> Annulée
+                    </span>
                     @endif
                 </div>
             </div>
