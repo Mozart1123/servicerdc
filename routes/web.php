@@ -124,11 +124,19 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
         // Artisan – incoming requests
         Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
+        // Artisan – reviews & ratings
+        Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
+
+        // Rate artisan after completed service
+        Route::post('/service-requests/{serviceRequest}/rate', [UserServiceRequestController::class, 'rate'])->name('service-requests.rate');
 
         // CV Management
         Route::get('/cv', [\App\Http\Controllers\User\CvController::class, 'index'])->name('cv.index');
+        Route::get('/cv/create', [\App\Http\Controllers\User\CvController::class, 'create'])->name('cv.create');
         Route::post('/cv', [\App\Http\Controllers\User\CvController::class, 'store'])->name('cv.store');
+        Route::put('/cv', [\App\Http\Controllers\User\CvController::class, 'update'])->name('cv.update');
         Route::delete('/cv', [\App\Http\Controllers\User\CvController::class, 'destroy'])->name('cv.destroy');
+        Route::post('/cv/file-upload', [\App\Http\Controllers\User\CvController::class, 'fileUpload'])->name('cv.file.upload');
 
         // Jobs — recruiter publishes offers
         Route::get('/my-job-offers', [UserJobController::class, 'myJobOffers'])->name('jobs.my-offers');
@@ -186,10 +194,6 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/security', [UserDashboardController::class, 'security'])->name('security');
         Route::get('/help', [UserDashboardController::class, 'help'])->name('help');
         Route::get('/report', [UserDashboardController::class, 'report'])->name('report');
-
-        // Smart Career Advisor
-        Route::get('/career-advisor', [\App\Http\Controllers\User\CareerAdvisorController::class, 'index'])->name('career-advisor.index');
-        Route::post('/career-advisor/update', [\App\Http\Controllers\User\CareerAdvisorController::class, 'updateProfile'])->name('career-advisor.update');
     });
 
 // Admin Routes
@@ -212,6 +216,14 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::resource('services', AdminServiceController::class);
         Route::resource('jobs', AdminJobController::class);
         Route::resource('categories', AdminCategoryController::class);
+
+        // Messages Supervision
+        Route::prefix('messages')->name('messages.')->group(function (): void {
+            Route::get('/', [AdminMessageController::class, 'index'])->name('index');
+            Route::get('/{conversation}', [AdminMessageController::class, 'show'])->name('show');
+            Route::post('/{conversation}/flag', [AdminMessageController::class, 'flag'])->name('flag');
+            Route::post('/{conversation}/note', [AdminMessageController::class, 'addNote'])->name('note');
+        });
 
         // Job Applications Management
         Route::prefix('job-applications')->name('job-applications.')->group(function (): void {
@@ -323,12 +335,6 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
-
-        // Admin Messages (view all user conversations)
-        Route::prefix('messages')->name('messages.')->group(function (): void {
-            Route::get('/', [AdminMessageController::class, 'index'])->name('index');
-            Route::get('/{conversation}', [AdminMessageController::class, 'show'])->name('show');
-        });
 
         // Admin Missions & Reviews
         Route::prefix('missions')->name('missions.')->group(function (): void {

@@ -83,6 +83,17 @@
                         @endif
                         <span><i class="fas fa-fire mr-1 text-orange-400"></i>{{ $req->urgency_label }}</span>
                         <span><i class="fas fa-dollar-sign mr-1"></i>{{ $req->budget_range }}</span>
+                        @if($req->status === 'accepted' && $req->accepted_at)
+                        <span class="text-emerald-600 font-bold" data-accepted-at="{{ $req->accepted_at->toIso8601String() }}">
+                            <i class="fas fa-stopwatch mr-1"></i><span>00:00:00</span>
+                        </span>
+                        @endif
+                        @if($req->status === 'completed' && $req->accepted_at && $req->completed_at)
+                        @php $d = $req->completed_at->diff($req->accepted_at); @endphp
+                        <span class="text-blue-600 font-bold">
+                            <i class="fas fa-clock mr-1"></i>{{ $d->h > 0 ? "{$d->h}h {$d->i}min" : "{$d->i}min" }}
+                        </span>
+                        @endif
                     </div>
                     @if($req->description)
                     <p class="mt-2 text-sm text-slate-400 line-clamp-2">{{ $req->description }}</p>
@@ -168,4 +179,24 @@
         @endif
     </div>
 </div>
+
+<script>
+(function() {
+    const badges = document.querySelectorAll('[data-accepted-at]');
+    if (!badges.length) return;
+    function updateBadges() {
+        const now = Date.now();
+        badges.forEach(badge => {
+            const acceptedAt = new Date(badge.dataset.acceptedAt).getTime();
+            const diff = Math.floor((now - acceptedAt) / 1000);
+            const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+            const s = String(diff % 60).padStart(2, '0');
+            badge.querySelector('span:last-child').textContent = h + ':' + m + ':' + s;
+        });
+    }
+    updateBadges();
+    setInterval(updateBadges, 1000);
+})();
+</script>
 @endsection

@@ -24,6 +24,8 @@ class ServiceRequest extends Model
         'budget_max',
         'urgency',
         'status',
+        'accepted_at',
+        'completed_at',
         'notes',
         'response',
         'admin_response',
@@ -32,9 +34,11 @@ class ServiceRequest extends Model
     ];
 
     protected $casts = [
-        'responded_at' => 'datetime',
-        'created_at'   => 'datetime',
-        'updated_at'   => 'datetime',
+        'responded_at'  => 'datetime',
+        'accepted_at'   => 'datetime',
+        'completed_at'  => 'datetime',
+        'created_at'    => 'datetime',
+        'updated_at'    => 'datetime',
     ];
 
     // Status constants
@@ -66,6 +70,11 @@ class ServiceRequest extends Model
     public function respondedByUser()
     {
         return $this->belongsTo(User::class, 'responded_by');
+    }
+
+    public function rating()
+    {
+        return $this->hasOne(ArtisanRating::class);
     }
 
     // ==========================================

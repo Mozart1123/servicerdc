@@ -24,7 +24,7 @@
     </div>
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6">
         <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center gap-4 hover:-translate-y-1 transition-all">
             <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-box-open"></i></div>
             <div>
@@ -44,6 +44,13 @@
             <div>
                 <p class="text-2xl font-black text-slate-900">{{ $stats['pending_demands_count'] ?? 0 }}</p>
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Demandes en attente</p>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center gap-4 hover:-translate-y-1 transition-all">
+            <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-star-half-alt"></i></div>
+            <div>
+                <p class="text-2xl font-black text-slate-900">{{ number_format($stats['avg_rating'] ?? 0, 1, ',', '') }} <span class="text-sm font-bold text-slate-400">({{ $stats['reviews_count'] ?? 0 }})</span></p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mes Avis</p>
             </div>
         </div>
         <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center gap-4 hover:-translate-y-1 transition-all">

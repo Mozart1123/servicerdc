@@ -177,6 +177,11 @@
                     <x-admin-dropdown-item route="admin.content.push" label="Alertes Push" />
                 </x-admin-dropdown-nav>
 
+                <!-- [MESSAGES SUPERVISION] -->
+                <x-admin-dropdown-nav icon="fas fa-comments" label="Messages" :activePrefixes="['admin.messages']">
+                    <x-admin-dropdown-item route="admin.messages.index" label="Toutes les conversations" />
+                </x-admin-dropdown-nav>
+
                 <!-- [RAPPORTS & ANALYTICS] -->
                 <x-admin-dropdown-nav icon="fas fa-chart-pie" label="Rapports Data" :activePrefixes="['admin.reports-hq']">
                     <x-admin-dropdown-item route="admin.reports-hq.analytics" label="Analytics globaux" />

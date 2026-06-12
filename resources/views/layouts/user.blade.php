@@ -232,6 +232,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('user.artisan.reviews.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.reviews.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-star-half-alt text-lg {{ request()->routeIs('user.artisan.reviews.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Avis
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('user.messages.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.messages.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-inbox text-lg {{ request()->routeIs('user.messages.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
                             Messages
@@ -300,16 +306,13 @@
             @endif
 
             <!-- [PARAMÈTRES] -->
+            <!-- [PROFIL] -->
             <div>
-                <div class="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-heading flex items-center gap-3">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                    Paramètres
-                </div>
                 <ul class="space-y-2">
                     <li>
                         <a href="{{ route('user.profile') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.profile') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-cog text-lg {{ request()->routeIs('user.profile') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Settings
+                            <i class="fas fa-user-cog text-lg {{ request()->routeIs('user.profile') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mon Profil
                         </a>
                     </li>
                 </ul>

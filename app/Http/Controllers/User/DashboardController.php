@@ -13,6 +13,7 @@ use App\Models\Notification;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -88,6 +89,13 @@ class DashboardController extends Controller
 
             $stats['my_services_count']   = $user->services()->count();
             $stats['pending_demands_count'] = $pendingDemandsCount;
+            $stats['reviews_count'] = \App\Models\Review::forArtisan($user->id)->count()
+                + \App\Models\ArtisanRating::where('artisan_id', $user->id)->count();
+            $missionAvg = \App\Models\Review::forArtisan($user->id)->avg('rating') ?? 0;
+            $ratingAvg  = \App\Models\ArtisanRating::where('artisan_id', $user->id)->avg('rating') ?? 0;
+            $stats['avg_rating'] = $stats['reviews_count'] > 0
+                ? round(($missionAvg + $ratingAvg) / 2, 1)
+                : 0;
 
             $artisanMissions = $user->missionsAsArtisan()
                 ->with('client', 'service')

@@ -204,21 +204,32 @@
                                 </a>
                             </div>
                         @else
-                            <form method="POST" action="{{ route('user.jobs.apply', $job->id) }}" class="space-y-6">
+                            <form method="POST" action="{{ route('user.jobs.apply', $job->id) }}" enctype="multipart/form-data" class="space-y-6">
                                 @csrf
                                 
                                 <div class="space-y-3">
-                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Lettre de motivation</label>
-                                    <textarea name="cover_letter" rows="6" required
-                                              class="w-full px-6 py-5 bg-white/5 border border-white/10 rounded-3xl text-sm focus:ring-2 focus:ring-rdc-blue outline-none placeholder-white/20 transition-all resize-none"
-                                              placeholder="Précisez vos motivations pour ce poste..."></textarea>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Importer votre CV</label>
+                                    <div class="relative">
+                                        <input type="file" name="cv_attachment" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" required
+                                               class="hidden peer" id="cv_file_input"
+                                               onchange="document.getElementById('cv_file_name').textContent = this.files[0]?.name || ''">
+                                        <label for="cv_file_input" 
+                                               class="flex flex-col items-center justify-center w-full px-6 py-8 bg-white/5 border-2 border-dashed border-white/20 rounded-3xl cursor-pointer hover:bg-white/10 hover:border-rdc-blue/50 transition-all">
+                                            <div class="w-14 h-14 bg-rdc-blue/20 rounded-2xl flex items-center justify-center mb-3">
+                                                <i class="fas fa-cloud-upload-alt text-2xl text-rdc-blue"></i>
+                                            </div>
+                                            <p class="text-sm font-bold text-white mb-1">Cliquez pour sélectionner</p>
+                                            <p class="text-[10px] text-slate-400 uppercase tracking-widest">PDF, Word, PNG, JPG (max 5MB)</p>
+                                            <p id="cv_file_name" class="text-xs text-rdc-yellow font-bold mt-2 truncate max-w-full"></p>
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
                                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <i class="fas fa-paperclip text-rdc-blue"></i> Dossier Joint
+                                        <i class="fas fa-info-circle text-rdc-blue"></i> Information
                                     </p>
-                                    <p class="text-xs font-bold text-slate-200">Votre CV ProConnect sera automatiquement joint à cette candidature.</p>
+                                    <p class="text-xs font-bold text-slate-200">Votre CV ProConnect sera également joint automatiquement.</p>
                                 </div>
 
                                 <button type="submit" 

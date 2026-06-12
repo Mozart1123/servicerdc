@@ -26,13 +26,17 @@ class Cv extends Model
         'portfolio_link',
         'profile_photo',
         'cv_file',
+        'template_answers',
+        'summary',
+        'job_title',
     ];
 
     protected $casts = [
-        'education'  => 'array',
-        'skills'     => 'array',
-        'experience' => 'array',
-        'languages'  => 'array',
+        'education'        => 'array',
+        'skills'           => 'array',
+        'experience'       => 'array',
+        'languages'        => 'array',
+        'template_answers' => 'array',
     ];
 
     // ─── Relationships ────────────────────────────────────────────────────────

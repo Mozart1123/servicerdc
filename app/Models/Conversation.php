@@ -16,11 +16,17 @@ class Conversation extends Model
         'user_two_id',
         'related_type',
         'related_id',
+        'flagged',
+        'admin_notes',
         // Legacy support
         'user_one',
         'user_two',
         'context',
         'context_id',
+    ];
+
+    protected $casts = [
+        'flagged' => 'boolean',
     ];
 
     // ── Relationships ──────────────────────────────────────────────────────────
@@ -86,12 +92,19 @@ class Conversation extends Model
         })->first();
 
         if (!$conv) {
+            $contextMap = [
+                'job'         => 'emploi',
+                'emploi'      => 'emploi',
+                'service'     => 'service',
+            ];
+            $context = $contextMap[$relatedType] ?? 'autre';
+
             $conv = self::create([
                 $oneCol       => $userA,
                 $twoCol       => $userB,
                 'related_type' => $relatedType ?? 'general',
                 'related_id'   => $relatedId,
-                'context'      => $relatedType ?? 'autre',
+                'context'      => $context,
                 'context_id'   => $relatedId,
             ]);
         }

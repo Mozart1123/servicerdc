@@ -220,9 +220,14 @@ function openCvModal(appId) {
                     </div>
                 </div>
                 <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Lettre de motivation</p>
-                    <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-50 text-sm text-slate-700 italic leading-relaxed">
-                        "${app.cover_letter || 'Aucune lettre fournie.'}"
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">CV Uploadé</p>
+                    <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-50 text-sm">
+                        ${app.cv_attachment 
+                            ? `<a href="/storage/${app.cv_attachment}" target="_blank" class="inline-flex items-center gap-2 text-rdc-blue font-bold hover:underline">
+                                   <i class="fas fa-file-download"></i>
+                                   <span>Télécharger le CV</span>
+                               </a>`
+                            : '<span class="text-slate-500 italic">Aucun CV uploadé.</span>'}
                     </div>
                 </div>
                 ${cv ? `

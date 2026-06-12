@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\ArtisanRating;
 use App\Models\Conversation;
 use App\Models\Mission;
 use App\Models\Notification;
+use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\User;
@@ -61,7 +63,10 @@ class ServiceRequestController extends Controller
 
     public function accept(ServiceRequest $serviceRequest): RedirectResponse
     {
-        $serviceRequest->update(['status' => 'accepted']);
+        $serviceRequest->update([
+            'status'      => 'accepted',
+            'accepted_at' => now(),
+        ]);
         $artisan = Auth::user();
 
         // Create a Mission to track the work (start/end dates, rating, feedback)
@@ -93,7 +98,7 @@ class ServiceRequestController extends Controller
 
         Conversation::findOrCreateBetween($serviceRequest->user_id, $artisan->id, 'service', $serviceRequest->id);
 
-        return back()->with('success', 'Demande acceptée. Mission créée !');
+        return back()->with('success', 'Demande acceptée. Mission créée, chronomètre lancé !');
     }
 
     public function reject(ServiceRequest $serviceRequest): RedirectResponse
@@ -134,6 +139,54 @@ class ServiceRequestController extends Controller
         $serviceRequests = $query->paginate(15);
 
         return view('user.artisan.service-requests', compact('serviceRequests', 'stats'));
+    }
+
+    public function artisanReviews(): View
+    {
+        $user = Auth::user();
+
+        $missionReviews = Review::forArtisan($user->id)
+            ->with('client', 'mission')
+            ->latest()
+            ->get();
+
+        $serviceRatings = ArtisanRating::where('artisan_id', $user->id)
+            ->with('user', 'serviceRequest')
+            ->latest()
+            ->get();
+
+        $allReviews = $missionReviews->map(fn($r) => (object)[
+            'id'        => 'review_' . $r->id,
+            'source'    => 'mission',
+            'client'    => $r->client,
+            'rating'    => $r->rating,
+            'comment'   => $r->feedback,
+            'status'    => $r->status,
+            'status_label' => $r->status_label,
+            'service_name' => $r->mission?->title ?? 'Mission',
+            'date'      => $r->created_at,
+        ])->merge($serviceRatings->map(fn($r) => (object)[
+            'id'        => 'rating_' . $r->id,
+            'source'    => 'service',
+            'client'    => $r->user,
+            'rating'    => $r->rating,
+            'comment'   => $r->comment,
+            'status'    => 'approved',
+            'status_label' => 'Approuvé',
+            'service_name' => $r->serviceRequest?->requested_service_name ?? 'Service',
+            'date'      => $r->created_at,
+        ]))->sortByDesc('date')->values();
+
+        $avgRating = $allReviews->avg('rating') ?? 0;
+        $totalReviews = $allReviews->count();
+        $ratingDistribution = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $ratingDistribution[$i] = $allReviews->where('rating', $i)->count();
+        }
+
+        return view('user.artisan.reviews', compact(
+            'allReviews', 'avgRating', 'totalReviews', 'ratingDistribution'
+        ));
     }
 
     public function index(): View
@@ -202,7 +255,10 @@ class ServiceRequestController extends Controller
      */
     public function complete(ServiceRequest $serviceRequest): RedirectResponse
     {
-        $serviceRequest->update(['status' => 'completed']);
+        $serviceRequest->update([
+            'status'       => 'completed',
+            'completed_at' => now(),
+        ]);
 
         $mission = Mission::where('artisan_id', Auth::id())
             ->where(function ($q) use ($serviceRequest) {
@@ -276,5 +332,52 @@ class ServiceRequestController extends Controller
         ]);
 
         return back()->with('info', 'Mission annulée.');
+    }
+
+    /**
+     * Rate an artisan after service completion.
+     */
+    public function rate(Request $request, ServiceRequest $serviceRequest): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if ($serviceRequest->user_id !== $user->id) {
+            abort(403);
+        }
+        if ($serviceRequest->status !== 'completed') {
+            return back()->with('error', 'Vous ne pouvez evaluer qu\'un service termine.');
+        }
+        if ($serviceRequest->rating) {
+            return back()->with('error', 'Vous avez deja evaluet cet artisan.');
+        }
+
+        $validated = $request->validate([
+            'rating'  => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:500',
+        ]);
+
+        $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if (!$artisanId) {
+            return back()->with('error', 'Artisan introuvable.');
+        }
+
+        ArtisanRating::create([
+            'user_id'            => $user->id,
+            'artisan_id'         => $artisanId,
+            'service_request_id' => $serviceRequest->id,
+            'rating'             => $validated['rating'],
+            'comment'            => $validated['comment'] ?? null,
+        ]);
+
+        Notification::create([
+            'user_id'    => $artisanId,
+            'type'       => 'artisan_rated',
+            'title'      => 'Nouvelle evaluation',
+            'message'    => "{$user->name} vous a donne {$validated['rating']}/5 etoiles.",
+            'action_url' => route('user.artisan.service-requests.index'),
+            'is_read'    => false,
+        ]);
+
+        return back()->with('success', 'Merci pour votre evaluation !');
     }
 }

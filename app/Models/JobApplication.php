@@ -14,6 +14,7 @@ class JobApplication extends Model
         'message',
         'resume_url',
         'cover_letter',
+        'cv_attachment',
         'applied_at',
         'reviewed_at',
         'admin_notes',

@@ -70,15 +70,23 @@ class JobController extends Controller
             return redirect()->route('user.cv.index')->with('warning', 'Veuillez créer votre CV avant de postuler.');
         }
 
-        $request->validate(['cover_letter' => ['nullable', 'string', 'max:2000']]);
+        $request->validate([
+            'cv_attachment' => ['required', 'file', 'mimes:pdf,doc,docx,png,jpg,jpeg', 'max:5120'],
+        ]);
+
+        $attachmentPath = null;
+        if ($request->hasFile('cv_attachment')) {
+            $attachmentPath = $request->file('cv_attachment')->store('cv_attachments', 'public');
+        }
 
         $application = JobApplication::create([
-            'job_offer_id' => $job->id,
-            'user_id'      => $user->id,
-            'cv_id'        => $user->cv->id,
-            'cover_letter' => $request->cover_letter,
-            'status'       => 'pending',
-            'applied_at'   => now(),
+            'job_offer_id'  => $job->id,
+            'user_id'       => $user->id,
+            'cv_id'         => $user->cv->id,
+            'cover_letter'  => null,
+            'cv_attachment' => $attachmentPath,
+            'status'        => 'pending',
+            'applied_at'    => now(),
         ]);
 
         $recruiterId = $job->employer_id ?? $job->user_id;
@@ -288,6 +296,29 @@ class JobController extends Controller
         ]);
 
         return back()->with('info', 'Candidature refusée.');
+    }
+
+    public function interviewApplication(int $applicationId): RedirectResponse
+    {
+        $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
+        $user        = Auth::user();
+
+        $application->update(['status' => 'interview']);
+
+        Notification::create([
+            'user_id'      => $application->user_id,
+            'type'         => 'application_interview',
+            'related_type' => 'application',
+            'related_id'   => $application->id,
+            'title'        => 'Entretien programmé',
+            'message'      => "Vous êtes invité(e) à un entretien pour \"{$application->jobOffer->title}\".",
+            'action_url'   => route('user.applications.index'),
+            'is_read'      => false,
+        ]);
+
+        Conversation::findOrCreateBetween($application->user_id, $user->id, 'job', $application->id);
+
+        return back()->with('success', 'Candidature marquée pour entretien.');
     }
 
     public function myJobOffers(): View

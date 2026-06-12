@@ -94,6 +94,17 @@
                         <span><i class="fas fa-map-marker-alt mr-1"></i>{{ $req->city }}</span>
                         @endif
                         <span><i class="fas fa-exclamation-triangle mr-1"></i>{{ $req->urgency_label }}</span>
+                        @if($req->status === 'accepted' && $req->accepted_at)
+                        <span class="text-emerald-600 font-bold" data-accepted-at="{{ $req->accepted_at->toIso8601String() }}" id="timer-badge-{{ $req->id }}">
+                            <i class="fas fa-stopwatch mr-1"></i><span>00:00:00</span>
+                        </span>
+                        @endif
+                        @if($req->status === 'completed' && $req->accepted_at && $req->completed_at)
+                        @php $d = $req->completed_at->diff($req->accepted_at); @endphp
+                        <span class="text-blue-600 font-bold">
+                            <i class="fas fa-clock mr-1"></i>{{ $d->h > 0 ? "{$d->h}h {$d->i}min" : "{$d->i}min" }}
+                        </span>
+                        @endif
                     </div>
                     @if($req->description)
                     <p class="mt-2 text-sm text-slate-400 line-clamp-2">{{ $req->description }}</p>
@@ -108,6 +119,14 @@
                     <a href="{{ route('user.messages.start.user', $artisanId) }}"
                        class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white text-sm font-bold rounded-xl hover:bg-rdc-blue-dark transition">
                         <i class="fas fa-comments"></i> Discuter
+                    </a>
+                    @endif
+
+                    {{-- Rate button --}}
+                    @if($req->status === 'completed' && $req->user_id === auth()->id())
+                    <a href="{{ route('user.service-requests.show', $req->id) }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-xl hover:bg-amber-600 transition">
+                        <i class="fas fa-star"></i> {{ $req->rating ? 'Voir evaluation' : 'Evaluer' }}
                     </a>
                     @endif
 
@@ -149,4 +168,24 @@
         @endif
     </div>
 </div>
+
+<script>
+(function() {
+    const badges = document.querySelectorAll('[data-accepted-at]');
+    if (!badges.length) return;
+    function updateBadges() {
+        const now = Date.now();
+        badges.forEach(badge => {
+            const acceptedAt = new Date(badge.dataset.acceptedAt).getTime();
+            const diff = Math.floor((now - acceptedAt) / 1000);
+            const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+            const s = String(diff % 60).padStart(2, '0');
+            badge.querySelector('span:last-child').textContent = h + ':' + m + ':' + s;
+        });
+    }
+    updateBadges();
+    setInterval(updateBadges, 1000);
+})();
+</script>
 @endsection
