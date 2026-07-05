@@ -9,59 +9,11 @@
     <title>ProConnect | Trouvez artisans et emplois en RDC</title>
 
     <!-- Preload critical resources -->
-    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!-- Tailwind CSS Play CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Tailwind Configuration avec couleurs RDC -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    screens: {
-                        'xs': '400px',
-                    },
-                    colors: {
-                        // Couleurs ProConnect
-                        'rdc-blue': '#29B6D1',
-                        'rdc-blue-dark': '#1E9CB5',
-                        'rdc-yellow': '#F0B800',
-                        'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#090D16',
-                        // Couleurs utilitaires
-                        'rdc-success': '#10B981',
-                        'rdc-warning': '#F59E0B',
-                        'rdc-error': '#EF4444',
-                        'rdc-info': '#3B82F6',
-                    },
-                    fontFamily: {
-                        'inter': ['Inter', 'system-ui', 'sans-serif'],
-                        'poppins': ['Poppins', 'system-ui', 'sans-serif'],
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s ease-in-out infinite',
-                        'bounce-slow': 'bounce 2s infinite',
-                        'fade-in-up': 'fadeInUp 0.6s ease-out',
-                        'slide-in-right': 'slideInRight 0.5s ease-out',
-                    },
-                    keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        slideInRight: {
-                            '0%': { opacity: '0', transform: 'translateX(20px)' },
-                            '100%': { opacity: '1', transform: 'translateX(0)' },
-                        }
-                    }
-                }
-            },
-            plugins: [],
-        }
-    </script>
+    <!-- Vite compiled CSS + JS (Tailwind v4) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"

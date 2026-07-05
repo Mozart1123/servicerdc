@@ -9,10 +9,13 @@ use Illuminate\View\View;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\JobOffer;
+use App\Models\Transaction;
 use App\Models\SystemLog;
 use App\Models\SystemAlert;
+use App\Services\KpayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 /**
  * Admin Dashboard Controller
@@ -21,20 +24,68 @@ use Illuminate\Http\Request;
  */
 class DashboardController extends Controller
 {
+    protected KpayService $kpayService;
+
+    public function __construct(KpayService $kpayService)
+    {
+        $this->kpayService = $kpayService;
+    }
+
     /**
      * Display the admin dashboard.
      */
     public function index(): View
     {
-        // Premium Dashboard Data
+        // Real revenue from Transaction table (payments confirmed by K-PAY)
+        $thisMonth = Carbon::now()->startOfMonth();
+        $lastMonth = Carbon::now()->subMonth()->startOfMonth();
+        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+
+        $monthlyRevenue = Transaction::where('status', 'succeeded')
+            ->where('created_at', '>=', $thisMonth)
+            ->sum('amount');
+
+        $lastMonthRevenue = Transaction::where('status', 'succeeded')
+            ->whereBetween('created_at', [$lastMonth, $lastMonthEnd])
+            ->sum('amount');
+
+        // Calculate real growth vs last month
+        $revenueGrowth = 0;
+        if ($lastMonthRevenue > 0) {
+            $revenueGrowth = round((($monthlyRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100, 1);
+        }
+
+        // Real user growth (users created this month vs last month)
+        $usersThisMonth = User::where('created_at', '>=', $thisMonth)->count();
+        $usersLastMonth = User::whereBetween('created_at', [$lastMonth, $lastMonthEnd])->count();
+        $userGrowth = $usersLastMonth > 0
+            ? round((($usersThisMonth - $usersLastMonth) / $usersLastMonth) * 100, 1)
+            : 0;
+
+        // K-PAY wallet balance (CDF)
+        $kpayBalance = 0;
+        try {
+            $wallets = $this->kpayService->getBalance();
+            if (is_array($wallets)) {
+                foreach ($wallets as $wallet) {
+                    if (($wallet['currency'] ?? '') === 'CDF') {
+                        $kpayBalance = $wallet['availableBalance'] ?? 0;
+                        break;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // If K-PAY is unreachable, show 0
+        }
+
         $stats = [
-            'total_users' => User::count(),
-            'active_services' => Service::active()->count(),
-            'total_jobs' => JobOffer::count(),
+            'total_users'        => User::count(),
+            'active_services'    => Service::active()->count(),
+            'total_jobs'         => JobOffer::count(),
             'total_applications' => \App\Models\JobApplication::count(),
-            'monthly_revenue' => 12450.75, 
-            'revenue_growth' => 12.5,
-            'user_growth' => 8.2,
+            'monthly_revenue'    => $kpayBalance,   // Real K-PAY CDF balance
+            'revenue_growth'     => $revenueGrowth,
+            'user_growth'        => $userGrowth,
         ];
 
         $users = User::latest()->take(10)->get();

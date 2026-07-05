@@ -12,30 +12,13 @@
     
     <!-- Icons & Stylings -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vite compiled CSS + JS (Tailwind v4) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        'rdc-blue': '#29B6D1',
-                        'rdc-blue-dark': '#1E9CB5',
-                        'rdc-yellow': '#F0B800',
-                        'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#090D16',
-                    }
-                }
-            }
-        }
-    </script>
+
 
     <style>
         [x-cloak] { display: none !important; }
@@ -165,7 +148,9 @@
 
                 <!-- [FINANCES] -->
                 <x-admin-dropdown-nav icon="fas fa-wallet" label="Gestion Financière" :activePrefixes="['admin.finances']">
+                    <x-admin-dropdown-item route="admin.finances.dashboard" label="Tableau de bord financier" />
                     <x-admin-dropdown-item route="admin.finances.transactions" label="Transactions" />
+                    <x-admin-dropdown-item route="admin.finances.withdrawals" label="Retraits" />
                     <x-admin-dropdown-item route="admin.finances.commissions" label="Commissions" />
                     <x-admin-dropdown-item route="admin.finances.invoicing" label="Facturation" />
                 </x-admin-dropdown-nav>

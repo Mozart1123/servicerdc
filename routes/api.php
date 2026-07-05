@@ -49,6 +49,9 @@ Route::middleware(['auth:sanctum', 'api.role:client'])
         // CV management
         Route::get('/cv',  [\App\Http\Controllers\Client\CvController::class, 'show'])->name('cv.show');
         Route::post('/cv', [\App\Http\Controllers\Client\CvController::class, 'store'])->name('cv.store');
+
+        // Payments
+        Route::post('/payments/initiate', [\App\Http\Controllers\Client\PaymentController::class, 'initiatePayment'])->name('payments.initiate');
     });
 
 // ─── Recruiter Routes ──────────────────────────────────────────────────────
@@ -86,4 +89,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
             'unread_notifications' => \App\Models\Notification::where('user_id', $request->user()->id)->unread()->count(),
         ]),
     ]);
+});
+
+// ─── K-PAY Webhooks ─────────────────────────────────────────────────────────
+Route::prefix('webhooks/kpay')->name('api.webhooks.kpay.')->group(function () {
+    Route::post('/',         [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handleGeneric'])->name('generic');
+    Route::post('/deposits', [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handleDeposit'])->name('deposits');
+    Route::post('/payouts',  [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handlePayout'])->name('payouts');
+    Route::post('/refunds',  [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handleRefund'])->name('refunds');
 });

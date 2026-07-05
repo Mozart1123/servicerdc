@@ -50,7 +50,7 @@ class SubscriptionController extends Controller
     /**
      * Process subscription payment.
      */
-    public function subscribe(Request $request): RedirectResponse
+    public function subscribe(Request $request, \App\Services\KpayService $kpayService): RedirectResponse
     {
         $request->validate([
             'plan_id'        => ['required', 'exists:subscription_plans,id'],
@@ -72,14 +72,16 @@ class SubscriptionController extends Controller
                     ->where('status', 'active')
                     ->update(['status' => 'cancelled']);
 
-        Subscription::create([
+        $externalId = 'PAY-' . time() . '-' . \Illuminate\Support\Str::random(5);
+
+        $subscription = Subscription::create([
             'user_id'              => Auth::id(),
             'subscription_plan_id' => $plan->id,
             'status'               => $amount == 0 ? 'active' : 'pending',
             'billing_cycle'        => $billing,
             'payment_method'       => $request->payment_method,
             'payment_phone'        => $request->payment_phone,
-            'transaction_ref'      => 'TXN-' . strtoupper(uniqid()),
+            'transaction_ref'      => $externalId,
             'amount_paid'          => $amount,
             'starts_at'            => now()->toDateString(),
             'ends_at'              => $billing === 'yearly'
@@ -88,13 +90,65 @@ class SubscriptionController extends Controller
             'paid_at'              => $amount == 0 ? now() : null,
         ]);
 
+        if ($amount > 0) {
+            $transaction = new \App\Models\Transaction();
+            $transaction->user_id = Auth::id();
+            $transaction->amount = $amount;
+            $transaction->currency = 'XAF'; // Adjust based on predicted provider later if needed
+            $transaction->status = 'pending';
+            $transaction->type = 'subscription';
+            $transaction->reference_id = $externalId; 
+            $transaction->item_id = $plan->id;
+            $transaction->description = "Abonnement " . $plan->name;
+            $transaction->save();
+        }
+
         if ($amount == 0) {
             return redirect()->route('user.subscription.index')
                              ->with('success', 'Votre abonnement Starter est maintenant actif !');
         }
 
+        if ($request->payment_method === 'mobile_money') {
+            try {
+                $provider = $kpayService->predictProvider($request->payment_phone);
+                
+                if (!$provider) {
+                    return redirect()->back()->withErrors(['payment_phone' => 'Opérateur Mobile Money non reconnu pour ce numéro.'])->withInput();
+                }
+
+                $providerCurrency = $kpayService->getCurrencyForProvider($provider);
+                $localAmount = (int) round($kpayService->convertUsdToLocal($amount, $providerCurrency));
+
+                if ($amount > 0) {
+                    $transaction->update([
+                        'currency' => $providerCurrency,
+                        'amount' => $localAmount
+                    ]);
+                }
+
+                $kpayResponse = $kpayService->initiatePayment([
+                    'amount'      => $localAmount,
+                    'provider'    => $provider,
+                    'phoneNumber' => preg_replace('/[^0-9]/', '', $request->payment_phone),
+                    'externalId'  => $externalId,
+                    'description' => "Abonnement " . $plan->name,
+                ]);
+
+                if (isset($kpayResponse['reference'])) {
+                    $transaction->update(['kpay_reference' => $kpayResponse['reference']]);
+                }
+
+                return redirect()->route('user.subscription.index')
+                                 ->with('success', 'Veuillez valider le paiement sur votre téléphone (Popup USSD) !');
+                                 
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Subscription payment init failed: ' . $e->getMessage());
+                return redirect()->back()->withErrors(['payment' => 'Erreur lors de l\'initialisation du paiement: ' . $e->getMessage()])->withInput();
+            }
+        }
+
         return redirect()->route('user.subscription.index')
-                         ->with('success', 'Souscription en cours de traitement. Confirmation sous peu.');
+                         ->with('success', 'Souscription enregistrée. Veuillez procéder au paiement manuel selon les instructions.');
     }
 
     /**

@@ -1,6 +1,6 @@
 @extends('layouts.user')
 
-@section('header_title', 'Paiement - Plan {{ $plan->name }}')
+@section('header_title', 'Paiement - Plan ' . $plan->name)
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-10 pb-20">
@@ -60,6 +60,9 @@
                             <label class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Numéro Mobile Money <span class="text-red-500">*</span></label>
                             <input type="tel" name="payment_phone" placeholder="+243 9xx xxx xxx" value="{{ old('payment_phone') }}"
                                    class="mt-2 w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 outline-none">
+                            @if(config('app.env') === 'local')
+                                <p class="text-[10px] font-bold text-amber-500 mt-1"><i class="fas fa-flask"></i> Mode Test : Utilisez le numéro K-Pay <b>243813456789</b> pour simuler un succès (RDC).</p>
+                            @endif
                         </div>
 
                         {{-- Visa/Mastercard --}}

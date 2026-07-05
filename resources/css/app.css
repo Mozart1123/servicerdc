@@ -1,1 +1,74 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+/* ============================================================
+   PROCONNECT – Custom Theme (Tailwind v4 CSS-first config)
+   ============================================================ */
+
+/* Class-based dark mode strategy */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ── RDC brand colours ──────────────────────────────────── */
+  --color-rdc-blue:       #29B6D1;
+  --color-rdc-blue-dark:  #1E9CB5;
+  --color-rdc-yellow:     #F0B800;
+  --color-rdc-red:        #FF4757;
+  --color-rdc-dark-blue:  #090D16;
+  --color-rdc-success:    #10B981;
+  --color-rdc-warning:    #F59E0B;
+  --color-rdc-error:      #EF4444;
+  --color-rdc-info:       #3B82F6;
+
+  /* ── Congo national colours (admin palette) ─────────────── */
+  --color-congo-blue:     #007FFF;
+  --color-congo-gold:     #F7D000;
+  --color-congo-red:      #CE1021;
+
+  /* ── Dark-mode surface colours ──────────────────────────── */
+  --color-page-dark:      #0A0F1C;
+  --color-surface-dark:   #111827;
+
+  /* ── Custom responsive breakpoint ──────────────────────── */
+  --breakpoint-xs: 400px;
+
+  /* ── Google Fonts ───────────────────────────────────────── */
+  --font-inter:   Inter, system-ui, sans-serif;
+  --font-poppins: Poppins, system-ui, sans-serif;
+
+  /* ── Custom animations ──────────────────────────────────── */
+  --animate-pulse-slow:      pulse 3s ease-in-out infinite;
+  --animate-bounce-slow:     bounce 2s infinite;
+  --animate-fade-in-up:      fadeInUp 0.6s ease-out;
+  --animate-slide-in-right:  slideInRight 0.5s ease-out;
+  --animate-float:           float 6s ease-in-out infinite;
+  --animate-float-delayed:   float 6s ease-in-out 3s infinite;
+  --animate-spin-slow:       spin 12s linear infinite;
+
+  /* ── Custom shadows ─────────────────────────────────────── */
+  --shadow-glow-blue:    0 0 20px rgba(0, 127, 255, 0.2);
+  --shadow-glow-blue-lg: 0 0 40px rgba(0, 127, 255, 0.3);
+}
+
+/* ── Keyframes ──────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    0%   { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+    0%   { opacity: 0; transform: translateX(20px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
+}
+
+/* Note: 'spin' and 'pulse' are built-in Tailwind keyframes */

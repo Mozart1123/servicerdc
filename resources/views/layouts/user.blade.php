@@ -8,8 +8,8 @@
 
     <title>@yield('title', 'Tableau de bord') | ProConnect</title>
 
-    <!-- Tailwind CSS Play CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vite compiled CSS + JS (Tailwind v4) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,25 +23,7 @@
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        'rdc-blue': '#29B6D1',
-                        'rdc-blue-dark': '#1E9CB5',
-                        'rdc-yellow': '#F0B800',
-                        'rdc-red': '#FF4757',
-                        'rdc-dark-blue': '#090D16',
-                    }
-                }
-            }
-        }
-    </script>
+
 
     <style>
         [x-cloak] {

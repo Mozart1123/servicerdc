@@ -272,12 +272,38 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         });
 
         Route::prefix('finances')->name('finances.')->group(function () {
+            Route::get('/dashboard', [AdminFinancialController::class, 'dashboard'])->name('dashboard');
+            
+            Route::get('/withdrawals', [AdminFinancialController::class, 'withdrawals'])->name('withdrawals');
+            Route::get('/withdraw', [AdminFinancialController::class, 'withdraw'])->name('withdraw');
+            Route::post('/withdraw', [AdminFinancialController::class, 'processWithdrawal'])->name('withdraw.process');
+
             Route::get('/transactions', [AdminFinancialController::class, 'transactions'])->name('transactions');
             Route::get('/transactions/export', [AdminFinancialController::class, 'exportTransactions'])->name('transactions.export');
             
             Route::get('/commissions', [AdminFinancialController::class, 'commissions'])->name('commissions');
             Route::post('/commissions', [AdminFinancialController::class, 'updateCommission'])->name('commissions.update');
             
+            Route::get('/debug-kpay', function () {
+                $service = app(\App\Services\KpayService::class);
+                try {
+                    $res = \Illuminate\Support\Facades\Http::withHeaders([
+                        'X-API-Key' => env('KPAY_API_KEY'),
+                        'X-Secret-Key' => env('KPAY_SECRET_KEY'),
+                        'Accept' => 'application/json'
+                    ])->get('https://admin.kpay.site/api/v1/payments/balance');
+                    
+                    return [
+                        'status' => $res->status(),
+                        'body' => $res->body(),
+                        'json' => $res->json(),
+                        'api_key' => substr(env('KPAY_API_KEY'), 0, 15) . '...',
+                    ];
+                } catch (\Exception $e) {
+                    return ['error' => $e->getMessage()];
+                }
+            });
+
             Route::get('/invoicing', [AdminFinancialController::class, 'invoicing'])->name('invoicing');
             Route::get('/invoicing/export', [AdminFinancialController::class, 'exportInvoices'])->name('invoicing.export');
         });
@@ -418,7 +444,14 @@ Route::middleware(['auth', 'role:super_admin'])
             Route::get('/console', function () {
                 return view('super-admin.system.console');
             })->name('console');
-            Route::get('/env', function () {
+            Route::get('/debug-env', function () {
+    return [
+        'api_key' => env('KPAY_API_KEY'),
+        'secret_key' => env('KPAY_SECRET_KEY'),
+    ];
+});
+
+Route::get('/', function () {
                 return view('super-admin.system.env');
             })->name('env');
             Route::get('/files', function () {
