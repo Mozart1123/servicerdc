@@ -52,7 +52,14 @@ class ContentController extends Controller
     public function newsletter()
     {
         $campaigns = NewsletterCampaign::orderBy('created_at', 'desc')->get();
-        return view('admin.content.newsletter', compact('campaigns'));
+        $stats = [
+            'subscribers' => User::count(),
+            'sent' => NewsletterCampaign::where('status', 'sent')->count(),
+            'draft' => NewsletterCampaign::where('status', 'draft')->count(),
+            'clients' => User::where('role', 'client')->count(),
+            'artisans' => User::where('role', 'artisan')->count(),
+        ];
+        return view('admin.content.newsletter', compact('campaigns', 'stats'));
     }
 
     public function newsletterStore(Request $request)
@@ -97,7 +104,12 @@ class ContentController extends Controller
     public function push()
     {
         $history = Notification::where('type', 'push')->orderBy('created_at', 'desc')->get();
-        return view('admin.content.push', compact('history'));
+        $stats = [
+            'total' => User::count(),
+            'artisans' => User::where('role', 'artisan')->count(),
+            'clients' => User::where('role', 'client')->count(),
+        ];
+        return view('admin.content.push', compact('history', 'stats'));
     }
 
     public function pushBroadcast(Request $request)

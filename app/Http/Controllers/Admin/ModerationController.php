@@ -29,6 +29,7 @@ class ModerationController extends Controller
             'approved' => Review::approved()->count(),
             'rejected' => Review::rejected()->count(),
             'total'    => Review::count(),
+            'avg_rating' => Review::avg('rating') ?? 0,
         ];
 
         return view('admin.moderation.reviews', compact('reviews', 'stats', 'status'));

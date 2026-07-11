@@ -56,7 +56,10 @@
                     <p class="text-[8px] sm:text-xs text-slate-400 font-bold mt-0.5">Dernières 24h</p>
                 </div>
             </div>
-            <p class="text-3xl sm:text-4xl font-black text-slate-900">02</p>
+            @php
+                $errorCount = $logs ? substr_count($logs, '[error]') + substr_count($logs, '.ERROR:') : 0;
+            @endphp
+            <p class="text-3xl sm:text-4xl font-black text-slate-900 font-mono">{{ str_pad($errorCount, 2, '0', STR_PAD_LEFT) }}</p>
         </div>
         
         <div class="bg-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group">
@@ -66,10 +69,15 @@
                 </div>
                 <div>
                     <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-tight">Disque</h4>
-                    <p class="text-[8px] sm:text-xs text-slate-400 font-bold mt-0.5">Cloud Storage</p>
+                    <p class="text-[8px] sm:text-xs text-slate-400 font-bold mt-0.5">Storage local</p>
                 </div>
             </div>
-            <p class="text-3xl sm:text-4xl font-black text-slate-900">14<span class="text-[10px] sm:text-xs uppercase ml-0.5">%</span></p>
+            @php
+                $diskTotal = disk_total_space(storage_path());
+                $diskFree  = disk_free_space(storage_path());
+                $diskUsed  = $diskTotal > 0 ? round((($diskTotal - $diskFree) / $diskTotal) * 100) : 0;
+            @endphp
+            <p class="text-3xl sm:text-4xl font-black text-slate-900 font-mono">{{ $diskUsed }}<span class="text-[10px] sm:text-xs uppercase ml-0.5">%</span></p>
         </div>
     </div>
 </div>

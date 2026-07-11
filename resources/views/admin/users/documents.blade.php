@@ -9,31 +9,45 @@
 <div class="space-y-8 pb-20" x-data="kycManager()">
     <!-- Verification Stats -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        <div class="bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all">
-            <div>
-                <p class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2">En Attente</p>
-                <h3 class="text-xl sm:text-3xl font-black text-slate-900" x-text="stats.pending">--</h3>
+        <!-- En Attente -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-amber-50 text-amber-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-clock-rotate-left text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <div class="w-10 h-10 sm:w-14 sm:h-14 bg-amber-50 text-amber-500 rounded-lg sm:rounded-2xl flex items-center justify-center text-lg sm:text-2xl group-hover:scale-110 transition-transform shrink-0">
-                <i class="fas fa-clock-rotate-left"></i>
-            </div>
-        </div>
-        <div class="bg-white p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all">
-            <div>
-                <p class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 text-nowrap">Validés (30j)</p>
-                <h3 class="text-xl sm:text-3xl font-black text-slate-900" x-text="stats.verified_30d">--</h3>
-            </div>
-            <div class="w-10 h-10 sm:w-14 sm:h-14 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-2xl flex items-center justify-center text-lg sm:text-2xl group-hover:scale-110 transition-transform shrink-0">
-                <i class="fas fa-circle-check"></i>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">En Attente</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="stats.pending">--</h3>
             </div>
         </div>
-        <div class="bg-slate-900 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl flex items-center justify-between group text-white">
-            <div>
-                <p class="text-[8px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest mb-1 sm:mb-2">Taux Rejet</p>
-                <h3 class="text-xl sm:text-3xl font-black"><span x-text="stats.rejected_rate">--</span>%</h3>
+
+        <!-- Validés (30j) -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-circle-check text-sm sm:text-xl"></i>
+                </div>
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold text-slate-500 bg-slate-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                    30 Jours
+                </span>
             </div>
-            <div class="w-10 h-10 sm:w-14 sm:h-14 bg-white/10 rounded-lg sm:rounded-2xl flex items-center justify-center text-lg sm:text-2xl group-hover:scale-110 transition-transform shrink-0">
-                <i class="fas fa-chart-pie"></i>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Validés</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="stats.verified_30d">--</h3>
+            </div>
+        </div>
+
+        <!-- Taux Rejet -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-red-50 text-rdc-red rounded-lg sm:rounded-xl">
+                    <i class="fas fa-chart-pie text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Taux Rejet</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate"><span x-text="stats.rejected_rate">--</span>%</h3>
             </div>
         </div>
     </div>
@@ -201,21 +215,24 @@ function kycManager() {
 
         fetchDocuments() {
             this.loading = true;
-            // Fake API call for demonstration
-            setTimeout(() => {
-                let dummyDocs = [
-                    { id: 301, user: { id: 50, name: "Pauline Mwamba" }, type: "identity", status: "pending", created_at: new Date(Date.now() - 3600000).toISOString(), file_path: "favicon.ico" },
-                    { id: 302, user: { id: 62, name: "Congo Services" }, type: "business_reg", status: "pending", created_at: new Date(Date.now() - 86400000).toISOString(), file_path: "favicon.ico" },
-                    { id: 303, user: { id: 77, name: "David Kabasele" }, type: "diploma", status: "pending", created_at: new Date(Date.now() - 172800000).toISOString(), file_path: "favicon.ico" }
-                ];
-                if (this.type) {
-                    dummyDocs = dummyDocs.filter(d => d.type === this.type);
-                }
-                this.documents = dummyDocs;
-                this.stats = { pending: 3, verified_30d: 42, rejected_rate: 12 };
-                this.pagination = { current_page: 1, last_page: 1, total: dummyDocs.length };
+            let url = `/admin/users/documents?page=${this.page}`;
+            if (this.type) url += `&type=${this.type}`;
+
+            fetch(url, {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.documents = data.documents.data;
+                this.stats = data.stats;
+                this.pagination = { 
+                    current_page: data.documents.current_page, 
+                    last_page: data.documents.last_page, 
+                    total: data.documents.total 
+                };
                 this.loading = false;
-            }, 600);
+            })
+            .catch(() => { this.loading = false; });
         },
 
         openViewer(doc) {
@@ -225,18 +242,45 @@ function kycManager() {
 
         verify() {
             if (!confirm('Valider ce document ?')) return;
-            this.modalOpen = false;
-            this.documents = this.documents.filter(d => d.id !== this.activeDoc.id);
-            this.stats.pending = Math.max(0, this.stats.pending - 1);
-            this.stats.verified_30d++;
+            fetch(`/admin/users/documents/${this.activeDoc.id}/verify`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    this.modalOpen = false;
+                    this.documents = this.documents.filter(d => d.id !== this.activeDoc.id);
+                    this.stats.pending = Math.max(0, this.stats.pending - 1);
+                    this.stats.verified_30d++;
+                }
+            });
         },
 
         reject() {
             const reason = prompt('Veuillez indiquer la raison du rejet :');
             if (!reason) return;
-            this.modalOpen = false;
-            this.documents = this.documents.filter(d => d.id !== this.activeDoc.id);
-            this.stats.pending = Math.max(0, this.stats.pending - 1);
+            
+            fetch(`/admin/users/documents/${this.activeDoc.id}/reject`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    this.modalOpen = false;
+                    this.documents = this.documents.filter(d => d.id !== this.activeDoc.id);
+                    this.stats.pending = Math.max(0, this.stats.pending - 1);
+                }
+            });
         },
 
         changePage(p) {

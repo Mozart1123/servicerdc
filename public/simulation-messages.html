@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Messages — Espace Client</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f7f9fa; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+        textarea { resize: none; }
+    </style>
+</head>
+<body>
+<header class="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-[#16a3b0] flex items-center justify-center">
+                <i class="fas fa-bolt text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-slate-900 text-lg">ProConnect</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="relative p-2 text-slate-500 hover:text-[#16a3b0]">
+                <i class="fas fa-bell"></i>
+                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <img src="https://ui-avatars.com/api/?name=Marie+Kabila&background=16a3b0&color=fff&size=80" class="w-9 h-9 rounded-full border-2 border-[#16a3b0] object-cover">
+        </div>
+    </div>
+</header>
+
+<div class="bg-[#f7f9fa] min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- SIDEBAR -->
+            <div class="w-full lg:w-72 shrink-0">
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden lg:sticky lg:top-24">
+                    <div class="p-6 border-b border-slate-50 flex items-center gap-4">
+                        <img src="https://ui-avatars.com/api/?name=Marie+Kabila&background=16a3b0&color=fff&size=80" class="w-14 h-14 rounded-full border-2 border-[#16a3b0] object-cover">
+                        <div>
+                            <p class="font-bold text-slate-800 text-lg leading-tight">Marie Kabila</p>
+                            <p class="text-xs text-[#16a3b0] font-medium mt-0.5">Espace Client</p>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-6">
+                        <div>
+                            <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Mon compte</p>
+                            <div class="space-y-1">
+                                <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fas fa-user w-5 text-center text-slate-400"></i> Profil</a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fas fa-shield-alt w-5 text-center text-slate-400"></i> Sécurité</a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fas fa-cog w-5 text-center text-slate-400"></i> Paramètres & Aide</a>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Activité</p>
+                            <div class="space-y-1">
+                                <a href="#" class="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"><div class="flex items-center gap-3"><i class="fas fa-clipboard-list w-5 text-center text-slate-400"></i> Mes demandes</div><span class="bg-[#16a3b0]/10 text-[#16a3b0] text-[10px] font-bold px-2 py-0.5 rounded-full">3</span></a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium bg-[#16a3b0]/10 text-[#16a3b0]"><i class="fas fa-envelope w-5 text-center text-[#16a3b0]"></i> Messages</a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fas fa-briefcase w-5 text-center text-slate-400"></i> Emplois & Candidatures</a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"><i class="fas fa-heart w-5 text-center text-slate-400"></i> Favoris</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 border-t border-slate-50">
+                        <button class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN -->
+            <div class="flex-1 min-w-0">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Messages</h1>
+                    <p class="mt-1 text-sm text-slate-500">Échangez avec vos prestataires de services.</p>
+                </div>
+                <div class="mb-4 flex items-center gap-2 px-4 py-3 bg-[#16a3b0]/10 border border-[#16a3b0]/20 rounded-xl text-sm text-[#16a3b0] font-medium">
+                    <i class="fas fa-envelope"></i><span>2 messages non lus</span>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" style="height:600px">
+                    <div class="grid grid-cols-4 h-full">
+                        <!-- CONV LIST -->
+                        <aside class="col-span-1 border-r border-slate-100 flex flex-col h-full overflow-hidden">
+                            <div class="p-3 border-b border-slate-100">
+                                <div class="relative">
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                    <input type="text" placeholder="Rechercher..." class="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-50 border border-slate-200 outline-none text-sm">
+                                </div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                                <div class="flex items-center gap-3 p-4 border-b border-slate-100 cursor-pointer bg-[#16a3b0]/5 border-l-4 border-l-[#16a3b0]">
+                                    <img src="https://ui-avatars.com/api/?name=Jean+Plombier&background=1a6b75&color=fff&size=80" class="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between mb-0.5"><h4 class="font-bold text-slate-900 truncate text-sm">Jean Plombier</h4><span class="text-[10px] text-slate-400">14:32</span></div>
+                                        <p class="text-xs text-slate-500 truncate">Oui je peux passer demain matin vers 9h</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 border-l-4 border-l-transparent">
+                                    <div class="relative shrink-0">
+                                        <img src="https://ui-avatars.com/api/?name=Amani+Electricien&background=7c3aed&color=fff&size=80" class="w-11 h-11 rounded-xl object-cover border border-slate-200">
+                                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">2</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between mb-0.5"><h4 class="font-bold text-slate-900 truncate text-sm">Amani Électricien</h4><span class="text-[10px] text-slate-400">11:05</span></div>
+                                        <p class="text-xs font-bold text-slate-900 truncate">Le devis est prêt, consultez-le</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 border-l-4 border-l-transparent">
+                                    <img src="https://ui-avatars.com/api/?name=Sylvie+Menage&background=d97706&color=fff&size=80" class="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between mb-0.5"><h4 class="font-bold text-slate-900 truncate text-sm">Sylvie Ménage</h4><span class="text-[10px] text-slate-400">Hier</span></div>
+                                        <p class="text-xs text-slate-500 truncate"><span class="text-[#16a3b0]">Vous:</span> Merci, à vendredi !</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 border-l-4 border-l-transparent">
+                                    <img src="https://ui-avatars.com/api/?name=Support+ProConnect&background=16a3b0&color=fff&size=80" class="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between mb-0.5"><h4 class="font-bold text-slate-900 truncate text-sm">Support ProConnect</h4><span class="text-[10px] text-slate-400">Lun</span></div>
+                                        <p class="text-xs text-slate-500 truncate italic">Commencer la discussion</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                        <!-- CHAT -->
+                        <main class="col-span-3 flex flex-col h-full">
+                            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                                <div class="flex items-center gap-3">
+                                    <div class="relative">
+                                        <img src="https://ui-avatars.com/api/?name=Jean+Plombier&background=1a6b75&color=fff&size=80" class="w-10 h-10 rounded-xl object-cover border border-slate-100">
+                                        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-slate-900 text-sm leading-none mb-1">Jean Plombier</h3>
+                                        <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span><span class="text-[10px] text-slate-400 uppercase tracking-widest">En ligne</span></div>
+                                    </div>
+                                </div>
+                                <span class="hidden sm:inline-flex px-3 py-1 bg-slate-50 text-slate-500 text-xs rounded-lg border border-slate-100">Réf: Service #1048</span>
+                            </div>
+                            <div class="flex-1 p-5 bg-slate-50/50 overflow-y-auto space-y-4 custom-scrollbar" id="chat-messages">
+                                <div class="flex justify-center"><span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] text-slate-400 font-medium shadow-sm">Aujourd'hui</span></div>
+                                <div class="flex justify-start items-end gap-2">
+                                    <img src="https://ui-avatars.com/api/?name=Jean+Plombier&background=1a6b75&color=fff&size=40" class="w-7 h-7 rounded-lg object-cover border border-slate-200 mb-1 shrink-0">
+                                    <div class="flex flex-col items-start max-w-sm">
+                                        <div class="p-3.5 bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-bl-sm shadow-sm"><p class="text-sm leading-relaxed">Bonjour Madame Marie, j'ai bien reçu votre demande pour la réparation de la fuite.</p></div>
+                                        <span class="text-[10px] text-slate-400 mt-1 px-1">09:15</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end items-end gap-2">
+                                    <div class="flex flex-col items-end max-w-sm">
+                                        <div class="p-3.5 bg-[#16a3b0] text-white rounded-2xl rounded-br-sm shadow-md"><p class="text-sm leading-relaxed">Bonjour Jean, merci de me répondre rapidement. La fuite est au niveau du lavabo de la salle de bain.</p></div>
+                                        <div class="flex items-center gap-1.5 mt-1 px-1"><span class="text-[10px] text-slate-400">09:18</span><i class="fas fa-check-double text-[10px] text-[#16a3b0]"></i></div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-start items-end gap-2">
+                                    <img src="https://ui-avatars.com/api/?name=Jean+Plombier&background=1a6b75&color=fff&size=40" class="w-7 h-7 rounded-lg object-cover border border-slate-200 mb-1 shrink-0">
+                                    <div class="flex flex-col items-start max-w-md">
+                                        <div class="p-3.5 bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-bl-sm shadow-sm"><p class="text-sm leading-relaxed">D'accord, ça peut venir du joint du siphon. Est-ce que la fuite est constante ou seulement quand vous ouvrez le robinet ?</p></div>
+                                        <span class="text-[10px] text-slate-400 mt-1 px-1">10:12</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end items-end gap-2">
+                                    <div class="flex flex-col items-end max-w-sm">
+                                        <div class="p-3.5 bg-[#16a3b0] text-white rounded-2xl rounded-br-sm shadow-md"><p class="text-sm leading-relaxed">Elle est constante, même quand le robinet est fermé. Il y a des gouttes toutes les 2-3 secondes.</p></div>
+                                        <div class="flex items-center gap-1.5 mt-1 px-1"><span class="text-[10px] text-slate-400">09:45</span><i class="fas fa-check-double text-[10px] text-[#16a3b0]"></i></div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-start items-end gap-2">
+                                    <img src="https://ui-avatars.com/api/?name=Jean+Plombier&background=1a6b75&color=fff&size=40" class="w-7 h-7 rounded-lg object-cover border border-slate-200 mb-1 shrink-0">
+                                    <div class="flex flex-col items-start max-w-md">
+                                        <div class="p-3.5 bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-bl-sm shadow-sm"><p class="text-sm leading-relaxed">Ah ok, c'est probablement le joint d'étanchéité qui est usé. Pas grave, ça se règle facilement. Je peux passer demain matin. Vous êtes disponible vers 9h ?</p></div>
+                                        <span class="text-[10px] text-slate-400 mt-1 px-1">10:12</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end items-end gap-2">
+                                    <div class="flex flex-col items-end max-w-sm">
+                                        <div class="p-3.5 bg-[#16a3b0] text-white rounded-2xl rounded-br-sm shadow-md"><p class="text-sm leading-relaxed">Oui, 9h c'est parfait ! Merci beaucoup Jean 🙏</p></div>
+                                        <div class="flex items-center gap-1.5 mt-1 px-1"><span class="text-[10px] text-slate-400">10:15</span><i class="fas fa-check-double text-[10px] text-[#16a3b0]"></i></div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-start items-end gap-2">
+                                    <img src="https://ui-avatars.com/api/?name=Jean+Plombier&background=1a6b75&color=fff&size=40" class="w-7 h-7 rounded-lg object-cover border border-slate-200 mb-1 shrink-0">
+                                    <div class="flex flex-col items-start max-w-sm">
+                                        <div class="p-3.5 bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-bl-sm shadow-sm"><p class="text-sm leading-relaxed">Oui je peux passer demain matin vers 9h 👍</p></div>
+                                        <span class="text-[10px] text-slate-400 mt-1 px-1">14:32</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 border-t border-slate-100 bg-white shrink-0">
+                                <div class="flex items-center gap-2">
+                                    <label class="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-[#16a3b0] transition-colors flex items-center justify-center cursor-pointer"><i class="fas fa-paperclip text-sm"></i></label>
+                                    <div class="flex-1 relative">
+                                        <textarea id="msg-input" placeholder="Écrire un message..." rows="1" class="w-full pl-4 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0]/30 transition-all max-h-32" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'" onkeydown="handleKey(event)"></textarea>
+                                        <button onclick="sendMsg()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-[#16a3b0] text-white hover:bg-[#138b96] transition-colors flex items-center justify-center"><i class="fas fa-paper-plane text-xs"></i></button>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-2 ml-11">Entrée pour envoyer · Shift+Entrée pour une nouvelle ligne</p>
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const chat = document.getElementById('chat-messages');
+    chat.scrollTop = chat.scrollHeight;
+    const responses = ["D'accord, noté !","Très bien, je m'en occupe.","Merci pour l'info, je confirme demain.","Parfait, à bientôt 👍","Je prends note, merci.","OK, je vous recontacte rapidement."];
+    function ts() { const n=new Date(); return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0'); }
+    function sendMsg() {
+        const input = document.getElementById('msg-input');
+        const text = input.value.trim();
+        if (!text) return;
+        const el = document.createElement('div');
+        el.className = 'flex justify-end items-end gap-2';
+        el.innerHTML = `<div class="flex flex-col items-end max-w-sm"><div class="p-3.5 bg-[#16a3b0] text-white rounded-2xl rounded-br-sm shadow-md"><p class="text-sm leading-relaxed">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</p></div><div class="flex items-center gap-1.5 mt-1 px-1"><span class="text-[10px] text-slate-400">${ts()}</span><i class="fa-check fas text-[10px] text-slate-300 ck"></i></div></div>`;
+        chat.appendChild(el); chat.scrollTop = chat.scrollHeight;
+        input.value = ''; input.style.height = '';
+        setTimeout(() => { el.querySelector('.ck').className = 'fas fa-check-double text-[10px] text-[#16a3b0]'; }, 1500);
+        setTimeout(() => {
+            const r = responses[Math.floor(Math.random()*responses.length)];
+            const re = document.createElement('div');
+            re.className = 'flex justify-start items-end gap-2';
+            re.innerHTML = `<img src="https://ui-avatars.com/api/?name=Jean+Plombier&background=1a6b75&color=fff&size=40" class="w-7 h-7 rounded-lg object-cover border border-slate-200 mb-1 shrink-0"><div class="flex flex-col items-start max-w-sm"><div class="p-3.5 bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-bl-sm shadow-sm"><p class="text-sm leading-relaxed">${r}</p></div><span class="text-[10px] text-slate-400 mt-1 px-1">${ts()}</span></div>`;
+            chat.appendChild(re); chat.scrollTop = chat.scrollHeight;
+        }, 2500);
+    }
+    function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+</script>
+</body>
+</html>

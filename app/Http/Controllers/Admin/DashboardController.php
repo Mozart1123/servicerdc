@@ -100,7 +100,45 @@ class DashboardController extends Controller
     public function stats(): View
     {
         \App\Services\SystemActivityService::log('SERV', 'Consultation des statistiques live', 'info');
-        return view('admin.stats');
+        
+        // Define all 26 provinces of DRC
+        $allProvinces = [
+            'Kinshasa', 'Kongo-Central', 'Kwango', 'Kwilu', 'Mai-Ndombe', 'Kasaï', 
+            'Kasaï-Central', 'Kasaï-Oriental', 'Lomami', 'Sankuru', 'Maniema', 
+            'Sud-Kivu', 'Nord-Kivu', 'Ituri', 'Haut-Uele', 'Bas-Uele', 'Tshopo', 
+            'Mongala', 'Nord-Ubangi', 'Sud-Ubangi', 'Équateur', 'Tshuapa', 
+            'Tanganyika', 'Haut-Lomami', 'Lualaba', 'Haut-Katanga'
+        ];
+
+        // Fetch user counts per province
+        $userCountsByProvince = \App\Models\User::select('province', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->whereNotNull('province')
+            ->groupBy('province')
+            ->pluck('total', 'province')
+            ->toArray();
+
+        $totalUsersWithProvince = array_sum($userCountsByProvince) ?: 1; // Prevent division by zero
+
+        $provinceData = [];
+        $idCounter = 1;
+        foreach ($allProvinces as $provinceName) {
+            $count = $userCountsByProvince[$provinceName] ?? 0;
+            $percentage = round(($count / $totalUsersWithProvince) * 100);
+            
+            $provinceData[] = [
+                'id' => $idCounter++,
+                'name' => $provinceName,
+                'active' => $count > 0, // Active if at least one user
+                'userCount' => $count,
+                'percentage' => $percentage,
+                'cities' => [] // Could be populated dynamically if needed, keeping empty for now or populate with defaults
+            ];
+        }
+
+        // Sort by user count descending to get top provinces for the summary
+        $sortedProvinces = collect($provinceData)->sortByDesc('userCount')->values()->all();
+
+        return view('admin.stats', compact('provinceData', 'sortedProvinces'));
     }
 
     /**

@@ -17,19 +17,45 @@
     }
 }">
     <!-- HUD Dashboard -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-rdc-blue/20 rounded-full blur-2xl group-hover:bg-rdc-blue/30 transition-colors"></div>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Volume Total (30j)</p>
-            <h3 class="text-4xl font-heading font-black">42.8k <span class="text-xs text-rdc-blue">$</span></h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Volume Total -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-chart-line text-sm sm:text-xl"></i>
+                </div>
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold text-slate-500 bg-slate-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">30 Jours</span>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Volume Total</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">42.8k $</h3>
+            </div>
         </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-xl">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Paiements Réussis</p>
-            <h3 class="text-4xl font-heading font-black text-slate-900">98.2 <span class="text-xs text-emerald-500">%</span></h3>
+
+        <!-- Paiements Réussis -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-circle-check text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Paiements Réussis</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">98.2 <span class="text-xs text-emerald-500">%</span></h3>
+            </div>
         </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-xl">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Remboursements</p>
-            <h3 class="text-4xl font-heading font-black text-slate-900">1.8 <span class="text-xs text-rdc-red">%</span></h3>
+
+        <!-- Remboursements -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-red-50 text-rdc-red rounded-lg sm:rounded-xl">
+                    <i class="fas fa-rotate-left text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Remboursements</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">1.8 <span class="text-xs text-rdc-red">%</span></h3>
+            </div>
         </div>
     </div>
 
@@ -63,71 +89,16 @@
                     @forelse($transactions ?? [] as $transaction)
                         <!-- Dynamic transaction rows would go here -->
                     @empty
-                        <!-- Mock Rows for demonstration -->
-                        <!-- TRX 1 -->
-                        <tr class="group hover:bg-slate-50/30 transition-colors">
-                            <td class="pl-4 pr-2 sm:px-8 py-4 sm:py-6">
-                                <span class="font-mono text-[8px] sm:text-xs font-black text-slate-400 uppercase tracking-tighter truncate block">#TRX-88219</span>
-                                <span class="text-[7px] font-bold text-slate-300 uppercase tracking-widest block mt-1">Il y a 5 min</span>
-                            </td>
-                            <td class="px-2 sm:px-8 py-4 sm:py-6">
-                                <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
-                                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-blue-50 text-rdc-blue flex items-center justify-center font-black shadow-sm shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-all">
-                                        <i class="fas fa-user text-[10px] sm:text-base"></i>
+                        <tr>
+                            <td colspan="5" class="py-24">
+                                <div class="flex flex-col items-center justify-center text-center">
+                                    <div class="w-24 h-24 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center text-5xl mb-8 shadow-inner ring-8 ring-slate-50/50">
+                                        <i class="fas fa-wallet"></i>
                                     </div>
-                                    <div class="min-w-0">
-                                        <p class="text-[10px] sm:text-sm font-black text-slate-900 truncate leading-tight tracking-tight">Jean Mukendi</p>
-                                        <p class="text-[7px] sm:text-[10px] font-bold text-slate-400 uppercase mt-0.5 sm:mt-1 truncate opacity-70">Plombier</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-2 sm:px-8 py-4 sm:py-6 text-center">
-                                <span class="text-[11px] sm:text-base font-black text-slate-900 tracking-tighter">125.00$</span>
-                            </td>
-                            <td class="hidden sm:table-cell px-8 py-6">
-                                <div class="flex items-center justify-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
-                                    <i class="fas fa-mobile-screen-button text-slate-400 text-xs"></i>
-                                    <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">M-Pesa</span>
-                                </div>
-                            </td>
-                            <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
-                                <div class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
-                                    <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <span class="text-[7px] sm:text-[9px] font-black uppercase tracking-widest">Succès</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- TRX 2 -->
-                        <tr class="group hover:bg-slate-50/30 transition-colors">
-                            <td class="pl-4 pr-2 sm:px-8 py-4 sm:py-6">
-                                <span class="font-mono text-[8px] sm:text-xs font-black text-slate-400 uppercase tracking-tighter truncate block">#TRX-88220</span>
-                                <span class="text-[7px] font-bold text-slate-300 uppercase tracking-widest block mt-1">Il y a 2h</span>
-                            </td>
-                            <td class="px-2 sm:px-8 py-4 sm:py-6">
-                                <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
-                                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center font-black shadow-sm shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-all">
-                                        <i class="fas fa-user text-[10px] sm:text-base"></i>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-[10px] sm:text-sm font-black text-slate-900 truncate leading-tight tracking-tight">Marie Kalala</p>
-                                        <p class="text-[7px] sm:text-[10px] font-bold text-slate-400 uppercase mt-0.5 sm:mt-1 truncate opacity-70">Electricienne</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-2 sm:px-8 py-4 sm:py-6 text-center">
-                                <span class="text-[11px] sm:text-base font-black text-slate-900 tracking-tighter">45.50$</span>
-                            </td>
-                            <td class="hidden sm:table-cell px-8 py-6">
-                                <div class="flex items-center justify-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
-                                    <i class="fas fa-credit-card text-slate-400 text-xs"></i>
-                                    <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Airtel</span>
-                                </div>
-                            </td>
-                            <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
-                                <div class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 bg-amber-50 text-amber-600 rounded-full border border-amber-100">
-                                    <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                                    <span class="text-[7px] sm:text-[9px] font-black uppercase tracking-widest">Attente</span>
+                                    <h4 class="text-base sm:text-xl font-black text-slate-400 uppercase tracking-widest">Aucune Transaction</h4>
+                                    <p class="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-tight mt-3 max-w-[300px] mx-auto leading-relaxed">
+                                        Il n'y a pas encore de transactions enregistrées dans le système.
+                                    </p>
                                 </div>
                             </td>
                         </tr>

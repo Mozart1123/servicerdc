@@ -1,9 +1,9 @@
-@extends('layouts.user')
+@extends($layout)
 
 @section('title', 'Mes Candidatures | ProConnect')
 @section('header_title', 'Mes Candidatures')
 
-@section('content')
+@section($contentSection)
 <div class="space-y-8 pb-10">
 
     {{-- Flash Messages --}}

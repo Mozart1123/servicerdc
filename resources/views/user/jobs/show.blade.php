@@ -1,9 +1,9 @@
-@extends('layouts.user')
+@extends($layout)
 
 @section('title', $job->title . ' | ProConnect')
 @section('header_title', 'Détails de l\'offre')
 
-@section('content')
+@section($contentSection)
 <div class="space-y-8 pb-20">
     
     {{-- Success/Error Messages --}}

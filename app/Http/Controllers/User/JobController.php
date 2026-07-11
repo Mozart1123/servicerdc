@@ -185,12 +185,21 @@ class JobController extends Controller
             'contract_type' => ['required', 'string', 'max:50'],
             'description'   => ['required', 'string'],
             'requirements'  => ['nullable', 'string'],
+            'company_logo'  => ['nullable', 'image', 'max:2048'],
+            'cover_image'   => ['nullable', 'image', 'max:2048'],
         ]);
 
         $user = Auth::user();
         $validated['user_id']     = $user->id;
         $validated['employer_id'] = $user->id;
         $validated['status']      = 'active';
+
+        if ($request->hasFile('company_logo')) {
+            $validated['company_logo'] = $request->file('company_logo')->store('job_images', 'public');
+        }
+        if ($request->hasFile('cover_image')) {
+            $validated['cover_image'] = $request->file('cover_image')->store('job_images', 'public');
+        }
 
         $job = JobOffer::create($validated);
 
@@ -233,7 +242,23 @@ class JobController extends Controller
             'requirements'  => ['nullable', 'string'],
             'salary_range'  => ['nullable', 'string', 'max:100'],
             'deadline'      => ['nullable', 'date'],
+            'company_logo'  => ['nullable', 'image', 'max:2048'],
+            'cover_image'   => ['nullable', 'image', 'max:2048'],
         ]);
+
+        if ($request->hasFile('company_logo')) {
+            if ($job->company_logo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($job->company_logo);
+            }
+            $validated['company_logo'] = $request->file('company_logo')->store('job_images', 'public');
+        }
+
+        if ($request->hasFile('cover_image')) {
+            if ($job->cover_image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($job->cover_image);
+            }
+            $validated['cover_image'] = $request->file('cover_image')->store('job_images', 'public');
+        }
 
         $job->update($validated);
 

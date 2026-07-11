@@ -1,8 +1,8 @@
-@extends('layouts.user')
+@extends($layout)
 
 @section('title', 'Mes Notifications')
 
-@section('content')
+@section($contentSection)
 <div class="max-w-5xl mx-auto space-y-8 pb-20">
     
     <!-- Header -->

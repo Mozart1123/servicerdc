@@ -6,29 +6,35 @@
 @section('page_subtitle', 'Consultez, gérez et générez des rapports détaillés sur l\'activité du système.')
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-8 pb-20">
     <!-- Reports Stats Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Rapports</span>
-                <i class="fas fa-file-alt text-rdc-blue"></i>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-blue-50 text-rdc-blue rounded-2xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-alt"></i>
+                </div>
             </div>
-            <h3 class="text-3xl font-black text-slate-900">{{ $reports->total() ?? 0 }}</h3>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Rapports</p>
+            <h3 class="text-3xl font-black text-slate-900 font-mono mt-1">{{ $reports->total() ?? 0 }}</h3>
         </div>
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Générés ce mois</span>
-                <i class="fas fa-calendar-check text-emerald-500"></i>
+        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
             </div>
-            <h3 class="text-3xl font-black text-slate-900">12</h3>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Générés ce mois</p>
+            <h3 class="text-3xl font-black text-slate-900 font-mono mt-1">{{ $reports->where('created_at', '>=', now()->startOfMonth())->count() }}</h3>
         </div>
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type dominant</span>
-                <i class="fas fa-chart-pie text-amber-500"></i>
+        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
             </div>
-            <h3 class="text-3xl font-black text-slate-900">Financier</h3>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Formats disponibles</p>
+            <h3 class="text-3xl font-black text-slate-900 font-mono mt-1">PDF / CSV</h3>
         </div>
     </div>
 

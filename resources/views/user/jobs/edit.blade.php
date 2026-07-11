@@ -14,7 +14,7 @@
         <p class="text-sm text-slate-400 font-medium">Mettez à jour les informations de votre offre d'emploi.</p>
     </div>
 
-    <form action="{{ route('user.jobs.update', $job->id) }}" method="POST" class="space-y-6">
+    <form action="{{ route('user.jobs.update', $job->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
         
@@ -39,6 +39,33 @@
                                class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue transition-all"
                                placeholder="ex: ProConnect SARL">
                     </div>
+                </div>
+            </div>
+
+            {{-- Images upload (Logo & Cover) --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Logo de l'entreprise (Optionnel)</label>
+                    @if($job->company_logo)
+                        <div class="mb-2">
+                            <img src="{{ Storage::url($job->company_logo) }}" alt="Logo" class="w-16 h-16 rounded-xl object-cover">
+                        </div>
+                    @endif
+                    <input type="file" name="company_logo" accept="image/*"
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-rdc-blue/10 file:text-rdc-blue hover:file:bg-rdc-blue/20">
+                    @error('company_logo') <p class="text-[10px] text-rdc-red font-bold ml-1">{{ $message }}</p> @enderror
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Image de couverture (Optionnel)</label>
+                    @if($job->cover_image)
+                        <div class="mb-2">
+                            <img src="{{ Storage::url($job->cover_image) }}" alt="Cover" class="w-full h-24 rounded-xl object-cover">
+                        </div>
+                    @endif
+                    <input type="file" name="cover_image" accept="image/*"
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-rdc-blue/10 file:text-rdc-blue hover:file:bg-rdc-blue/20">
+                    @error('cover_image') <p class="text-[10px] text-rdc-red font-bold ml-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 

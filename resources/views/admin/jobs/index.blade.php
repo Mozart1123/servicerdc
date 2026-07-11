@@ -8,35 +8,46 @@
 @section('content')
 <div class="space-y-8 pb-20">
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-rdc-blue/10 rounded-full blur-3xl"></div>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Offres Actives</p>
-            <div class="flex items-end justify-between relative z-10">
-                <h3 class="text-4xl font-heading font-black">{{ optional($jobs)->total() }}</h3>
-                <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-rdc-blue">
-                    <i class="fas fa-briefcase text-xl"></i>
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Active Jobs -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-briefcase text-sm sm:text-xl"></i>
                 </div>
             </div>
-        </div>
-        
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-xl group">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Derniers 30 jours</p>
-            <div class="flex items-end justify-between">
-                <h3 class="text-4xl font-heading font-black text-slate-900">+12</h3>
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                    <i class="fas fa-arrow-trend-up text-xl"></i>
-                </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Offres Actives</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($stats['active_jobs']) }}</h3>
             </div>
         </div>
 
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-xl group">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Candidatures reçues</p>
-            <div class="flex items-end justify-between">
-                <h3 class="text-4xl font-heading font-black text-slate-900">1.2k</h3>
-                <div class="w-12 h-12 bg-blue-50 text-rdc-blue rounded-2xl flex items-center justify-center group-hover:bg-rdc-blue group-hover:text-white transition-all">
-                    <i class="fas fa-user-tie text-xl"></i>
+        <!-- Recent Jobs -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-arrow-trend-up text-sm sm:text-xl"></i>
                 </div>
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold text-slate-500 bg-slate-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                    30 Jours
+                </span>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Nouveautés</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">+{{ number_format($stats['recent_jobs']) }}</h3>
+            </div>
+        </div>
+
+        <!-- Total Applications -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden col-span-2 lg:col-span-1">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-purple-50 text-purple-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-user-tie text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Candidatures reçues</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($stats['total_applications']) }}</h3>
             </div>
         </div>
     </div>

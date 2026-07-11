@@ -43,43 +43,43 @@
     }
 }">
     <!-- HUD Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group border border-slate-800">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-rdc-blue/10 rounded-full blur-2xl group-hover:bg-rdc-blue/20 transition-colors"></div>
-            <div class="relative z-10 flex flex-col gap-3">
-                <p class="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">Total Abonnés</p>
-                <h4 class="text-3xl font-heading font-black text-white">12,482</h4>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="text-[8px] font-black text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full">+4.2%</span>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Total Abonnés -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-users text-sm sm:text-xl"></i>
                 </div>
             </div>
-        </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors"></div>
-            <div class="relative z-10 flex flex-col gap-3">
-                <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Taux d'Ouverture</p>
-                <h4 class="text-3xl font-heading font-black text-slate-900">42.8%</h4>
-                <div class="w-full bg-slate-50 h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div class="bg-emerald-500 h-full w-[42.8%] rounded-full"></div>
-                </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Total Abonnés</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($stats['subscribers']) }}</h3>
             </div>
         </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors"></div>
-            <div class="relative z-10 flex flex-col gap-3">
-                <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Taux de Clic</p>
-                <h4 class="text-3xl font-heading font-black text-rdc-blue">18.4%</h4>
-                <div class="w-full bg-slate-50 h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div class="bg-rdc-blue h-full w-[18.4%] rounded-full"></div>
+
+        <!-- Campagnes Envoyées -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-paper-plane text-sm sm:text-xl"></i>
                 </div>
             </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Campagnes Envoyées</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($stats['sent']) }}</h3>
+            </div>
         </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-colors"></div>
-            <div class="relative z-10 flex flex-col gap-3">
-                <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Désabonnements</p>
-                <h4 class="text-3xl font-heading font-black text-rose-500">0.4%</h4>
-                <p class="text-[8px] font-bold text-slate-300 mt-1 uppercase tracking-tighter italic">Seuil de sécurité respecté</p>
+
+        <!-- Brouillons -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-slate-100 text-slate-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-file-lines text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Brouillons</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($stats['draft']) }}</h3>
             </div>
         </div>
     </div>
@@ -101,7 +101,7 @@
                         </div>
                         <div>
                             <p class="text-[10px] sm:text-sm font-black text-slate-900 uppercase">Utilisateurs</p>
-                            <p class="text-[8px] sm:text-[10px] font-bold text-slate-400">8,248 abonnés</p>
+                            <p class="text-[8px] sm:text-[10px] font-bold text-slate-400">{{ number_format($stats['clients']) }} abonnés</p>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right text-[10px] text-slate-200 group-hover:text-rdc-blue transition-colors"></i>
@@ -113,7 +113,7 @@
                         </div>
                         <div>
                             <p class="text-[10px] sm:text-sm font-black text-slate-900 uppercase">Artisans</p>
-                            <p class="text-[8px] sm:text-[10px] font-bold text-slate-400">4,124 abonnés</p>
+                            <p class="text-[8px] sm:text-[10px] font-bold text-slate-400">{{ number_format($stats['artisans']) }} abonnés</p>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right text-[10px] text-slate-200 group-hover:text-emerald-500 transition-colors"></i>
@@ -170,8 +170,8 @@
                                     <span class="text-[10px] font-black text-slate-900 uppercase">{{ $campaign->audience }}</span>
                                 </td>
                                 <td class="px-2 sm:px-8 py-6 text-center">
-                                    <div class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black uppercase ring-1 ring-emerald-100">
-                                        <i class="fas fa-bolt text-[8px]"></i> {{ $campaign->status == 'sent' ? '98%' : '-' }}
+                                    <div class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 text-slate-500 rounded-lg text-[9px] font-black uppercase ring-1 ring-slate-100">
+                                        <i class="fas fa-minus text-[8px]"></i>
                                     </div>
                                 </td>
                                 <td class="pr-4 pl-2 sm:px-8 py-6 text-right">

@@ -6,11 +6,11 @@
 @section('page_subtitle', 'Visualisez et gérez toutes les candidatures aux offres d\'emploi')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-8 pb-20">
     
     <!-- Success/Error Messages -->
     @if(session('success'))
-        <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 rounded-lg shadow-sm" role="alert">
+        <div class="bg-emerald-50 border border-emerald-100 text-emerald-700 p-4 rounded-2xl shadow-sm" role="alert">
             <div class="flex items-center gap-3">
                 <i class="fas fa-check-circle text-lg"></i>
                 <p class="font-bold">{{ session('success') }}</p>
@@ -19,7 +19,7 @@
     @endif
 
     @if(session('error'))
-        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-sm" role="alert">
+        <div class="bg-red-50 border border-red-100 text-rdc-red p-4 rounded-2xl shadow-sm" role="alert">
             <div class="flex items-center gap-3">
                 <i class="fas fa-exclamation-circle text-lg"></i>
                 <p class="font-bold">{{ session('error') }}</p>
@@ -29,79 +29,67 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <!-- Total Applications -->
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 hover:shadow-lg transition-all">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-[10px] sm:text-sm font-bold uppercase tracking-wide">Total</p>
-                    <h3 class="text-xl sm:text-3xl font-black text-slate-900 mt-1">{{ $applications->total() }}</h3>
-                </div>
-                <div class="hidden sm:flex w-14 h-14 bg-blue-50 rounded-xl items-center justify-center">
-                    <i class="fas fa-file-lines text-2xl text-rdc-blue"></i>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div class="w-10 h-10 bg-blue-50 text-rdc-blue rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-lines text-lg"></i>
                 </div>
             </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
+            <h3 class="text-xl sm:text-3xl font-black text-slate-900 font-mono mt-1">{{ $applications->total() }}</h3>
         </div>
 
-        <!-- Pending Applications -->
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 hover:shadow-lg transition-all">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-[10px] sm:text-sm font-bold uppercase tracking-wide">Attente</p>
-                    <h3 class="text-xl sm:text-3xl font-black text-amber-500 mt-1">{{ $applications->where('status', 'pending')->count() }}</h3>
-                </div>
-                <div class="hidden sm:flex w-14 h-14 bg-amber-50 rounded-xl items-center justify-center">
-                    <i class="fas fa-clock text-2xl text-amber-500"></i>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div class="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="fas fa-clock text-lg"></i>
                 </div>
             </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Attente</p>
+            <h3 class="text-xl sm:text-3xl font-black text-amber-500 font-mono mt-1">{{ $applications->where('status', 'pending')->count() }}</h3>
         </div>
 
-        <!-- Accepted Applications -->
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 hover:shadow-lg transition-all">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-[10px] sm:text-sm font-bold uppercase tracking-wide">Acceptées</p>
-                    <h3 class="text-xl sm:text-3xl font-black text-emerald-500 mt-1">{{ $applications->where('status', 'accepted')->count() }}</h3>
-                </div>
-                <div class="hidden sm:flex w-14 h-14 bg-emerald-50 rounded-xl items-center justify-center">
-                    <i class="fas fa-check-circle text-2xl text-emerald-500"></i>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="fas fa-check-circle text-lg"></i>
                 </div>
             </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Acceptées</p>
+            <h3 class="text-xl sm:text-3xl font-black text-emerald-500 font-mono mt-1">{{ $applications->where('status', 'accepted')->count() }}</h3>
         </div>
 
-        <!-- Rejected Applications -->
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 hover:shadow-lg transition-all">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-slate-500 text-[10px] sm:text-sm font-bold uppercase tracking-wide">Rejetées</p>
-                    <h3 class="text-xl sm:text-3xl font-black text-red-500 mt-1">{{ $applications->where('status', 'rejected')->count() }}</h3>
-                </div>
-                <div class="hidden sm:flex w-14 h-14 bg-red-50 rounded-xl items-center justify-center">
-                    <i class="fas fa-times-circle text-2xl text-red-500"></i>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <div class="w-10 h-10 bg-red-50 text-rdc-red rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="fas fa-times-circle text-lg"></i>
                 </div>
             </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Rejetées</p>
+            <h3 class="text-xl sm:text-3xl font-black text-rdc-red font-mono mt-1">{{ $applications->where('status', 'rejected')->count() }}</h3>
         </div>
     </div>
 
     <!-- Applications Table -->
-    <div class="bg-white rounded-[1.5rem] sm:rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
         <!-- Table Header -->
-        <div class="px-5 sm:px-8 py-5 sm:py-6 border-b border-slate-200 bg-slate-50/50">
+        <div class="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 bg-slate-50/20">
             <h3 class="text-sm sm:text-lg font-black text-slate-900 uppercase tracking-tight">Candidatures</h3>
         </div>
 
         <!-- Table Content -->
         <div class="overflow-x-auto sm:overflow-x-visible">
             <table class="w-full text-left table-fixed sm:table-auto">
-                <thead class="bg-slate-50 border-b border-slate-200">
+                <thead class="bg-slate-50/50 border-b border-slate-50">
                     <tr>
-                        <th class="w-1/2 sm:w-auto px-4 sm:px-6 py-4 text-[8px] sm:text-xs font-black text-slate-600 uppercase tracking-tighter sm:tracking-widest">Candidat</th>
-                        <th class="hidden lg:table-cell px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-wider">Offre</th>
-                        <th class="hidden sm:table-cell px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-wider">Date</th>
-                        <th class="w-1/6 sm:w-auto px-2 sm:px-6 py-4 text-[8px] sm:text-xs font-black text-slate-600 uppercase tracking-tighter sm:tracking-widest text-center">Statut</th>
-                        <th class="w-1/3 sm:w-auto px-4 sm:px-6 py-4 text-[8px] sm:text-xs font-black text-slate-600 uppercase tracking-tighter sm:tracking-widest text-right">Actions</th>
+                        <th class="w-1/2 sm:w-auto px-4 sm:px-8 py-5 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Candidat</th>
+                        <th class="hidden lg:table-cell px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Offre</th>
+                        <th class="hidden sm:table-cell px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                        <th class="w-1/6 sm:w-auto px-2 sm:px-8 py-5 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Statut</th>
+                        <th class="w-1/3 sm:w-auto px-4 sm:px-8 py-5 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody class="divide-y divide-slate-50">
                     @forelse($applications as $application)
                         <tr class="hover:bg-slate-50/50 transition-colors">
                             <!-- Candidate -->
@@ -185,10 +173,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
+                            <td colspan="5" class="py-24 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-inbox text-4xl sm:text-6xl text-slate-300 mb-4"></i>
-                                    <p class="text-slate-500 font-bold text-sm sm:text-lg">Aucune candidature found</p>
+                                    <div class="w-24 h-24 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center text-5xl mb-8 shadow-inner">
+                                        <i class="fas fa-inbox"></i>
+                                    </div>
+                                    <h4 class="text-base font-black text-slate-400 uppercase tracking-widest">Aucune candidature</h4>
+                                    <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mt-2">Les candidatures apparaîtront ici.</p>
                                 </div>
                             </td>
                         </tr>
@@ -199,7 +190,7 @@
 
         <!-- Pagination -->
         @if($applications->hasPages())
-            <div class="px-5 sm:px-8 py-5 border-t border-slate-200 bg-slate-50/30">
+            <div class="px-6 sm:px-10 py-6 border-t border-slate-50 bg-slate-50/20">
                 {{ $applications->links() }}
             </div>
         @endif

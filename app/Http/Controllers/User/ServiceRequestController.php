@@ -56,9 +56,30 @@ class ServiceRequestController extends Controller
                 'action_url'   => route('user.artisan.service-requests.index'),
                 'is_read'      => false,
             ]);
+
+            // Create/open conversation
+            $conversation = \App\Models\Conversation::findOrCreateBetween($user->id, $artisanId);
+            
+            // Send the automated first message from the client
+            $automatedMessage = "Bonjour,\nJe souhaiterais faire appel à vos services pour : " . ($serviceRequest->requested_service_name ?? 'un service') . ".\n\n" .
+                                "📍 Lieu : " . ($serviceRequest->city ?? 'Non précisé') . "\n" .
+                                "💰 Budget estimé : " . ($request->budget_range ?? 'Non précisé') . "\n" .
+                                "⏳ Urgence : " . ($request->urgency ?? 'Standard') . "\n\n" .
+                                "📝 Description :\n" . $serviceRequest->description;
+
+            \App\Models\Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id'       => $user->id,
+                'content'         => $automatedMessage,
+                'message'         => $automatedMessage,
+                'is_read'         => false,
+            ]);
+
+            return redirect()->route('user.messages.index', ['id' => $conversation->id])
+                             ->with('success', 'Votre demande a été envoyée. Vous pouvez maintenant échanger avec l\'artisan.');
         }
 
-        return back()->with('success', 'Votre demande a été envoyée.');
+        return redirect()->route('user.service-requests.index')->with('success', 'Votre demande a été enregistrée.');
     }
 
     public function accept(ServiceRequest $serviceRequest): RedirectResponse

@@ -40,40 +40,55 @@
 }">
     <!-- Support Quick Stats -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-3 sm:gap-4 group transition-all hover:border-amber-100">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 text-amber-500 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition-transform">
-                <i class="fas fa-ticket"></i>
+        <!-- En attente -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-amber-50 text-amber-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-ticket text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <div class="overflow-hidden">
-                <p class="text-[7px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">En attente</p>
-                <h4 class="text-lg sm:text-xl font-black text-slate-900">{{ number_format($tickets->where('status', 'open')->count()) }}</h4>
-            </div>
-        </div>
-        <div class="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-3 sm:gap-4 group transition-all hover:border-blue-100">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition-transform">
-                <i class="fas fa-spinner"></i>
-            </div>
-            <div class="overflow-hidden">
-                <p class="text-[7px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">En cours</p>
-                <h4 class="text-lg sm:text-xl font-black text-slate-900">{{ number_format($tickets->where('status', 'pending')->count()) }}</h4>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">En attente</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($tickets->where('status', 'open')->count()) }}</h3>
             </div>
         </div>
-        <div class="bg-emerald-500 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-lg shadow-emerald-500/10 flex items-center gap-3 sm:gap-4 text-white group hover:scale-[1.02] transition-transform">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:rotate-12 transition-transform">
-                <i class="fas fa-check"></i>
+
+        <!-- En cours -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-spinner text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <div class="overflow-hidden">
-                <p class="text-[7px] sm:text-[9px] font-black text-white/60 uppercase tracking-widest truncate">Résolus</p>
-                <h4 class="text-lg sm:text-xl font-black">{{ number_format($tickets->where('status', 'closed')->count()) }}</h4>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">En cours</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($tickets->where('status', 'pending')->count()) }}</h3>
             </div>
         </div>
-        <div class="bg-slate-900 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl flex items-center gap-3 sm:gap-4 text-white group hover:scale-[1.02] transition-transform">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition-transform">
-                <i class="fas fa-clock"></i>
+
+        <!-- Résolus -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-check text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <div class="overflow-hidden">
-                <p class="text-[7px] sm:text-[9px] font-black text-white/40 uppercase tracking-widest truncate">Moyen</p>
-                <h4 class="text-lg sm:text-xl font-black">4h 12m</h4>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Résolus</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($tickets->where('status', 'closed')->count()) }}</h3>
+            </div>
+        </div>
+
+        <!-- Temps Moyen -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-purple-50 text-purple-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-clock text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Temps Moyen</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">4h 12m</h3>
             </div>
         </div>
     </div>

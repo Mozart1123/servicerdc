@@ -86,6 +86,11 @@ class AuthenticatedSessionController extends Controller
      */
     private function redirectToDashboard(User $user): RedirectResponse
     {
+        if ($user->user_type === User::TYPE_CLIENT && $user->role === User::ROLE_USER) {
+            return redirect()->intended(route('home'))
+                ->with('success', 'Connexion réussie. Bienvenue sur ProConnect !');
+        }
+
         $route = match ($user->role) {
             User::ROLE_SUPER_ADMIN => 'super-admin.dashboard',
             User::ROLE_ADMIN => 'admin.dashboard',

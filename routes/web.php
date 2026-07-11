@@ -11,6 +11,8 @@ use App\Http\Controllers\User\DashboardController as UserDashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\JobController as AdminJobController;
+use App\Http\Middleware\PreventClientDashboardAccess;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
@@ -54,6 +56,14 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/how-it-works', [HomeController::class, 'howItWorks'])->name('how-it-works');
 
+// Public Catalog Routes
+Route::get('/public/services', [PublicController::class, 'services'])->name('public.services.index');
+Route::get('/public/services/{id}', [PublicController::class, 'serviceShow'])->name('public.services.show');
+Route::get('/public/jobs', [PublicController::class, 'jobs'])->name('public.jobs.index');
+Route::get('/public/jobs/{id}', [PublicController::class, 'jobShow'])->name('public.jobs.show');
+Route::get('/public/artisans', [PublicController::class, 'artisans'])->name('public.artisans.index');
+Route::get('/public/artisans/{id}', [PublicController::class, 'artisanShow'])->name('public.artisans.show');
+
 // Guest Routes
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -82,55 +92,59 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
     ->name('user.')
     ->group(function (): void {
         // Dashboard
-        Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
+        Route::middleware([PreventClientDashboardAccess::class])->group(function (): void {
+            Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
+
+            // Services Management (Artisan)
+            Route::get('/services/create', [UserServiceController::class, 'create'])->name('services.create');
+            Route::post('/services', [UserServiceController::class, 'store'])->name('services.store');
+            Route::get('/services/{id}/edit', [UserServiceController::class, 'edit'])->name('services.edit');
+            Route::put('/services/{id}', [UserServiceController::class, 'update'])->name('services.update');
+            Route::delete('/services/{id}', [UserServiceController::class, 'destroy'])->name('services.destroy');
+            Route::get('/my-services', [UserServiceController::class, 'myServices'])->name('services.my');
+            Route::post('/services/{id}/remove-image', [UserServiceController::class, 'removeImage'])->name('services.remove-image');
+
+            // Missions
+            Route::get('/missions', [UserDashboardController::class, 'missions'])->name('missions.index');
+            Route::get('/missions/{id}', [UserDashboardController::class, 'missionDetail'])->name('missions.show');
+            Route::put('/missions/{id}/status', [UserDashboardController::class, 'updateMissionStatus'])->name('missions.update-status');
+            
+            // Artisan – incoming requests & reviews
+            Route::post('/service-requests/{serviceRequest}/accept', [UserServiceRequestController::class, 'accept'])->name('service-requests.accept');
+            Route::post('/service-requests/{serviceRequest}/reject', [UserServiceRequestController::class, 'reject'])->name('service-requests.reject');
+            Route::post('/service-requests/{serviceRequest}/complete', [UserServiceRequestController::class, 'complete'])->name('service-requests.complete');
+            Route::post('/service-requests/{serviceRequest}/start', [UserServiceRequestController::class, 'startMission'])->name('service-requests.start');
+            Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
+            Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
+        });
 
         // Profile
         Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserDashboardController::class, 'profile'])->name('profile.edit');
         Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
 
-        // Services
+        // Service Catalog (Logged-in view, though we will add public routes too)
         Route::get('/services', [UserServiceController::class, 'index'])->name('services.index');
-        Route::get('/services/create', [UserServiceController::class, 'create'])->name('services.create');
-        Route::post('/services', [UserServiceController::class, 'store'])->name('services.store');
         Route::get('/services/{id}', [UserServiceController::class, 'show'])->name('services.show');
-        Route::get('/services/{id}/edit', [UserServiceController::class, 'edit'])->name('services.edit');
-        Route::put('/services/{id}', [UserServiceController::class, 'update'])->name('services.update');
-        Route::delete('/services/{id}', [UserServiceController::class, 'destroy'])->name('services.destroy');
-        Route::get('/my-services', [UserServiceController::class, 'myServices'])->name('services.my');
-        Route::post('/services/{id}/remove-image', [UserServiceController::class, 'removeImage'])->name('services.remove-image');
 
-        // Jobs
+        // Jobs Catalog
         Route::get('/jobs', [UserJobController::class, 'index'])->name('jobs.index');
         Route::get('/jobs/{id}', [UserJobController::class, 'show'])->name('jobs.show');
         Route::post('/jobs/{job}/apply', [UserJobController::class, 'apply'])->name('jobs.apply');
+        
+        // Client: My Applications & Service Requests
         Route::get('/my-applications', [UserJobController::class, 'myApplications'])->name('applications.index');
         Route::delete('/applications/{applicationId}', [UserJobController::class, 'withdrawApplication'])->name('applications.withdraw');
-
-        // Missions
-        Route::get('/missions', [UserDashboardController::class, 'missions'])->name('missions.index');
-        Route::get('/missions/{id}', [UserDashboardController::class, 'missionDetail'])->name('missions.show');
-        Route::put('/missions/{id}/status', [UserDashboardController::class, 'updateMissionStatus'])->name('missions.update-status');
-        Route::get('/reviews', [UserDashboardController::class, 'myReviews'])->name('reviews.index');
-        // Service Requests
         Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
         Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
         Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
-        // Artisan: accept / reject incoming service requests
-        Route::post('/service-requests/{serviceRequest}/accept', [UserServiceRequestController::class, 'accept'])->name('service-requests.accept');
-        Route::post('/service-requests/{serviceRequest}/reject', [UserServiceRequestController::class, 'reject'])->name('service-requests.reject');
-        Route::post('/service-requests/{serviceRequest}/complete', [UserServiceRequestController::class, 'complete'])->name('service-requests.complete');
-        Route::post('/service-requests/{serviceRequest}/start', [UserServiceRequestController::class, 'startMission'])->name('service-requests.start');
         Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
-        // Artisan – incoming requests
-        Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
-        // Artisan – reviews & ratings
-        Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
-
-        // Rate artisan after completed service
         Route::post('/service-requests/{serviceRequest}/rate', [UserServiceRequestController::class, 'rate'])->name('service-requests.rate');
-
-        // CV Management
+        Route::get('/reviews', [UserDashboardController::class, 'myReviews'])->name('reviews.index');
+        // Service Requests
+        // (Handled above, client-facing vs artisan-facing separated)
+        
+        // CV Management (Job seeker/client)
         Route::get('/cv', [\App\Http\Controllers\User\CvController::class, 'index'])->name('cv.index');
         Route::get('/cv/create', [\App\Http\Controllers\User\CvController::class, 'create'])->name('cv.create');
         Route::post('/cv', [\App\Http\Controllers\User\CvController::class, 'store'])->name('cv.store');
@@ -138,22 +152,24 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::delete('/cv', [\App\Http\Controllers\User\CvController::class, 'destroy'])->name('cv.destroy');
         Route::post('/cv/file-upload', [\App\Http\Controllers\User\CvController::class, 'fileUpload'])->name('cv.file.upload');
 
-        // Jobs — recruiter publishes offers
-        Route::get('/my-job-offers', [UserJobController::class, 'myJobOffers'])->name('jobs.my-offers');
-        Route::get('/job-offers/create', [UserJobController::class, 'create'])->name('jobs.create');
-        Route::post('/job-offers', [UserJobController::class, 'storeOffer'])->name('jobs.store');
-        Route::get('/job-offers/{id}/edit', [UserJobController::class, 'editOffer'])->name('jobs.edit');
-        Route::put('/job-offers/{id}', [UserJobController::class, 'updateOffer'])->name('jobs.update');
-        Route::delete('/job-offers/{id}', [UserJobController::class, 'destroyOffer'])->name('jobs.destroy');
-        // Recruiter sees & manages received applications
-        Route::get('/received-applications', [UserJobController::class, 'receivedApplications'])->name('applications.received');
-        Route::get('/received-applications/{id}/details', [UserJobController::class, 'applicationDetails'])->name('applications.details');
-        Route::post('/applications/{application}/approve', [UserJobController::class, 'approveApplication'])->name('applications.approve');
-        Route::post('/applications/{application}/reject', [UserJobController::class, 'rejectApplication'])->name('applications.reject');
-        Route::post('/applications/{application}/interview', [UserJobController::class, 'interviewApplication'])->name('applications.interview');
-        Route::post('/applications/{application}/hire', [UserJobController::class, 'hireApplication'])->name('applications.hire');
+        Route::middleware([PreventClientDashboardAccess::class])->group(function (): void {
+            // Jobs — recruiter publishes offers
+            Route::get('/my-job-offers', [UserJobController::class, 'myJobOffers'])->name('jobs.my-offers');
+            Route::get('/job-offers/create', [UserJobController::class, 'create'])->name('jobs.create');
+            Route::post('/job-offers', [UserJobController::class, 'storeOffer'])->name('jobs.store');
+            Route::get('/job-offers/{id}/edit', [UserJobController::class, 'editOffer'])->name('jobs.edit');
+            Route::put('/job-offers/{id}', [UserJobController::class, 'updateOffer'])->name('jobs.update');
+            Route::delete('/job-offers/{id}', [UserJobController::class, 'destroyOffer'])->name('jobs.destroy');
+            // Recruiter sees & manages received applications
+            Route::get('/received-applications', [UserJobController::class, 'receivedApplications'])->name('applications.received');
+            Route::get('/received-applications/{id}/details', [UserJobController::class, 'applicationDetails'])->name('applications.details');
+            Route::post('/applications/{application}/approve', [UserJobController::class, 'approveApplication'])->name('applications.approve');
+            Route::post('/applications/{application}/reject', [UserJobController::class, 'rejectApplication'])->name('applications.reject');
+            Route::post('/applications/{application}/interview', [UserJobController::class, 'interviewApplication'])->name('applications.interview');
+            Route::post('/applications/{application}/hire', [UserJobController::class, 'hireApplication'])->name('applications.hire');
+        });
 
-        // Artisan public profile
+        // Artisan public profile (from within app)
         Route::get('/artisans/{artisan}', [UserServiceController::class, 'artisanProfile'])->name('artisans.show');
 
         // Notifications

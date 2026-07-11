@@ -8,34 +8,57 @@
 @section('content')
 <div class="space-y-8 pb-20" x-data="userManager()">
     <!-- Stats Grid (Summary) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-wrap">Total Utilisateurs</span>
-                <i class="fas fa-users text-rdc-blue"></i>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <!-- Total Utilisateurs -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-users text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <h3 class="text-2xl font-black text-slate-900" x-text="stats.total">--</h3>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Total Utilisateurs</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="stats.total">--</h3>
+            </div>
         </div>
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Actifs</span>
-                <i class="fas fa-user-check text-emerald-500"></i>
+
+        <!-- Actifs -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-user-check text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <h3 class="text-2xl font-black text-slate-900" x-text="stats.active">--</h3>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Actifs</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="stats.active">--</h3>
+            </div>
         </div>
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Suspendus</span>
-                <i class="fas fa-user-slash text-rdc-red"></i>
+
+        <!-- Suspendus -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-red-50 text-rdc-red rounded-lg sm:rounded-xl">
+                    <i class="fas fa-user-slash text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <h3 class="text-2xl font-black text-slate-900" x-text="stats.suspended">--</h3>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Suspendus</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="stats.suspended">--</h3>
+            </div>
         </div>
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vérifiés KYC</span>
-                <i class="fas fa-id-card text-amber-500"></i>
+
+        <!-- Vérifiés KYC -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-amber-50 text-amber-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-id-card text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <h3 class="text-2xl font-black text-slate-900" x-text="stats.verified">--</h3>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Vérifiés KYC</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="stats.verified">--</h3>
+            </div>
         </div>
     </div>
 

@@ -1,8 +1,8 @@
-@extends('layouts.user')
+@extends($layout)
 
 @section('header_title', 'Détails de la Mission')
 
-@section('content')
+@section($contentSection)
 <div class="space-y-10 pb-20 max-w-5xl mx-auto">
     
     <!-- Top Nav -->

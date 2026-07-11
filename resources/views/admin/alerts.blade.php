@@ -10,34 +10,48 @@
     
     <!-- Alert HUD -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        <div class="bg-red-50 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-red-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-rdc-red/5 rounded-full blur-3xl"></div>
-            <div class="flex items-center justify-between mb-4 relative z-10">
-                <span class="text-[8px] sm:text-[10px] font-black text-rdc-red uppercase tracking-widest">Critique</span>
-                <i class="fas fa-radiation text-rdc-red {{ $stats['critical'] > 0 ? 'animate-pulse' : '' }} text-sm"></i>
+        <!-- Critique -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-red-50 text-rdc-red rounded-lg sm:rounded-xl">
+                    <i class="fas fa-radiation {{ $stats['critical'] > 0 ? 'animate-pulse' : '' }} text-sm sm:text-xl"></i>
+                </div>
+                @if($stats['critical'] > 0)
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold text-red-500 bg-red-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                    <i class="fas fa-circle-exclamation text-[6px] sm:text-[8px]"></i> Actif
+                </span>
+                @endif
             </div>
-            <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">{{ str_pad((string)$stats['critical'], 2, '0', STR_PAD_LEFT) }}</h3>
-            <p class="text-[9px] sm:text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Incidents</p>
-        </div>
-        
-        <div class="bg-amber-50 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-amber-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl"></div>
-            <div class="flex items-center justify-between mb-4 relative z-10">
-                <span class="text-[8px] sm:text-[10px] font-black text-amber-600 uppercase tracking-widest">Avertissements</span>
-                <i class="fas fa-triangle-exclamation text-amber-500 text-sm"></i>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Critique</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ str_pad((string)$stats['critical'], 2, '0', STR_PAD_LEFT) }}</h3>
             </div>
-            <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">{{ str_pad((string)$stats['warning'], 2, '0', STR_PAD_LEFT) }}</h3>
-            <p class="text-[9px] sm:text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Anomalies</p>
         </div>
 
-        <div class="bg-emerald-50 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-emerald-100 shadow-sm relative overflow-hidden group sm:col-span-2 lg:col-span-1">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl"></div>
-            <div class="flex items-center justify-between mb-4 relative z-10">
-                <span class="text-[8px] sm:text-[10px] font-black text-emerald-600 uppercase tracking-widest">Résolus</span>
-                <i class="fas fa-circle-check text-emerald-500 text-sm"></i>
+        <!-- Avertissements -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-amber-50 text-amber-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-triangle-exclamation text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">{{ str_pad((string)$stats['resolved'], 3, '0', STR_PAD_LEFT) }}</h3>
-            <p class="text-[9px] sm:text-xs font-bold text-slate-500 mt-2 uppercase tracking-tight">Archives</p>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Avertissements</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ str_pad((string)$stats['warning'], 2, '0', STR_PAD_LEFT) }}</h3>
+            </div>
+        </div>
+
+        <!-- Résolus -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden sm:col-span-2 lg:col-span-1">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-circle-check text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Résolus</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ str_pad((string)$stats['resolved'], 3, '0', STR_PAD_LEFT) }}</h3>
+            </div>
         </div>
     </div>
 

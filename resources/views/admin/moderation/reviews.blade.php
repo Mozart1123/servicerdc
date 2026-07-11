@@ -7,49 +7,67 @@
 @section('content')
 <div class="space-y-8 pb-20">
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Total Avis</div>
-            <div class="text-4xl font-heading font-black text-slate-900">{{ $stats['total'] }}</div>
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 text-slate-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-star"></i>
+            </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Avis</p>
+            <h3 class="text-lg sm:text-2xl font-black text-slate-900 font-mono mt-1">{{ $stats['total'] }}</h3>
         </div>
 
-        <div class="bg-amber-50 rounded-2xl p-6 border border-amber-100 shadow-sm">
-            <div class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-3">En Attente</div>
-            <div class="text-4xl font-heading font-black text-amber-600">{{ $stats['pending'] }}</div>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 text-amber-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-clock"></i>
+            </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">En Attente</p>
+            <h3 class="text-lg sm:text-2xl font-black text-slate-900 font-mono mt-1">{{ $stats['pending'] }}</h3>
         </div>
 
-        <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-100 shadow-sm">
-            <div class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3">Approuvés</div>
-            <div class="text-4xl font-heading font-black text-emerald-600">{{ $stats['approved'] }}</div>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-circle-check"></i>
+            </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Approuvés</p>
+            <h3 class="text-lg sm:text-2xl font-black text-slate-900 font-mono mt-1">{{ $stats['approved'] }}</h3>
         </div>
 
-        <div class="bg-red-50 rounded-2xl p-6 border border-red-100 shadow-sm">
-            <div class="text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">Rejetés</div>
-            <div class="text-4xl font-heading font-black text-red-600">{{ $stats['rejected'] }}</div>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-50 text-rdc-red rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-circle-xmark"></i>
+            </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Rejetés</p>
+            <h3 class="text-lg sm:text-2xl font-black text-slate-900 font-mono mt-1">{{ $stats['rejected'] }}</h3>
         </div>
 
-        <div class="bg-blue-50 rounded-2xl p-6 border border-blue-100 shadow-sm">
-            <div class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Note Moyenne</div>
-            <div class="text-4xl font-heading font-black text-blue-600">{{ number_format($stats['avg_rating'], 1) }}/5</div>
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group col-span-2 lg:col-span-1">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-rdc-blue rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Note Moyenne</p>
+            <h3 class="text-lg sm:text-2xl font-black text-slate-900 font-mono mt-1">{{ number_format($stats['avg_rating'] ?? 0, 1) }}/5</h3>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
-        <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Filtres</h3>
+    <div class="bg-white rounded-[2.5rem] p-6 sm:p-8 border border-slate-100 shadow-sm">
+        <h3 class="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Filtres</h3>
         <form method="GET" class="flex flex-col md:flex-row gap-4">
-            <input type="text" name="search" placeholder="Chercher par client ou texte..." 
-                   value="{{ request('search') }}"
-                   class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="relative flex-1 group">
+                <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rdc-blue transition-colors"></i>
+                <input type="text" name="search" placeholder="Chercher par client ou texte..."
+                       value="{{ request('search') }}"
+                       class="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-xs font-black text-slate-900 outline-none focus:ring-4 focus:ring-rdc-blue/10 focus:bg-white transition-all">
+            </div>
             
-            <select name="status" class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
+            <select name="status" class="px-5 py-4 bg-slate-50 border-none rounded-2xl text-xs font-black text-slate-900 outline-none focus:ring-4 focus:ring-rdc-blue/10 focus:bg-white transition-all cursor-pointer">
                 <option value="all">Tous les statuts</option>
                 <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>En attente</option>
                 <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approuvés</option>
                 <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejetés</option>
             </select>
 
-            <select name="rating" class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
+            <select name="rating" class="px-5 py-4 bg-slate-50 border-none rounded-2xl text-xs font-black text-slate-900 outline-none focus:ring-4 focus:ring-rdc-blue/10 focus:bg-white transition-all cursor-pointer">
                 <option value="">Toutes les notes</option>
                 <option value="5" {{ request('rating') === '5' ? 'selected' : '' }}>⭐⭐⭐⭐⭐ 5/5</option>
                 <option value="4" {{ request('rating') === '4' ? 'selected' : '' }}>⭐⭐⭐⭐ 4/5</option>
@@ -58,14 +76,14 @@
                 <option value="1" {{ request('rating') === '1' ? 'selected' : '' }}>⭐ 1/5</option>
             </select>
 
-            <button type="submit" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-[10px] uppercase tracking-widest transition-all">
+            <button type="submit" class="px-8 py-4 bg-slate-900 hover:bg-rdc-blue text-white font-black rounded-2xl text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200 shrink-0">
                 <i class="fas fa-search mr-2"></i> Filtrer
             </button>
         </form>
     </div>
 
     <!-- Reviews Table -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
         <table class="w-full text-xs">
             <thead>
                 <tr class="border-b border-slate-100 bg-slate-50">
@@ -165,10 +183,13 @@
                 @endif
                 @empty
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center">
-                        <div class="flex flex-col items-center justify-center text-slate-400">
-                            <i class="fas fa-inbox text-4xl mb-4 opacity-20"></i>
-                            <p class="font-bold">Aucun avis trouvé</p>
+                    <td colspan="7" class="py-24 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="w-24 h-24 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center text-5xl mb-8 shadow-inner">
+                                <i class="fas fa-star-half-stroke"></i>
+                            </div>
+                            <h4 class="text-base font-black text-slate-400 uppercase tracking-widest">Aucun avis trouvé</h4>
+                            <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tight mt-2">Les avis apparaîtront ici après modération.</p>
                         </div>
                     </td>
                 </tr>

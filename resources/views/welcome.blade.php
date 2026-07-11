@@ -14,6 +14,9 @@
 
     <!-- Vite compiled CSS + JS (Tailwind v4) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -399,15 +402,20 @@
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Accueil
                         </a>
-                        <a href="#services" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
+                        <a href="{{ route('public.services.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
                                   relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Services
                         </a>
-                        <a href="#emplois" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
+                        <a href="{{ route('public.jobs.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
                                   relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Emplois
+                        </a>
+                        <a href="{{ route('public.artisans.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
+                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
+                                  after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
+                            Artisans
                         </a>
                         <a href="#fonctionnement" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
                                   relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
@@ -451,33 +459,117 @@
                         @auth
                             <div class="flex items-center space-x-4">
                                 <!-- Notification Badge -->
-                                <div class="relative">
-                                    <button class="p-2 text-gray-600 hover:text-rdc-blue transition-colors">
+                                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                                    <button @click="open = !open" class="p-2 text-gray-600 hover:text-rdc-blue transition-colors relative focus:outline-none">
                                         <i class="fas fa-bell text-xl"></i>
-                                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-rdc-red text-white 
-                                                                 text-xs rounded-full flex items-center justify-center">
-                                            3
-                                        </span>
+                                        @if(auth()->user()->unreadNotifications->count() > 0)
+                                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-rdc-red text-white 
+                                                                     text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
+                                                {{ auth()->user()->unreadNotifications->count() }}
+                                            </span>
+                                        @endif
                                     </button>
+                                    
+                                    <div x-show="open" style="display: none;"
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 scale-95"
+                                         x-transition:enter-end="opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="opacity-100 scale-100"
+                                         x-transition:leave-end="opacity-0 scale-95"
+                                         class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                                        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                                            <h3 class="font-bold text-gray-800">Notifications</h3>
+                                            @if(auth()->user()->unreadNotifications->count() > 0)
+                                            <span class="bg-rdc-blue/10 text-rdc-blue text-xs font-bold px-2 py-1 rounded-full">{{ auth()->user()->unreadNotifications->count() }} nouvelle(s)</span>
+                                            @endif
+                                        </div>
+                                        <div class="max-h-80 overflow-y-auto">
+                                            @forelse(auth()->user()->notifications()->take(5)->get() as $notification)
+                                                <div class="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors {{ is_null($notification->read_at) ? 'bg-blue-50/50' : '' }}">
+                                                    <p class="text-sm text-gray-700">{{ $notification->data['message'] ?? 'Nouvelle notification' }}</p>
+                                                    <span class="text-xs text-gray-400 mt-1 block">{{ $notification->created_at->diffForHumans() }}</span>
+                                                </div>
+                                            @empty
+                                                <div class="p-6 text-center text-gray-500">
+                                                    <i class="fas fa-bell-slash text-3xl mb-3 opacity-20"></i>
+                                                    <p class="text-sm">Aucune notification</p>
+                                                </div>
+                                            @endforelse
+                                        </div>
+                                        <div class="p-3 border-t border-gray-100 text-center bg-gray-50">
+                                            <a href="{{ route('user.notifications.index') }}" class="text-sm font-bold text-rdc-blue hover:text-rdc-blue-dark transition-colors">
+                                                Voir toutes les notifications
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <!-- Dashboard Button -->
-                                <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
-                                                      text-white font-semibold rounded-lg hover:shadow-lg 
-                                                      transition-all duration-300 flex items-center space-x-2">
-                                    <i class="fas fa-th-large"></i>
-                                    <span>Dashboard</span>
-                                </a>
+                                @if(auth()->user()->user_type === 'client' || auth()->user()->role === 'user')
+                                    <!-- Client Dropdown -->
+                                    <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                                        <button @click="open = !open" class="flex items-center gap-2 focus:outline-none py-2">
+                                            <img src="{{ auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}" class="w-10 h-10 rounded-full border-2 border-rdc-blue object-cover">
+                                            <span class="font-bold text-gray-700 hidden sm:block">{{ auth()->user()->name }}</span>
+                                            <i class="fas fa-chevron-down text-xs text-gray-400 hidden sm:block transition-transform" :class="{'rotate-180': open}"></i>
+                                        </button>
+                                        
+                                        <div x-show="open" style="display: none;"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                             class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 origin-top-right">
+                                            <div class="p-2 space-y-1">
+                                                <div class="px-4 py-2 border-b border-gray-100 mb-2">
+                                                    <p class="text-sm font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                                                    <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                                                </div>
+                                                <a href="{{ route('user.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                    <i class="fas fa-user w-5 text-center"></i> Mon profil
+                                                </a>
+                                                <a href="{{ route('user.applications.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                    <i class="fas fa-file-alt w-5 text-center"></i> Mes candidatures
+                                                </a>
+                                                <a href="{{ route('user.service-requests.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                    <i class="fas fa-clipboard-list w-5 text-center"></i> Mes demandes
+                                                </a>
+                                                <a href="{{ route('user.messages.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                    <i class="fas fa-envelope w-5 text-center"></i> Messages
+                                                </a>
+                                                <div class="border-t border-gray-100 my-1"></div>
+                                                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                                    @csrf
+                                                    <button type="submit" class="w-full flex items-center px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                                        <i class="fas fa-sign-out-alt w-5 text-center"></i> Déconnexion
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    @if(auth()->user()->role === 'admin' || auth()->user()->role === 'super_admin')
+                                        <a href="{{ route('admin.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-gray-800 to-gray-900 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center space-x-2">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>Dashboard Admin</span>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center space-x-2">
+                                            <i class="fas fa-th-large"></i>
+                                            <span>Dashboard</span>
+                                        </a>
+                                    @endif
 
-                                <!-- Logout -->
-                                <form method="POST" action="{{ route('logout') }}" class="m-0">
-                                    @csrf
-                                    <button type="submit" class="p-2.5 text-gray-500 hover:text-rdc-red transition-colors 
-                                                               rounded-lg border border-gray-200 hover:border-rdc-red/30"
-                                        aria-label="Déconnexion">
-                                        <i class="fas fa-sign-out-alt text-lg"></i>
-                                    </button>
-                                </form>
+                                    <!-- Logout -->
+                                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                        @csrf
+                                        <button type="submit" class="p-2.5 text-gray-500 hover:text-rdc-red transition-colors rounded-lg border border-gray-200 hover:border-rdc-red/30" aria-label="Déconnexion">
+                                            <i class="fas fa-sign-out-alt text-lg"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         @endauth
 
@@ -1415,53 +1507,124 @@
                 });
             }
 
-            // Données des catégories
+            // Données des catégories avec images Unsplash
             const categories = [
-                { name: "Électriciens", icon: "fa-bolt", color: "from-blue-500 to-blue-600", desc: "Installation & dépannage" },
-                { name: "Plombiers", icon: "fa-tools", color: "from-yellow-500 to-yellow-600", desc: "Installation & réparation" },
-                { name: "Couturiers", icon: "fa-cut", color: "from-red-500 to-red-600", desc: "Sur mesure & réparation" },
-                { name: "Maçons", icon: "fa-hammer", color: "from-green-500 to-green-600", desc: "Construction & rénovation" },
-                { name: "Cordonniers", icon: "fa-shoe-prints", color: "from-purple-500 to-purple-600", desc: "Réparation de chaussures" },
-                { name: "Coiffeurs", icon: "fa-scissors", color: "from-pink-500 to-pink-600", desc: "Coiffure homme & femme" },
-                { name: "Mécaniciens", icon: "fa-car", color: "from-indigo-500 to-indigo-600", desc: "Réparation automobile" },
-                { name: "Menuisiers", icon: "fa-tree", color: "from-yellow-700 to-yellow-800", desc: "Menuiserie & ébénisterie" },
-                { name: "Jardiniers", icon: "fa-leaf", color: "from-green-400 to-green-500", desc: "Entretien & aménagement" },
-                { name: "Peintres", icon: "fa-paint-roller", color: "from-cyan-500 to-cyan-600", desc: "Peinture intérieur/extérieur" },
-                { name: "Soudeurs", icon: "fa-fire", color: "from-orange-500 to-orange-600", desc: "Soudure & métallerie" },
-                { name: "Informaticiens", icon: "fa-laptop-code", color: "from-blue-400 to-blue-500", desc: "Maintenance & support IT" }
+                {
+                    name: "Électriciens",
+                    desc: "Installation & dépannage",
+                    img: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop&auto=format",
+                    color: "from-blue-500 to-blue-600"
+                },
+                {
+                    name: "Plombiers",
+                    desc: "Installation & réparation",
+                    img: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=300&fit=crop&auto=format",
+                    color: "from-yellow-500 to-yellow-600"
+                },
+                {
+                    name: "Couturiers",
+                    desc: "Sur mesure & réparation",
+                    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop&auto=format",
+                    color: "from-red-500 to-red-600"
+                },
+                {
+                    name: "Maçons",
+                    desc: "Construction & rénovation",
+                    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=300&fit=crop&auto=format",
+                    color: "from-green-500 to-green-600"
+                },
+                {
+                    name: "Cordonniers",
+                    desc: "Réparation de chaussures",
+                    img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop&auto=format",
+                    color: "from-purple-500 to-purple-600"
+                },
+                {
+                    name: "Coiffeurs",
+                    desc: "Coiffure homme & femme",
+                    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop&auto=format",
+                    color: "from-pink-500 to-pink-600"
+                },
+                {
+                    name: "Mécaniciens",
+                    desc: "Réparation automobile",
+                    img: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop&auto=format",
+                    color: "from-indigo-500 to-indigo-600"
+                },
+                {
+                    name: "Menuisiers",
+                    desc: "Menuiserie & ébénisterie",
+                    img: "https://images.unsplash.com/photo-1588854337236-6889d631faa8?w=400&h=300&fit=crop&auto=format",
+                    color: "from-yellow-700 to-yellow-800"
+                },
+                {
+                    name: "Jardiniers",
+                    desc: "Entretien & aménagement",
+                    img: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop&auto=format",
+                    color: "from-green-400 to-green-500"
+                },
+                {
+                    name: "Peintres",
+                    desc: "Peinture intérieur/extérieur",
+                    img: "https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=400&h=300&fit=crop&auto=format",
+                    color: "from-cyan-500 to-cyan-600"
+                },
+                {
+                    name: "Soudeurs",
+                    desc: "Soudure & métallerie",
+                    img: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop&auto=format",
+                    color: "from-orange-500 to-orange-600"
+                },
+                {
+                    name: "Informaticiens",
+                    desc: "Maintenance & support IT",
+                    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop&auto=format",
+                    color: "from-blue-400 to-blue-500"
+                }
             ];
 
-            // Remplir les catégories
+            // Remplir les catégories avec images
             const categoriesContainer = document.getElementById('categories-container');
             if (categoriesContainer) {
                 categories.forEach((category, index) => {
                     const categoryElement = document.createElement('div');
-                    categoryElement.className = 'group relative overflow-hidden bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 will-change-transform';
+                    categoryElement.className = 'group relative overflow-hidden bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer will-change-transform hover:-translate-y-1';
                     categoryElement.setAttribute('data-aos', 'fade-up');
                     categoryElement.setAttribute('data-aos-delay', (index % 6) * 100);
 
                     categoryElement.innerHTML = `
-                        <div class="relative z-10">
-                            <div class="w-16 h-16 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-500 shadow-lg">
-                                <i class="fas ${category.icon} text-white text-2xl"></i>
+                        <div class="relative h-44 overflow-hidden">
+                            <img
+                                src="${category.img}"
+                                alt="${category.name}"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                loading="lazy"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            >
+                            <div class="hidden w-full h-full bg-gradient-to-br ${category.color} items-center justify-center absolute inset-0">
+                                <span class="text-white text-4xl font-black opacity-30">${category.name[0]}</span>
                             </div>
-                            <h4 class="text-lg font-bold text-gray-900 text-center mb-2 group-hover:text-rdc-blue transition-colors">${category.name}</h4>
-                            <p class="text-sm text-gray-600 text-center mb-4">${category.desc}</p>
-                            <div class="text-center">
-                                <a href="{{ route('user.services.index') }}" class="inline-flex items-center text-rdc-blue text-sm font-semibold group-hover:translate-x-1 transition-transform">
-                                    Voir les artisans
-                                    <i class="fas fa-arrow-right ml-1 text-xs"></i>
-                                </a>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-4">
+                                <h4 class="text-white font-bold text-base leading-tight drop-shadow">${category.name}</h4>
+                                <p class="text-white/80 text-xs font-medium mt-0.5">${category.desc}</p>
                             </div>
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+                        <div class="px-4 py-3 flex items-center justify-between">
+                            <a href="{{ route('public.artisans.index') }}" class="text-rdc-blue text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                                Voir les artisans
+                                <i class="fas fa-arrow-right text-[10px]"></i>
+                            </a>
+                            <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">RDC</span>
+                        </div>
                     `;
 
                     categoriesContainer.appendChild(categoryElement);
                 });
             }
 
-            // Données des emplois
+
+            // Données des emplois avec images Unsplash
             const jobs = [
                 {
                     title: "Électricien Résidentiel",
@@ -1470,7 +1633,8 @@
                     type: "Temps plein",
                     salary: "800-1200$",
                     urgent: true,
-                    tags: ["Électricité", "CDI", "Expérience"]
+                    tags: ["Électricité", "CDI", "Expérience"],
+                    img: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&h=300&fit=crop"
                 },
                 {
                     title: "Plombier Qualifié",
@@ -1479,7 +1643,8 @@
                     type: "Temps plein",
                     salary: "700-1000$",
                     urgent: false,
-                    tags: ["Plomberie", "CDD", "Formation"]
+                    tags: ["Plomberie", "CDD", "Formation"],
+                    img: "https://images.unsplash.com/photo-1505798577917-a65157d3320a?w=400&h=300&fit=crop"
                 },
                 {
                     title: "Couturier sur Mesure",
@@ -1488,7 +1653,8 @@
                     type: "Indépendant",
                     salary: "À discuter",
                     urgent: false,
-                    tags: ["Couture", "Freelance", "Créatif"]
+                    tags: ["Couture", "Freelance", "Créatif"],
+                    img: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=300&fit=crop"
                 },
                 {
                     title: "Maçon Bâtiment",
@@ -1497,7 +1663,8 @@
                     type: "Contrat",
                     salary: "600-900$",
                     urgent: true,
-                    tags: ["Construction", "CDD", "Force physique"]
+                    tags: ["Construction", "CDD", "Force physique"],
+                    img: "https://images.unsplash.com/photo-1541888081622-15cb3258c734?w=400&h=300&fit=crop"
                 },
                 {
                     title: "Coiffeur Salon",
@@ -1506,7 +1673,8 @@
                     type: "Temps plein",
                     salary: "500-800$",
                     urgent: false,
-                    tags: ["Coiffure", "CDI", "Relation client"]
+                    tags: ["Coiffure", "CDI", "Relation client"],
+                    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop"
                 },
                 {
                     title: "Mécanicien Automobile",
@@ -1515,7 +1683,8 @@
                     type: "Temps plein",
                     salary: "750-1100$",
                     urgent: false,
-                    tags: ["Mécanique", "CDI", "Technicien"]
+                    tags: ["Mécanique", "CDI", "Technicien"],
+                    img: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400&h=300&fit=crop"
                 }
             ];
 
@@ -1524,54 +1693,61 @@
             if (jobsContainer) {
                 jobs.forEach((job, index) => {
                     const jobElement = document.createElement('div');
-                    jobElement.className = 'group bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden relative';
+                    jobElement.className = 'group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden relative cursor-pointer hover:-translate-y-1';
                     jobElement.setAttribute('data-aos', 'fade-up');
                     jobElement.setAttribute('data-aos-delay', (index % 3) * 100);
 
                     const urgentBadge = job.urgent ?
-                        `<div class="absolute top-4 right-4 px-4 py-1.5 bg-gradient-to-r from-rdc-red to-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                        `<div class="absolute top-4 right-4 z-10 px-3 py-1 bg-gradient-to-r from-rdc-red to-red-500 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg animate-pulse">
                             <i class="fas fa-bolt mr-1"></i>URGENT
                         </div>` : '';
 
                     const tagsHtml = job.tags.map(tag =>
-                        `<span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">${tag}</span>`
+                        `<span class="px-2.5 py-1 bg-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider rounded-lg">${tag}</span>`
                     ).join('');
 
                     jobElement.innerHTML = `
                         ${urgentBadge}
+                        <div class="relative h-40 overflow-hidden">
+                            <img src="${job.img}" alt="${job.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <h3 class="text-xl font-bold text-white mb-1 drop-shadow-md leading-tight group-hover:text-rdc-blue transition-colors">${job.title}</h3>
+                                <div class="flex items-center text-white/90 text-sm">
+                                    <i class="fas fa-building text-rdc-blue mr-2"></i>
+                                    <span class="font-medium drop-shadow">${job.company}</span>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <div class="mb-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-rdc-blue transition-colors">${job.title}</h3>
-                            <div class="flex items-center text-gray-600 mb-2">
-                                <i class="fas fa-building text-rdc-blue mr-2"></i>
-                                <span class="font-medium">${job.company}</span>
-                            </div>
-                            <div class="flex items-center text-gray-600 mb-4">
+                        <div class="p-6 flex flex-col flex-1">
+                            <div class="flex items-center text-slate-500 text-sm mb-4">
                                 <i class="fas fa-map-marker-alt text-rdc-red mr-2"></i>
-                                <span>${job.location}</span>
+                                <span class="font-bold">${job.location}</span>
                             </div>
-                            <div class="flex flex-wrap gap-2 mb-4">
+                            
+                            <div class="flex flex-wrap gap-2 mb-6">
                                 ${tagsHtml}
                             </div>
+                            
+                            <div class="flex justify-between items-center mt-auto pt-4 border-t border-slate-100 mb-6">
+                                <span class="px-3 py-1 bg-rdc-blue/10 text-rdc-blue text-xs font-black uppercase tracking-wider rounded-lg">
+                                    ${job.type}
+                                </span>
+                                <span class="text-lg font-black text-slate-900">${job.salary}</span>
+                            </div>
+                            
+                            <a href="{{ route('public.jobs.index') }}" class="w-full group/btn py-3.5 bg-slate-50 hover:bg-gradient-to-r hover:from-rdc-blue hover:to-rdc-blue-dark 
+                                          text-slate-700 hover:text-white font-bold rounded-xl border border-slate-200 hover:border-transparent
+                                          transition-all duration-300
+                                          flex items-center justify-center space-x-2">
+                                <i class="fas fa-paper-plane group-hover/btn:rotate-12 transition-transform"></i>
+                                <span>Voir les détails</span>
+                            </a>
                         </div>
-                        
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="px-4 py-2 bg-rdc-blue/10 text-rdc-blue font-semibold rounded-lg">
-                                ${job.type}
-                            </span>
-                            <span class="text-lg font-bold text-gray-900">${job.salary}</span>
-                        </div>
-                        
-                        <a href="{{ route('user.jobs.index') }}" class="w-full group/btn px-6 py-3.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
-                                      text-white font-semibold rounded-xl hover:shadow-lg 
-                                      transition-all duration-300 hover:scale-[1.02] 
-                                      flex items-center justify-center space-x-3">
-                            <i class="fas fa-paper-plane group-hover/btn:rotate-12 transition-transform"></i>
-                            <span>Postuler maintenant</span>
-                            <i class="fas fa-arrow-right group-hover/btn:translate-x-1 transition-transform"></i>
-                        </a>
                         
                         <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-rdc-blue to-rdc-yellow transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+
                     `;
 
                     jobsContainer.appendChild(jobElement);

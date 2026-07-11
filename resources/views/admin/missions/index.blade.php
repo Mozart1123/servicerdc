@@ -8,41 +8,70 @@
 @section('content')
 <div class="space-y-8">
     <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total</p>
-                <i class="fas fa-list text-slate-400"></i>
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        <!-- Total -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-slate-100 text-slate-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-list text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <p class="text-3xl font-extrabold text-slate-900">{{ $stats['total'] }}</p>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Total</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ $stats['total'] }}</h3>
+            </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-bold uppercase tracking-wider text-amber-500">En cours</p>
-                <i class="fas fa-spinner text-amber-500"></i>
+
+        <!-- En cours -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-amber-50 text-amber-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-spinner text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <p class="text-3xl font-extrabold text-slate-900">{{ $stats['in_progress'] }}</p>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">En cours</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ $stats['in_progress'] }}</h3>
+            </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-bold uppercase tracking-wider text-emerald-500">Terminées</p>
-                <i class="fas fa-check-circle text-emerald-500"></i>
+
+        <!-- Terminées -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-check-circle text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <p class="text-3xl font-extrabold text-slate-900">{{ $stats['completed'] }}</p>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Terminées</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ $stats['completed'] }}</h3>
+            </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-bold uppercase tracking-wider text-blue-500">Avec Avis</p>
-                <i class="fas fa-star text-blue-500"></i>
+
+        <!-- Avec Avis -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-star text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <p class="text-3xl font-extrabold text-slate-900">{{ $stats['with_review'] }}</p>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Avec Avis</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ $stats['with_review'] }}</h3>
+            </div>
         </div>
-        <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-bold uppercase tracking-wider text-amber-400">Note Moy.</p>
-                <i class="fas fa-chart-bar text-amber-400"></i>
+
+        <!-- Note Moy. -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden col-span-2 lg:col-span-1">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-purple-50 text-purple-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-chart-bar text-sm sm:text-xl"></i>
+                </div>
             </div>
-            <p class="text-3xl font-extrabold text-white">{{ $stats['avg_rating'] }}/5</p>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Note Moy.</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ $stats['avg_rating'] }}/5</h3>
+            </div>
         </div>
     </div>
 

@@ -48,16 +48,26 @@
 
                 <!-- Images -->
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Images du service (Max 5)</label>
-                    <div class="relative border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center hover:bg-slate-50 transition-colors group">
-                        <input type="file" name="images[]" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="flex items-center justify-between pl-4 mb-2">
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Images du service</label>
+                        <span id="image-counter" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">0/5 images</span>
+                    </div>
+                    <div class="relative border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center hover:bg-slate-50 transition-colors group" id="upload-zone">
+                        <input type="file" name="images[]" id="images-input" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center text-rdc-blue text-2xl mx-auto mb-4 group-hover:scale-110 transition-transform">
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
                         <h4 class="font-bold text-slate-900 mb-1">Cliquez ou glissez vos images ici</h4>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">JPG, PNG, GIF (Max 2MB)</p>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">JPG, PNG, GIF (Max 5 images)</p>
                     </div>
-                    @error('images.*')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+
+                    <!-- Grille d'aperçu -->
+                    <div id="image-preview-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-4 hidden">
+                        <!-- Les vignettes s'afficheront ici via JS -->
+                    </div>
+
+                    @error('images.*')<span class="text-xs text-red-500 pl-4 font-bold block mt-1">{{ $message }}</span>@enderror
+                    @error('images')<span class="text-xs text-red-500 pl-4 font-bold block mt-1">{{ $message }}</span>@enderror
                 </div>
 
                 <div class="pt-6 flex gap-4 border-t border-slate-100">
@@ -71,4 +81,80 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('images-input');
+        const previewContainer = document.getElementById('image-preview-container');
+        const imageCounter = document.getElementById('image-counter');
+        const maxFiles = 5;
+        
+        let dataTransfer = new DataTransfer();
+
+        fileInput.addEventListener('change', function(e) {
+            const newFiles = Array.from(e.target.files);
+            
+            newFiles.forEach(file => {
+                if (dataTransfer.items.length < maxFiles) {
+                    dataTransfer.items.add(file);
+                }
+            });
+
+            fileInput.files = dataTransfer.files;
+            updatePreviews();
+        });
+
+        function updatePreviews() {
+            previewContainer.innerHTML = '';
+            const files = dataTransfer.files;
+            
+            if (files.length > 0) {
+                previewContainer.classList.remove('hidden');
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+
+            imageCounter.textContent = `${files.length}/${maxFiles} images`;
+
+            Array.from(files).forEach((file, index) => {
+                const url = URL.createObjectURL(file);
+                
+                const div = document.createElement('div');
+                div.className = 'relative aspect-square rounded-2xl overflow-hidden border border-slate-200 group shadow-sm bg-slate-50';
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'w-full h-full object-cover';
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'absolute top-2 right-2 w-7 h-7 bg-white/90 text-red-500 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 z-20';
+                removeBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
+                removeBtn.onclick = (e) => {
+                    e.preventDefault();
+                    removeFile(index);
+                };
+                
+                div.appendChild(img);
+                div.appendChild(removeBtn);
+                previewContainer.appendChild(div);
+            });
+        }
+
+        function removeFile(indexToRemove) {
+            const newDataTransfer = new DataTransfer();
+            const files = Array.from(dataTransfer.files);
+            
+            files.forEach((file, index) => {
+                if (index !== indexToRemove) {
+                    newDataTransfer.items.add(file);
+                }
+            });
+            
+            dataTransfer = newDataTransfer;
+            fileInput.files = dataTransfer.files;
+            updatePreviews();
+        }
+    });
+</script>
 @endsection

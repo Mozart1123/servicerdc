@@ -1,126 +1,126 @@
-@extends('layouts.user')
+@extends($layout)
 
-@section('header_title', 'Signaler un Problème')
+@section('header_title', 'Paramètres & Aide')
+@section('header_subtitle', 'Signaler une anomalie ou obtenir de l\'assistance.')
 
-@section('content')
-<div class="max-w-4xl mx-auto space-y-12 pb-20">
-    <!-- Header -->
-    <div class="text-center space-y-4">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-red-50 text-rdc-red shadow-inner text-3xl mb-4 animate-pulse">
-            <i class="fas fa-triangle-exclamation"></i>
+@section($contentSection)
+<div class="space-y-10">
+
+    <section>
+        <div class="mb-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-1">Signaler un problème</h2>
+            <p class="text-sm text-slate-500">Un bug, un comportement inapproprié ou un problème technique ? Signalez-le nous.</p>
         </div>
-        <h2 class="text-3xl font-heading font-black text-slate-900 uppercase">Signaler une Anomalie</h2>
-        <p class="text-slate-500 font-medium max-w-lg mx-auto leading-relaxed">
-            Un bug, un comportement inapproprié ou un problème technique ? Signalez-le nous pour que nous puissions intervenir rapidement.
-        </p>
-    </div>
 
-    <!-- Report Form Card -->
-    <div class="bg-white rounded-[3.5rem] p-10 md:p-16 shadow-xl border border-red-100 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-        
-        <form id="reportProblemForm" class="space-y-8 relative z-10">
+        <form id="reportProblemForm" class="space-y-6 max-w-3xl">
             @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Problem Type -->
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Type de Problème</label>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Type de problème <span class="text-red-500">*</span></label>
                     <select name="problem_type" required
-                            class="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-red-500/30 focus:bg-white transition-all outline-none font-bold text-slate-900 appearance-none">
+                            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm appearance-none">
                         <option value="">Sélectionner le type</option>
-                        <option value="bug">Bug Technique / Erreur Affichage</option>
-                        <option value="harassment">Comportement Inapproprié</option>
-                        <option value="scam">Suspicion de Fraude / Arnaque</option>
-                        <option value="content">Contenu Illégal ou Choquant</option>
-                        <option value="other">Autre Problème</option>
+                        <option value="bug">Bug technique / Erreur d'affichage</option>
+                        <option value="harassment">Comportement inapproprié</option>
+                        <option value="scam">Suspicion de fraude / Arnaque</option>
+                        <option value="content">Contenu illégal ou choquant</option>
+                        <option value="other">Autre problème</option>
                     </select>
                 </div>
 
                 <!-- Urgency -->
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Niveau de Gravité</label>
-                    <div class="flex items-center bg-slate-50 p-1.5 rounded-2xl border border-transparent">
-                        <button type="button" onclick="setUrgency('low', this)" class="flex-1 py-3 px-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all urgency-btn" data-val="low">Faible</button>
-                        <button type="button" onclick="setUrgency('medium', this)" class="flex-1 py-3 px-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all urgency-btn bg-white shadow-sm ring-1 ring-slate-100" data-val="medium">Moyen</button>
-                        <button type="button" onclick="setUrgency('high', this)" class="flex-1 py-3 px-2 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all urgency-btn" data-val="high">Critique</button>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Niveau de gravité</label>
+                    <div class="flex items-center bg-slate-50 p-1 rounded-lg border border-slate-200">
+                        <button type="button" onclick="setUrgency('low', this)" class="flex-1 py-2 px-2 text-xs font-medium rounded-md transition-all urgency-btn text-slate-600" data-val="low">Faible</button>
+                        <button type="button" onclick="setUrgency('medium', this)" class="flex-1 py-2 px-2 text-xs font-medium rounded-md transition-all urgency-btn bg-white shadow-sm border border-slate-200 text-[#16a3b0]" data-val="medium">Moyen</button>
+                        <button type="button" onclick="setUrgency('high', this)" class="flex-1 py-2 px-2 text-xs font-medium rounded-md transition-all urgency-btn text-slate-600" data-val="high">Critique</button>
                         <input type="hidden" name="urgency" value="medium" id="urgencyInput">
                     </div>
                 </div>
             </div>
 
             <!-- Subject -->
-            <div class="space-y-3">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Objet du Signalement</label>
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">Objet du signalement <span class="text-red-500">*</span></label>
                 <input type="text" name="subject" required
                        placeholder="Ex: Impossible de télécharger mon CV"
-                       class="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-red-500/30 focus:bg-white transition-all outline-none font-bold text-slate-900">
+                       class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
             </div>
 
             <!-- Description -->
-            <div class="space-y-3">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Détails de l'Incident</label>
-                <textarea name="description" rows="6" required
-                          placeholder="Merci de nous donner le maximum de précisions pour que nous puissions reproduire le problème..."
-                          class="w-full px-6 py-5 bg-slate-50 border-2 border-transparent rounded-[2rem] focus:border-red-500/30 focus:bg-white transition-all outline-none font-bold text-slate-900 resize-none"></textarea>
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">Détails de l'incident <span class="text-red-500">*</span></label>
+                <textarea name="description" rows="5" required
+                          placeholder="Merci de nous donner le maximum de précisions..."
+                          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm resize-none"></textarea>
             </div>
 
-            <!-- Footer Action -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-4 border-t border-slate-50">
-                <div class="flex items-center gap-3 text-red-500/70">
-                    <i class="fas fa-user-shield"></i>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Signalement Anonyme ou Identifié</span>
-                </div>
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+                <p class="text-xs text-slate-500 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-slate-400"></i>
+                    Votre signalement sera traité de manière confidentielle.
+                </p>
                 <button type="submit" id="submitBtn"
-                        class="w-full md:w-auto px-12 py-5 bg-slate-900 text-white font-black rounded-3xl text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-3">
-                    <span>Lancer l'Alerte</span>
-                    <i class="fas fa-radiation"></i>
+                        class="w-full sm:w-auto px-6 py-2.5 bg-[#16a3b0] text-white font-medium text-sm rounded-lg hover:bg-[#138b96] transition-colors flex items-center justify-center gap-2">
+                    <span>Envoyer le signalement</span>
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
         </form>
-    </div>
+    </section>
 
-    <!-- Security Note -->
-    <div class="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 flex items-start gap-6">
-        <div class="text-rdc-blue text-xl mt-1">
-            <i class="fas fa-info-circle"></i>
+    <hr class="border-slate-100">
+
+    <section>
+        <div class="flex items-start gap-4 p-5 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="text-[#16a3b0] mt-0.5">
+                <i class="fas fa-shield-alt text-lg"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-slate-900 text-sm mb-1">Utilisation responsable</h4>
+                <p class="text-sm text-slate-600">
+                    Les fausses alertes répétées peuvent entraîner une restriction de votre compte. 
+                    Aidez-nous à maintenir la plateforme sûre en signalant uniquement les problèmes réels.
+                </p>
+            </div>
         </div>
-        <div class="space-y-2">
-            <h4 class="font-bold text-slate-900 uppercase text-xs tracking-wider">Note de Sécurité</h4>
-            <p class="text-xs text-slate-500 leading-relaxed font-medium">
-                Toutes les fausses alertes répétées pourront entraîner une suspension temporaire de votre compte. 
-                Utilisez ce service avec responsabilité pour nous aider à maintenir <strong>ProConnect</strong> sûr pour tous.
-            </p>
-        </div>
-    </div>
+    </section>
+
 </div>
 
 <script>
 function setUrgency(val, el) {
     document.getElementById('urgencyInput').value = val;
     document.querySelectorAll('.urgency-btn').forEach(btn => {
-        btn.classList.remove('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-100', 'text-red-600', 'text-amber-600', 'text-emerald-600');
+        btn.classList.remove('bg-white', 'shadow-sm', 'border', 'border-slate-200', 'text-[#16a3b0]', 'text-red-600');
+        btn.classList.add('text-slate-600');
     });
-    el.classList.add('bg-white', 'shadow-sm', 'ring-1', 'ring-slate-100');
-    if(val === 'high') el.classList.add('text-red-600');
-    if(val === 'medium') el.classList.add('text-amber-600');
-    if(val === 'low') el.classList.add('text-emerald-600');
+    
+    el.classList.remove('text-slate-600');
+    el.classList.add('bg-white', 'shadow-sm', 'border', 'border-slate-200');
+    
+    if (val === 'high') el.classList.add('text-red-600');
+    else el.classList.add('text-[#16a3b0]');
 }
 
 document.getElementById('reportProblemForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-spinner animate-spin"></i> <span>ANALYSIS EN COURS...</span>`;
+    btn.innerHTML = `<i class="fas fa-spinner animate-spin"></i> <span>Envoi en cours...</span>`;
 
     // Simulated submission
     setTimeout(() => {
-        btn.classList.remove('bg-slate-900');
-        btn.classList.add('bg-emerald-500');
-        btn.innerHTML = `<i class="fas fa-check"></i> <span>ALERTE TRANSMISE</span>`;
+        btn.classList.remove('bg-[#16a3b0]', 'hover:bg-[#138b96]');
+        btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+        btn.innerHTML = `<i class="fas fa-check"></i> <span>Signalement envoyé</span>`;
         
         setTimeout(() => {
-            alert("Merci pour votre signalement. Nos administrateurs ont été prévenus.");
-            window.location.href = "{{ route('user.dashboard') }}";
+            alert("Merci pour votre signalement. Nos équipes ont été prévenues.");
+            window.location.reload();
         }, 1500);
     }, 2000);
 });

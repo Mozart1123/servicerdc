@@ -37,35 +37,43 @@
     }
 }">
     <!-- HUD Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-rdc-blue/20 rounded-full blur-2xl group-hover:bg-rdc-blue/30 transition-colors"></div>
-            <div class="relative z-10 flex flex-col gap-4">
-                <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-sm"><i class="fas fa-bullhorn"></i></div>
-                <div>
-                    <h5 class="text-3xl font-heading font-black">{{ $articles->count() }}</h5>
-                    <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Annonces Publiées</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Annonces Publiées -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-bullhorn text-sm sm:text-xl"></i>
                 </div>
             </div>
-        </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors"></div>
-            <div class="relative z-10 flex flex-col gap-4">
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm"><i class="fas fa-eye"></i></div>
-                <div>
-                    <h5 class="text-3xl font-heading font-black text-slate-900">{{ number_format($articles->sum('views') + 12400, 1, '.', '') }}k</h5>
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-nowrap">Vues Totales</p>
-                </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Annonces Publiées</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ $articles->count() }}</h3>
             </div>
         </div>
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors"></div>
-            <div class="relative z-10 flex flex-col gap-4">
-                <div class="w-10 h-10 rounded-xl bg-blue-50 text-rdc-blue flex items-center justify-center text-sm"><i class="fas fa-share-nodes"></i></div>
-                <div>
-                    <h5 class="text-3xl font-heading font-black text-slate-900">85%</h5>
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Taux d'Engagement</p>
+
+        <!-- Vues Totales -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-eye text-sm sm:text-xl"></i>
                 </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Vues Totales</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ number_format($articles->sum('views')) }}</h3>
+            </div>
+        </div>
+
+        <!-- Moyenne Vues/Article -->
+        <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-purple-50 text-purple-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-chart-simple text-sm sm:text-xl"></i>
+                </div>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Vues par Article</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">{{ $articles->count() > 0 ? number_format($articles->sum('views') / $articles->count(), 1) : 0 }}</h3>
             </div>
         </div>
     </div>

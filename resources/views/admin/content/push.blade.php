@@ -17,9 +17,9 @@
     audience: 0,
     calculateAudience() {
         const map = {
-            'Tous les Utilisateurs': 12480,
-            'Artisans Active': 4120,
-            'Clients Premium': 2850
+            'Tous les Utilisateurs': {{ $stats['total'] }},
+            'Artisans Active': {{ $stats['artisans'] }},
+            'Clients Premium': {{ $stats['clients'] }}
         };
         this.audience = map[this.target] || 0;
     },
@@ -172,10 +172,10 @@
                     <div class="px-8 py-5 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-md group-hover:bg-white/10 transition-colors">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-[9px] font-black text-white/40 uppercase tracking-widest font-heading">CTR Projection</span>
-                            <span class="text-[12px] font-black text-emerald-400">14.2%</span>
+                            <span class="text-[12px] font-black text-slate-400">-</span>
                         </div>
                         <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden shadow-inner">
-                            <div class="bg-gradient-to-r from-rdc-blue to-emerald-400 h-full w-[14.2%] rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+                            <div class="bg-gradient-to-r from-slate-400 to-slate-500 h-full w-[0%] rounded-full"></div>
                         </div>
                     </div>
                 </div>
@@ -223,8 +223,7 @@
                             </td>
                             <td class="px-4 sm:px-10 py-8 text-center">
                                 <div class="flex flex-col items-center">
-                                    <span class="text-[12px] sm:text-xl font-black text-slate-900 tracking-tighter">{{ number_format(rand(1000, 5000)) }}</span>
-                                    <p class="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">+{{ rand(5, 15) }}% CTR</p>
+                                    <span class="text-[12px] sm:text-xl font-black text-slate-400 tracking-tighter">-</span>
                                 </div>
                             </td>
                             <td class="pr-6 pl-4 sm:px-10 py-8 text-right">

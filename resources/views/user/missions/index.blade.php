@@ -1,8 +1,8 @@
-@extends('layouts.user')
+@extends($layout)
 
 @section('header_title', 'Mes Missions')
 
-@section('content')
+@section($contentSection)
 <div class="space-y-12 pb-20">
     <!-- Header -->
     <div class="relative">

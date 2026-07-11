@@ -117,6 +117,8 @@ class MessageController extends Controller
             'is_read'         => false,
         ]);
 
+        broadcast(new \App\Events\MessageSent($message))->toOthers();
+
         // Notification
         Notification::create([
             'user_id' => $receiverId,

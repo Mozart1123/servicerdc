@@ -106,24 +106,49 @@ function flaggedManager() {
 
         fetchUsers() {
             this.loading = true;
-            // Fake API call for demonstration
-            setTimeout(() => {
-                this.users = [
-                    { id: 201, name: "Marc Kamanda", email: "marc.kamanda@spam.cd", created_at: new Date(Date.now() - 5000000).toISOString() },
-                    { id: 202, name: "Arnaque Express", email: "fake.service@xyz.com", created_at: new Date(Date.now() - 15000000).toISOString() }
-                ];
-                this.pagination = { current_page: 1, last_page: 1, total: 2 };
+            fetch(`/admin/users/flagged?page=${this.page}`, {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.users = data.data;
+                this.pagination = { 
+                    current_page: data.current_page, 
+                    last_page: data.last_page, 
+                    total: data.total 
+                };
                 this.loading = false;
-            }, 600);
+            })
+            .catch(() => { this.loading = false; });
         },
 
         reactivate(user) {
-            this.users = this.users.filter(u => u.id !== user.id);
+            fetch(`/admin/users/${user.id}/toggle-status-api`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    this.users = this.users.filter(u => u.id !== user.id);
+                }
+            });
         },
 
         confirmDelete(id) {
             if (confirm('Supprimer définitivement ce compte ? Cette action est irréversible.')) {
-                this.users = this.users.filter(u => u.id !== id);
+                fetch(`/admin/users/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                }).then(() => {
+                    this.users = this.users.filter(u => u.id !== id);
+                });
             }
         },
 

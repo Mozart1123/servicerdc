@@ -1,105 +1,93 @@
-@extends('layouts.user')
+@extends($layout)
 
-@section('header_title', 'Sécurité & Accès')
+@section('header_title', 'Sécurité')
+@section('header_subtitle', 'Gérez votre mot de passe et vos sessions actives.')
 
-@section('content')
-<div class="max-w-4xl mx-auto space-y-12 pb-20">
-    <!-- Header -->
-    <div class="flex items-center gap-6">
-        <div class="w-20 h-20 rounded-[2.5rem] bg-slate-900 text-white flex items-center justify-center text-3xl shadow-xl shadow-slate-200">
-            <i class="fas fa-shield-halved"></i>
-        </div>
-        <div>
-            <h2 class="text-3xl font-heading font-black text-slate-900 uppercase">Coffre-fort <span class="text-rdc-blue">Numérique</span></h2>
-            <p class="text-slate-500 font-medium">Gérez votre mot de passe, vos sessions actives et protégez votre identité sur ProConnect.</p>
-        </div>
-    </div>
-
-    <!-- Security Sections -->
-    <div class="grid grid-cols-1 gap-10">
+@section($contentSection)
+<div class="space-y-10">
+    
+    <!-- 1. Change Password -->
+    <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-6">Changer le mot de passe</h2>
         
-        <!-- 1. Change Password -->
-        <div class="bg-white rounded-[3.5rem] p-10 md:p-14 shadow-sm border border-slate-100 overflow-hidden relative">
-            <div class="absolute top-0 left-0 w-2 h-full bg-rdc-blue"></div>
-            
-            <h3 class="text-xl font-heading font-black text-slate-900 uppercase mb-10 flex items-center gap-4">
-                <i class="fas fa-key text-rdc-blue"></i>
-                Changer mon Mot de Passe
-            </h3>
+        <form class="space-y-6 max-w-2xl">
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">Mot de passe actuel</label>
+                <input type="password" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
+            </div>
 
-            <form class="space-y-8">
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Mot de passe actuel</label>
-                    <input type="password" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 transition-all outline-none font-bold text-slate-900">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Nouveau mot de passe</label>
+                    <input type="password" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-3">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Nouveau mot de passe</label>
-                        <input type="password" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 transition-all outline-none font-bold text-slate-900">
-                    </div>
-                    <div class="space-y-3">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Confirmer le nouveau</label>
-                        <input type="password" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 transition-all outline-none font-bold text-slate-900">
-                    </div>
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="submit" class="px-10 py-4 bg-rdc-blue text-white font-black rounded-2xl text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-blue-500/20">
-                        Mettre à jour
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- 2. Active Sessions -->
-        <div class="bg-white rounded-[3.5rem] p-10 md:p-14 shadow-sm border border-slate-100">
-            <h3 class="text-xl font-heading font-black text-slate-900 uppercase mb-10 flex items-center gap-4">
-                <i class="fas fa-desktop text-slate-300"></i>
-                Sessions Actives
-            </h3>
-
-            <div class="space-y-4">
-                <div class="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:bg-white hover:shadow-lg transition-all">
-                    <div class="flex items-center gap-6">
-                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl text-emerald-500 shadow-inner">
-                            <i class="fas fa-mobile-screen"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-slate-900 text-sm uppercase">iPhone 14 Pro Max • Kinshasa</h4>
-                            <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Session Actuelle • En ligne</p>
-                        </div>
-                    </div>
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chrome Mobile</span>
-                </div>
-
-                <div class="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 opacity-60">
-                    <div class="flex items-center gap-6">
-                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl text-slate-400 shadow-inner">
-                            <i class="fas fa-laptop"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-slate-900 text-sm uppercase">MacBook Air • Lubumbashi</h4>
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Dernière connexion: 2 jours</p>
-                        </div>
-                    </div>
-                    <button class="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline">Déconnecter</button>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Confirmer le mot de passe</label>
+                    <input type="password" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
                 </div>
             </div>
+
+            <div class="flex justify-start pt-2">
+                <button type="submit" class="px-6 py-2.5 bg-[#16a3b0] text-white font-medium text-sm rounded-lg hover:bg-[#138b96] transition-colors">
+                    Mettre à jour
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <hr class="border-slate-100">
+
+    <!-- 2. Active Sessions -->
+    <section>
+        <div class="mb-6">
+            <h2 class="text-lg font-bold text-slate-900 mb-1">Sessions actives</h2>
+            <p class="text-sm text-slate-500">Appareils connectés à votre compte récemment.</p>
         </div>
 
-        <!-- 3. Account Deletion (Danger Zone) -->
-        <div class="bg-red-50 rounded-[3.5rem] p-10 md:p-14 border border-red-100 space-y-4">
-            <h3 class="text-xl font-heading font-black text-red-600 uppercase flex items-center gap-4">
-                <i class="fas fa-skull-crossbones"></i>
-                Zone de Danger
-            </h3>
-            <p class="text-sm font-medium text-red-600/70 max-w-md">Une fois votre compte supprimé, toutes vos données (profil, favoris, historique) seront définitivement effacées du Nexus ProConnect.</p>
-            <button class="mt-4 px-10 py-4 bg-red-600 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-500/20">
-                Supprimer mon compte
-            </button>
-        </div>
+        <div class="space-y-3 max-w-3xl">
+            <!-- Current Session -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-xl gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-500 shrink-0">
+                        <i class="fas fa-mobile-screen"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">iPhone 14 Pro Max • Kinshasa</h4>
+                        <p class="text-xs text-emerald-600 font-medium mt-0.5">Session actuelle • Chrome Mobile</p>
+                    </div>
+                </div>
+            </div>
 
-    </div>
+            <!-- Other Session -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-xl gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500 shrink-0">
+                        <i class="fas fa-laptop"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-slate-900 text-sm">MacBook Air • Lubumbashi</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">Dernière connexion : Il y a 2 jours</p>
+                    </div>
+                </div>
+                <button type="button" class="text-sm font-medium text-red-500 hover:text-red-700 transition-colors self-start sm:self-auto ml-14 sm:ml-0">
+                    Déconnecter
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <hr class="border-slate-100">
+
+    <!-- 3. Account Deletion -->
+    <section>
+        <div class="mb-4">
+            <h2 class="text-lg font-bold text-red-600 mb-1">Zone de danger</h2>
+            <p class="text-sm text-slate-600 max-w-2xl">La suppression de votre compte est définitive. Toutes vos données seront effacées.</p>
+        </div>
+        <button type="button" class="px-6 py-2.5 bg-white border border-red-200 text-red-600 font-medium text-sm rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors">
+            Supprimer mon compte
+        </button>
+    </section>
+
 </div>
 @endsection

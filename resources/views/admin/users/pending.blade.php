@@ -104,25 +104,53 @@ function pendingManager() {
 
         fetchUsers() {
             this.loading = true;
-            // Fake API call for demonstration
-            setTimeout(() => {
-                this.users = [
-                    { id: 101, name: "Jean-Pierre Kabangu", email: "jp.kabangu@gmail.com", created_at: new Date(Date.now() - 3600000).toISOString() },
-                    { id: 102, name: "Marie Louise Ngalula", email: "ml.ngalula@entreprise.cd", created_at: new Date(Date.now() - 86400000).toISOString() },
-                    { id: 103, name: "Congo Tech Services", email: "contact@congotech.cd", created_at: new Date(Date.now() - 172800000).toISOString() }
-                ];
-                this.pagination = { current_page: 1, last_page: 1, total: 3 };
+            fetch(`/admin/users/pending?page=${this.page}`, {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.users = data.data;
+                this.pagination = { 
+                    current_page: data.current_page, 
+                    last_page: data.last_page, 
+                    total: data.total 
+                };
                 this.loading = false;
-            }, 600);
+            })
+            .catch(() => { this.loading = false; });
         },
 
         approve(user) {
-            this.users = this.users.filter(u => u.id !== user.id);
+            fetch(`/admin/users/pending/${user.id}/approve-api`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    this.users = this.users.filter(u => u.id !== user.id);
+                }
+            });
         },
 
         reject(user) {
             if (!confirm(`Refuser l'inscription de ${user.name} ?`)) return;
-            this.users = this.users.filter(u => u.id !== user.id);
+            fetch(`/admin/users/pending/${user.id}/reject-api`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    this.users = this.users.filter(u => u.id !== user.id);
+                }
+            });
         },
 
         changePage(p) {

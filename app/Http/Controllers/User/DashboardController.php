@@ -180,11 +180,21 @@ class DashboardController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'city' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:500'],
+            'profile_photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $user = Auth::user();
-        $user->update($request->only(['name', 'phone']));
+        $user->update($request->only(['name', 'phone', 'city', 'bio']));
+
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_photo);
+            }
+            $user->profile_photo = $request->file('profile_photo')->store('profile_photos', 'public');
+            $user->save();
+        }
 
         return redirect()->back()->with('success', 'Profil mis à jour avec succès.');
     }

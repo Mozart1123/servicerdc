@@ -42,47 +42,19 @@
                     @forelse($invoices ?? [] as $invoice)
                         <!-- Dynamic rows -->
                     @empty
-                        @if(true) <!-- Force show mock -->
-                            <tr class="group hover:bg-slate-50/30 transition-colors">
-                                <td class="pl-4 pr-2 sm:px-8 py-4 sm:py-6">
-                                    <span class="font-mono text-[9px] sm:text-xs font-black text-slate-900 block truncate">#INV-2026-001</span>
-                                    <span class="text-[7px] sm:text-[9px] font-bold text-slate-400 uppercase mt-1 block">Facturé le 12 Mars</span>
-                                </td>
-                                <td class="hidden sm:table-cell px-8 py-6">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-xs">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-black text-slate-900 leading-tight">Jean-Charles Kabila</p>
-                                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Pack Premium Artisans</p>
-                                        </div>
+                        <tr>
+                            <td colspan="4" class="py-24">
+                                <div class="flex flex-col items-center justify-center text-center">
+                                    <div class="w-24 h-24 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center text-5xl mb-8 shadow-inner ring-8 ring-slate-50/50">
+                                        <i class="fas fa-file-invoice-dollar"></i>
                                     </div>
-                                </td>
-                                <td class="px-2 sm:px-8 py-4 sm:py-6 text-center">
-                                    <span class="text-[10px] sm:text-base font-black text-slate-900 leading-none">45.00 $</span>
-                                </td>
-                                <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
-                                    <button class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-2xl bg-white text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm border border-slate-100 group-hover:scale-110">
-                                        <i class="fas fa-file-pdf text-[10px] sm:text-sm"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        @else
-                            <tr>
-                                <td colspan="4" class="py-24">
-                                    <div class="flex flex-col items-center justify-center text-center">
-                                        <div class="w-24 h-24 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center text-5xl mb-8 shadow-inner ring-8 ring-slate-50/50">
-                                            <i class="fas fa-file-invoice-dollar"></i>
-                                        </div>
-                                        <h4 class="text-base sm:text-xl font-black text-slate-400 uppercase tracking-widest">Aucune Facture</h4>
-                                        <p class="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-tight mt-3 max-w-[300px] mx-auto leading-relaxed">
-                                            Votre centre de facturation est prêt. Les factures apparaîtront ici dès les premiers abonnements.
-                                        </p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endif
+                                    <h4 class="text-base sm:text-xl font-black text-slate-400 uppercase tracking-widest">Aucune Facture</h4>
+                                    <p class="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-tight mt-3 max-w-[300px] mx-auto leading-relaxed">
+                                        Votre centre de facturation est prêt. Les factures apparaîtront ici dès les premiers abonnements.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

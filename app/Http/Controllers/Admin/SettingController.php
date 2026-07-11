@@ -27,7 +27,38 @@ class SettingController extends Controller
 
     public function geo()
     {
-        return view('admin.settings.geo');
+        $allProvinces = [
+            'Bas-Uele', 'Équateur', 'Haut-Katanga', 'Haut-Lomami', 'Haut-Uele',
+            'Ituri', 'Kasaï', 'Kasaï Central', 'Kasaï Oriental', 'Kinshasa',
+            'Kongo Central', 'Kwango', 'Kwilu', 'Lomami', 'Lualaba', 'Mai-Ndombe',
+            'Maniema', 'Mongala', 'Nord-Kivu', 'Nord-Ubangi', 'Sankuru',
+            'Sud-Kivu', 'Sud-Ubangi', 'Tanganyika', 'Tshopo', 'Tshuapa'
+        ];
+
+        // Fetch provinces that have at least one user
+        $activeProvincesFromDb = \App\Models\User::whereNotNull('province')
+            ->select('province')
+            ->distinct()
+            ->pluck('province')
+            ->toArray();
+
+        // Normalize matching
+        $activeProvinces = [];
+        foreach ($allProvinces as $p) {
+            $active = false;
+            foreach ($activeProvincesFromDb as $activeDb) {
+                if (strtolower(trim($p)) === strtolower(trim($activeDb))) {
+                    $active = true;
+                    break;
+                }
+            }
+            $activeProvinces[] = [
+                'name' => $p,
+                'is_active' => $active
+            ];
+        }
+
+        return view('admin.settings.geo', compact('activeProvinces'));
     }
 
     public function api()

@@ -35,8 +35,8 @@ class UserController extends Controller
             'pending' => User::where('status', 'pending')->count(),
             'flagged' => User::where('status', 'suspended')->count(),
             'jobs' => JobOffer::where('status', 'active')->count(),
-            'services' => 8, // Mocked until reporting is implemented
-            'reviews' => 12, // Mocked until reviews are implemented
+            'services' => Service::where('status', 'active')->count(),
+            'reviews' => \App\Models\Review::count(),
         ]);
     }
 

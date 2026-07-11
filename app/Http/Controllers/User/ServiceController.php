@@ -20,30 +20,9 @@ class ServiceController extends Controller
     /**
      * Display all services with filters.
      */
-    public function index(Request $request): View
+    public function index(Request $request): RedirectResponse
     {
-        $query = Service::active()->verified();
-
-        if ($request->has('category') && $request->category) {
-            $query->byCategory($request->category);
-        }
-
-        if ($request->has('search') && $request->search) {
-            $query->search($request->search);
-        }
-
-        if ($request->has('location') && $request->location) {
-            $query->byLocation($request->location);
-        }
-
-        $services = $query->with('category', 'artisan')
-                         ->latest()
-                         ->paginate(12)
-                         ->appends($request->query());
-        
-        $categories = Category::all();
-
-        return view('user.services.index', compact('services', 'categories'));
+        return redirect()->route('public.services.index', $request->query());
     }
 
     /**
@@ -120,7 +99,7 @@ class ServiceController extends Controller
             'description' => ['nullable', 'string'],
             'price'       => ['required', 'numeric', 'min:0'],
             'location'    => ['required', 'string', 'max:255'],
-            'images.*'    => ['nullable', 'image', 'max:2048'],
+            'images.*'    => ['nullable', 'image'],
         ]);
 
         $user = Auth::user();
@@ -194,8 +173,8 @@ class ServiceController extends Controller
             'price'         => ['required', 'numeric', 'min:0'],
             'location'      => ['required', 'string', 'max:255'],
             'status'        => ['required', 'in:active,inactive'],
-            'service_image' => ['nullable', 'image', 'max:2048'],
-            'images.*'      => ['nullable', 'image', 'max:2048'],
+            'service_image' => ['nullable', 'image'],
+            'images.*'      => ['nullable', 'image'],
         ]);
 
         $service->update(array_diff_key($validated, ['images' => 1, 'service_image' => 1]));

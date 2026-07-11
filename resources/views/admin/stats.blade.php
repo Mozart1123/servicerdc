@@ -40,79 +40,101 @@
     </div>
 
     <!-- Top Live Metrics -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <!-- Metric: Connections -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Connectés</span>
-                <span class="flex h-2 w-2 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+
+        <!-- Card: Connectés -->
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-blue-50 text-rdc-blue rounded-lg sm:rounded-xl">
+                    <i class="fas fa-users text-sm sm:text-xl"></i>
+                </div>
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold text-emerald-600 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                    <i class="fas fa-arrow-up text-[6px] sm:text-[8px]"></i>
+                    <span x-text="userTrend + '%'">5%</span>
                 </span>
             </div>
-            <div class="flex items-baseline gap-2">
-                <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900" x-text="activeUsers">248</h3>
-                <span class="text-[10px] sm:text-xs font-bold text-emerald-500" x-text="'+' + userTrend + '%' ">+5%</span>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Connectés</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="activeUsers">248</h3>
             </div>
             <!-- Mini Sparkline -->
-            <div class="mt-4 h-10 sm:h-12 flex items-end gap-1">
+            <div class="mt-3 h-8 flex items-end gap-0.5">
                 <template x-for="height in userSparkline">
-                    <div class="flex-1 bg-rdc-blue/10 rounded-full transition-all duration-500" :style="'height: ' + height + '%'"></div>
+                    <div class="flex-1 bg-blue-100 rounded-sm transition-all duration-500" :style="'height: ' + height + '%'"></div>
                 </template>
             </div>
         </div>
 
-        <!-- Metric: API Requests -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Requêtes</span>
-                <i class="fas fa-bolt text-amber-500 animate-pulse text-xs"></i>
+        <!-- Card: Requêtes -->
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-amber-50 text-amber-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-bolt text-sm sm:text-xl"></i>
+                </div>
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold text-slate-500 bg-slate-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                    Live
+                </span>
             </div>
-            <div class="flex items-baseline gap-2">
-                <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900" x-text="reqPerMin">1.2k</h3>
-                <span class="text-[10px] sm:text-xs font-bold text-slate-400">Live</span>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Requêtes / min</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate" x-text="reqPerMin.toLocaleString()">1240</h3>
             </div>
-            <div class="mt-4 h-10 sm:h-12 flex items-end gap-1">
+            <div class="mt-3 h-8 flex items-end gap-0.5">
                 <template x-for="height in reqSparkline">
-                    <div class="flex-1 bg-amber-500/10 rounded-full transition-all duration-500" :style="'height: ' + height + '%'"></div>
+                    <div class="flex-1 bg-amber-100 rounded-sm transition-all duration-500" :style="'height: ' + height + '%'"></div>
                 </template>
             </div>
         </div>
 
-        <!-- Metric: Server Load -->
-        <div :class="cpuLoad >= 80 ? 'bg-red-600 border-red-400' : 'bg-slate-900 border-transparent'" 
-             class="p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-xl relative overflow-hidden group border transition-colors duration-500">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest" :class="cpuLoad >= 80 ? 'text-white/60' : 'text-white/40'">Charge</span>
-                <i class="fas fa-microchip text-xs" :class="cpuLoad >= 80 ? 'text-white animate-spin' : 'text-rdc-blue'"></i>
+        <!-- Card: Charge Serveur -->
+        <div class="p-4 sm:p-6 rounded-xl sm:rounded-2xl border shadow-sm hover:shadow-md transition-all relative overflow-hidden"
+             :class="cpuLoad >= 80 ? 'bg-red-600 border-red-500' : 'bg-slate-900 border-slate-800'">
+            <div class="absolute right-0 top-0 w-20 sm:w-24 h-20 sm:h-24 bg-gradient-to-br from-white/10 to-transparent rounded-bl-full -mr-4 -mt-4"></div>
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 rounded-lg sm:rounded-xl"
+                     :class="cpuLoad >= 80 ? 'bg-white/20 text-white' : 'bg-white/10 text-rdc-blue'">
+                    <i class="fas fa-microchip text-sm sm:text-xl" :class="cpuLoad >= 80 ? 'animate-spin' : ''"></i>
+                </div>
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full"
+                      :class="cpuLoad >= 80 ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'">
+                    Serveur
+                </span>
             </div>
-            <div class="flex items-baseline gap-2 relative z-10">
-                <h3 class="text-3xl sm:text-4xl font-heading font-black text-white" x-text="cpuLoad + '%'">14%</h3>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium truncate" :class="cpuLoad >= 80 ? 'text-white/80' : 'text-slate-400'">Charge CPU</p>
+                <h3 class="text-lg sm:text-2xl font-black text-white mt-1 truncate" x-text="cpuLoad + '%'">14%</h3>
+                <div x-show="cpuLoad >= 80" class="mt-1 text-[9px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1 animate-pulse">
+                    <i class="fas fa-exclamation-triangle text-[8px]"></i> Surcharge
+                </div>
             </div>
-            <!-- Message Rouge -->
-            <div x-show="cpuLoad >= 80" class="mt-2 text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
-                <i class="fas fa-exclamation-triangle"></i> Surcharge ponctuelle
+            <div class="mt-3 bg-white/10 h-1.5 rounded-full overflow-hidden">
+                <div class="h-full transition-all duration-1000 rounded-full"
+                     :class="cpuLoad >= 80 ? 'bg-white' : 'bg-rdc-blue'"
+                     :style="'width: ' + cpuLoad + '%'"></div>
             </div>
-            <div class="mt-4 bg-white/5 h-1.5 sm:h-2 rounded-full overflow-hidden">
-                <div class="h-full bg-rdc-blue transition-all duration-1000" :style="'width: ' + cpuLoad + '%'"></div>
-            </div>
-            <div x-show="cpuLoad >= 80" class="absolute inset-0 bg-red-500/10 animate-pulse pointer-events-none"></div>
         </div>
 
-        <!-- Metric: Security -->
-        <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Sécurité</span>
-                <i class="fas fa-shield-check text-emerald-500 text-xs"></i>
+        <!-- Card: Sécurité -->
+        <div class="bg-white p-4 sm:p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+            <div class="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+                <div class="p-2 sm:p-3 bg-emerald-50 text-emerald-500 rounded-lg sm:rounded-xl">
+                    <i class="fas fa-shield-halved text-sm sm:text-xl"></i>
+                </div>
+                <span class="flex items-center gap-1 text-[8px] sm:text-xs font-bold text-emerald-600 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                    <i class="fas fa-check text-[6px] sm:text-[8px]"></i> OK
+                </span>
             </div>
-            <div class="flex items-baseline gap-2">
-                <h3 class="text-3xl sm:text-4xl font-heading font-black text-slate-900">99%</h3>
+            <div class="relative z-10">
+                <p class="text-[9px] sm:text-sm font-medium text-slate-500 truncate">Sécurité</p>
+                <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-1 truncate">99%</h3>
             </div>
-            <div class="mt-4 h-8 sm:h-12 flex items-center justify-center">
-                 <div class="w-full h-0.5 sm:h-1 bg-emerald-500 rounded-full"></div>
+            <div class="mt-3 bg-emerald-50 h-1.5 rounded-full overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 99%"></div>
             </div>
         </div>
+
     </div>
+
 
     <!-- Charts Hub -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -139,33 +161,17 @@
                 <p class="text-[8px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">Origine par Province</p>
             </div>
             <div class="flex-1 space-y-5 sm:space-y-6">
+                @foreach(array_slice($sortedProvinces, 0, 3) as $prov)
                 <div class="space-y-2">
                     <div class="flex justify-between text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
-                        <span class="text-slate-900">Kinshasa</span>
-                        <span class="text-rdc-blue">64%</span>
+                        <span class="text-slate-900">{{ $prov['name'] }}</span>
+                        <span class="{{ $loop->first ? 'text-rdc-blue' : 'text-slate-400' }}">{{ $prov['percentage'] }}% ({{ $prov['userCount'] }})</span>
                     </div>
                     <div class="h-1.5 sm:h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                        <div class="h-full bg-rdc-blue w-[64%]"></div>
+                        <div class="h-full {{ $loop->first ? 'bg-rdc-blue' : ($loop->index == 1 ? 'bg-slate-900' : 'bg-slate-400') }}" style="width: {{ $prov['percentage'] }}%"></div>
                     </div>
                 </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
-                        <span class="text-slate-900">Lubumbashi</span>
-                        <span class="text-slate-400">18%</span>
-                    </div>
-                    <div class="h-1.5 sm:h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                        <div class="h-full bg-slate-900 w-[18%]"></div>
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
-                        <span class="text-slate-900">Goma</span>
-                        <span class="text-slate-400">12%</span>
-                    </div>
-                    <div class="h-1.5 sm:h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                        <div class="h-full bg-slate-400 w-[12%]"></div>
-                    </div>
-                </div>
+                @endforeach
             </div>
             <!-- Region Indicator -->
             <div @click="showGeographyModal = true" class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-50 flex items-center justify-between cursor-pointer group/geo">
@@ -227,11 +233,10 @@
                             </div>
                             
                             <div class="space-y-1">
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Villes principales</p>
                                 <div class="flex flex-wrap gap-2">
-                                    <template x-for="city in province.cities">
-                                        <span class="px-2.5 py-1 bg-slate-50 rounded-lg text-[10px] font-bold text-slate-600 border border-slate-100" x-text="city">Ville</span>
-                                    </template>
+                                    <span class="px-2.5 py-1 bg-slate-50 rounded-lg text-[10px] font-bold text-slate-600 border border-slate-100">
+                                        <span x-text="province.userCount"></span> Utilisateur(s)
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -271,34 +276,7 @@
             showGeographyModal: false,
             userSparkline: [20, 35, 50, 40, 60, 45, 80, 55, 70, 90],
             reqSparkline: [40, 45, 42, 48, 50, 45, 52, 55, 50, 48],
-            provinces: [
-                { id: 1, name: 'Kinshasa', active: true, cities: ['Kinshasa', 'Masina', 'Ndjili', 'Kintambo'] },
-                { id: 2, name: 'Kongo-Central', active: false, cities: ['Matadi', 'Boma', 'Mbanza-Ngungu', 'Lukala'] },
-                { id: 3, name: 'Kwango', active: false, cities: ['Kenge', 'Popokabaka', 'Kahemba'] },
-                { id: 4, name: 'Kwilu', active: false, cities: ['Bandundu', 'Kikwit', 'Idiofa', 'Gungu'] },
-                { id: 5, name: 'Mai-Ndombe', active: false, cities: ['Inongo', 'Bolobo', 'Kutu'] },
-                { id: 6, name: 'Kasaï', active: false, cities: ['Tshikapa', 'Ilebo', 'Luebo'] },
-                { id: 7, name: 'Kasaï-Central', active: false, cities: ['Kananga', 'Dibaya', 'Dimbelenge'] },
-                { id: 8, name: 'Kasaï-Oriental', active: false, cities: ['Mbuji-Mayi', 'Miabi', 'Tshilenge'] },
-                { id: 9, name: 'Lomami', active: false, cities: ['Kabinda', 'Ngandajika', 'Kamiji'] },
-                { id: 10, name: 'Sankuru', active: false, cities: ['Lodja', 'Lusambo', 'Katako-Kombe'] },
-                { id: 11, name: 'Maniema', active: false, cities: ['Kindu', 'Kalima', 'Punia', 'Kasongo'] },
-                { id: 12, name: 'Sud-Kivu', active: false, cities: ['Bukavu', 'Uvira', 'Baraka', 'Shabunda'] },
-                { id: 13, name: 'Nord-Kivu', active: true, cities: ['Goma', 'Butembo', 'Beni', 'Rutshuru'] },
-                { id: 14, name: 'Ituri', active: false, cities: ['Bunia', 'Aru', 'Mahagi', 'Irumu'] },
-                { id: 15, name: 'Haut-Uele', active: false, cities: ['Isiro', 'Wamba', 'Dungu'] },
-                { id: 16, name: 'Bas-Uele', active: false, cities: ['Buta', 'Aketi', 'Bondo'] },
-                { id: 17, name: 'Tshopo', active: false, cities: ['Kisangani', 'Ubundu', 'Isangi', 'Basoko'] },
-                { id: 18, name: 'Mongala', active: false, cities: ['Lisala', 'Bumba', 'Bongandanga'] },
-                { id: 19, name: 'Nord-Ubangi', active: false, cities: ['Gbadolite', 'Mobayi-Mbongo', 'Businga'] },
-                { id: 20, name: 'Sud-Ubangi', active: false, cities: ['Gemena', 'Zongo', 'Kungu', 'Libenge'] },
-                { id: 21, name: 'Équateur', active: false, cities: ['Mbandaka', 'Bikoro', 'Ingende'] },
-                { id: 22, name: 'Tshuapa', active: false, cities: ['Boende', 'Befale', 'Monkoto'] },
-                { id: 23, name: 'Tanganyika', active: false, cities: ['Kalemie', 'Kongolo', 'Moba', 'Nyunzu'] },
-                { id: 24, name: 'Haut-Lomami', active: false, cities: ['Kamina', 'Kabalo', 'Malemba-Nkulu'] },
-                { id: 25, name: 'Lualaba', active: true, cities: ['Kolwezi', 'Likasi', 'Fungurume', 'Mutshatsha'] },
-                { id: 26, name: 'Haut-Katanga', active: true, cities: ['Lubumbashi', 'Kipushi', 'Kasenga', 'Sakania'] }
-            ],
+            provinces: @json($provinceData),
             events: [
                 { id: 1, time: '17:20:01', label: 'AUTH', type: 'info', message: 'Connexion réussie: superadmin@proconnect.com' },
                 { id: 2, time: '17:20:12', label: 'JOB', type: 'info', message: 'Nouvelle offre publiée: Développeur PHP à Gombe' },
@@ -340,10 +318,7 @@
                         window.liveChart.update('none');
                     }
 
-                    if (Math.random() > 0.8) {
-                        const idx = Math.floor(Math.random() * 26);
-                        this.provinces[idx].active = !this.provinces[idx].active;
-                    }
+
                 }, 3000);
             },
 

@@ -11,7 +11,14 @@ class JobController extends Controller
     public function index()
     {
         $jobs = JobOffer::withCount('applications')->latest()->paginate(10);
-        return view('admin.jobs.index', compact('jobs'));
+        
+        $stats = [
+            'active_jobs' => JobOffer::where('status', 'active')->count(),
+            'recent_jobs' => JobOffer::where('created_at', '>=', now()->subDays(30))->count(),
+            'total_applications' => \Illuminate\Support\Facades\DB::table('job_applications')->count(),
+        ];
+
+        return view('admin.jobs.index', compact('jobs', 'stats'));
     }
 
     public function create()
