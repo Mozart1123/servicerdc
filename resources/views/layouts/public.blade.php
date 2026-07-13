@@ -26,7 +26,7 @@
 <body class="bg-slate-50 text-slate-800 antialiased">
 
     {{-- Header --}}
-    <header class="sticky top-0 z-50 bg-white shadow-md">
+    <header class="fixed inset-x-0 top-0 z-50 bg-white shadow-md">
         <div class="flag-stripe"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -148,7 +148,7 @@
     @endif
 
     {{-- Main Content --}}
-    <main class="min-h-screen">
+    <main class="min-h-screen pt-20">
         @yield('content')
     </main>
 

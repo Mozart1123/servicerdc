@@ -193,51 +193,20 @@
                     <div class="relative z-10">
                         <h3 class="font-heading font-black text-2xl mb-8 text-center">Postuler à ce poste</h3>
                         
-                        @if(!auth()->user()->cv)
-                            <div class="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 text-center mb-6">
-                                <div class="w-16 h-16 bg-amber-400/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-exclamation-triangle text-2xl"></i>
-                                </div>
-                                <p class="text-sm font-bold text-slate-200 leading-relaxed">Attention ! Vous devez créer votre CV ProConnect avant de pouvoir postuler.</p>
-                                <a href="{{ route('user.cv.index') }}" class="inline-block mt-6 px-8 py-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-rdc-yellow transition transform hover:scale-105">
-                                    Créer mon CV
+                        <div class="relative z-10 text-center">
+                            <h3 class="font-heading font-black text-2xl mb-6">Postuler à ce poste</h3>
+                            <p class="text-sm text-slate-400 leading-relaxed mb-8">Utilisez le formulaire dédié à cette offre pour envoyer votre candidature avec votre CV ProConnect ou un document personnalisé.</p>
+
+                            @if($userApplication)
+                                <a href="{{ route('user.applications.index') }}" class="inline-flex items-center justify-center gap-3 w-full py-5 bg-green-500 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-green-600 transition-all shadow-xl shadow-green-500/20">
+                                    <i class="fas fa-check-circle"></i> Candidature déjà déposée
                                 </a>
-                            </div>
-                        @else
-                            <form method="POST" action="{{ route('user.jobs.apply', $job->id) }}" enctype="multipart/form-data" class="space-y-6">
-                                @csrf
-                                
-                                <div class="space-y-3">
-                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Importer votre CV</label>
-                                    <div class="relative">
-                                        <input type="file" name="cv_attachment" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" required
-                                               class="hidden peer" id="cv_file_input"
-                                               onchange="document.getElementById('cv_file_name').textContent = this.files[0]?.name || ''">
-                                        <label for="cv_file_input" 
-                                               class="flex flex-col items-center justify-center w-full px-6 py-8 bg-white/5 border-2 border-dashed border-white/20 rounded-3xl cursor-pointer hover:bg-white/10 hover:border-rdc-blue/50 transition-all">
-                                            <div class="w-14 h-14 bg-rdc-blue/20 rounded-2xl flex items-center justify-center mb-3">
-                                                <i class="fas fa-cloud-upload-alt text-2xl text-rdc-blue"></i>
-                                            </div>
-                                            <p class="text-sm font-bold text-white mb-1">Cliquez pour sélectionner</p>
-                                            <p class="text-[10px] text-slate-400 uppercase tracking-widest">PDF, Word, PNG, JPG (max 5MB)</p>
-                                            <p id="cv_file_name" class="text-xs text-rdc-yellow font-bold mt-2 truncate max-w-full"></p>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <i class="fas fa-info-circle text-rdc-blue"></i> Information
-                                    </p>
-                                    <p class="text-xs font-bold text-slate-200">Votre CV ProConnect sera également joint automatiquement.</p>
-                                </div>
-
-                                <button type="submit" 
-                                        class="w-full py-5 bg-rdc-blue text-white font-heading font-black text-sm uppercase tracking-[0.2em] rounded-[2rem] shadow-2xl shadow-rdc-blue/30 hover:bg-rdc-blue-dark transform hover:scale-[1.02] transition-all">
-                                    Envoyer ma candidature
-                                </button>
-                            </form>
-                        @endif
+                            @else
+                                <a href="{{ route('user.jobs.apply.form', $job->id) }}" class="inline-flex items-center justify-center gap-3 w-full py-5 bg-rdc-blue text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-rdc-blue-dark transition-all shadow-xl shadow-blue-500/20">
+                                    <i class="fas fa-paper-plane"></i> Postuler maintenant
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 @endif
             </div>

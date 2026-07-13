@@ -48,7 +48,7 @@
                 <div class="relative z-10 p-6 sm:p-10 bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white text-center shadow-2xl max-w-[280px] sm:max-w-sm">
                     <i class="fas fa-map-marked-alt text-3xl sm:text-4xl text-rdc-blue mb-3 sm:mb-4"></i>
                     <h4 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-tight mb-2">Moteur Cartographique</h4>
-                    <p class="text-[10px] sm:text-[11px] text-slate-500 font-medium">L'intégration Google Maps Enterprise est en attente de synchronisation.</p>
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 font-medium">Cartographie interactive — fonctionnalité à venir.</p>
                 </div>
             </div>
         </div>

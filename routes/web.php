@@ -64,6 +64,15 @@ Route::get('/public/jobs/{id}', [PublicController::class, 'jobShow'])->name('pub
 Route::get('/public/artisans', [PublicController::class, 'artisans'])->name('public.artisans.index');
 Route::get('/public/artisans/{id}', [PublicController::class, 'artisanShow'])->name('public.artisans.show');
 
+// Newsletter subscription from the landing page
+Route::post('/newsletter/subscribe', [HomeController::class, 'subscribeNewsletter'])->name('newsletter.subscribe');
+
+// Static public legal pages
+Route::view('/privacy', 'public.static.privacy')->name('privacy');
+Route::view('/terms', 'public.static.terms')->name('terms');
+Route::view('/legal', 'public.static.legal')->name('legal');
+Route::view('/sitemap', 'public.static.sitemap')->name('sitemap');
+
 // Guest Routes
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -129,6 +138,7 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
 
         // Jobs Catalog
         Route::get('/jobs', [UserJobController::class, 'index'])->name('jobs.index');
+        Route::get('/job-offers/{id}/apply', [UserJobController::class, 'showApplyForm'])->name('jobs.apply.form');
         Route::get('/jobs/{id}', [UserJobController::class, 'show'])->name('jobs.show');
         Route::post('/jobs/{job}/apply', [UserJobController::class, 'apply'])->name('jobs.apply');
         

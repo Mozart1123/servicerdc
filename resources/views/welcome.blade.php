@@ -377,9 +377,9 @@
     </div>
 
     <!-- Contenu principal -->
-    <div id="main-content" class="min-h-screen flex flex-col overflow-x-hidden">
+    <div id="main-content" class="min-h-screen flex flex-col overflow-x-hidden pt-24">
         <!-- Header & Navigation -->
-        <header class="sticky top-0 z-50 bg-white shadow-lg will-change-transform">
+        <header class="fixed inset-x-0 top-0 z-50 bg-white shadow-lg will-change-transform">
             <div class="flag-stripe"></div>
             <div class="container mx-auto px-4 py-4">
                 <div class="flex justify-between items-center">
@@ -1085,7 +1085,7 @@
                                 <span>J'ai déjà un compte</span>
                             </a>
                         @else
-                            <a href="{{ route('user.dashboard') }}" class="px-8 py-4 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
+                            <a href="{{ route('dashboard') }}" class="px-8 py-4 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
                                                   text-white font-bold rounded-xl hover:shadow-2xl 
                                                   transition-all duration-300 hover:scale-105 
                                                   flex items-center justify-center space-x-3">
@@ -1276,22 +1276,22 @@
                             et des opportunités d'emploi dans toute la République Démocratique du Congo.
                         </p>
                         <div class="flex space-x-4">
-                            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-rdc-blue 
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-rdc-blue 
                                                flex items-center justify-center transition-colors 
                                                duration-300" aria-label="Facebook">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
-                            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-400 
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-400 
                                                flex items-center justify-center transition-colors 
                                                duration-300" aria-label="Twitter">
                                 <i class="fab fa-twitter"></i>
                             </a>
-                            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-rdc-red 
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-rdc-red 
                                                flex items-center justify-center transition-colors 
                                                duration-300" aria-label="Instagram">
                                 <i class="fab fa-instagram"></i>
                             </a>
-                            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-700 
+                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-700 
                                                flex items-center justify-center transition-colors 
                                                duration-300" aria-label="LinkedIn">
                                 <i class="fab fa-linkedin-in"></i>
@@ -1306,27 +1306,27 @@
                             Services
                         </h3>
                         <ul class="space-y-3">
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                                    <li><a href="{{ route('public.artisans.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Trouver un artisan
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.services.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Catégories de services
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.artisans.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Artisans vérifiés
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.artisans.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Évaluations & avis
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('contact') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Demande personnalisée
@@ -1341,27 +1341,27 @@
                             Emplois
                         </h3>
                         <ul class="space-y-3">
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Offres d'emploi
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Postuler en ligne
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     CV en ligne
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Conseils carrière
                                 </a></li>
-                            <li><a href="#" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Alertes emploi
@@ -1379,9 +1379,15 @@
                             Inscrivez-vous à notre newsletter pour recevoir les dernières
                             offres et actualités ProConnect.
                         </p>
-                        <form class="mb-6">
+                        @if(session('success'))
+                            <div class="mb-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-900">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                        <form action="{{ route('newsletter.subscribe') }}" method="POST" class="mb-6">
+                            @csrf
                             <div class="flex">
-                                <input type="email" placeholder="Votre email" class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 
+                                <input name="email" type="email" value="{{ old('email') }}" placeholder="Votre email" class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 
                                               rounded-l-lg focus:outline-none focus:border-rdc-yellow 
                                               text-white placeholder-gray-500">
                                 <button type="submit" class="px-4 py-3 bg-rdc-yellow text-gray-900 font-semibold 
@@ -1389,6 +1395,9 @@
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
+                            @error('email')
+                                <p class="mt-2 text-sm text-rose-200">{{ $message }}</p>
+                            @enderror
                         </form>
                         <div class="space-y-3">
                             <div class="flex items-center text-gray-400">
@@ -1412,21 +1421,21 @@
                     <div class="flex flex-col md:flex-row justify-between items-center">
                         <div class="mb-4 md:mb-0">
                             <p class="text-gray-500 text-sm">
-                                &copy; 2024 ProConnect. Tous droits réservés.
+                                &copy; {{ date('Y') }} ProConnect. Tous droits réservés.
                                 <span class="text-rdc-yellow">🇨🇩 Fièrement congolais</span>
                             </p>
                         </div>
                         <div class="flex space-x-6 text-sm text-gray-500">
-                            <a href="#" class="hover:text-rdc-yellow transition-colors">
+                            <a href="{{ route('privacy') }}" class="hover:text-rdc-yellow transition-colors">
                                 Politique de confidentialité
                             </a>
-                            <a href="#" class="hover:text-rdc-yellow transition-colors">
+                            <a href="{{ route('terms') }}" class="hover:text-rdc-yellow transition-colors">
                                 Conditions d'utilisation
                             </a>
-                            <a href="#" class="hover:text-rdc-yellow transition-colors">
+                            <a href="{{ route('legal') }}" class="hover:text-rdc-yellow transition-colors">
                                 Mentions légales
                             </a>
-                            <a href="#" class="hover:text-rdc-yellow transition-colors">
+                            <a href="{{ route('sitemap') }}" class="hover:text-rdc-yellow transition-colors">
                                 Plan du site
                             </a>
                         </div>

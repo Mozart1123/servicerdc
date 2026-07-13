@@ -182,7 +182,7 @@ class DashboardController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
             'city' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:500'],
-            'profile_photo' => ['nullable', 'image', 'max:2048'],
+            'profile_photo' => ['nullable', 'image', 'max:5120'],
         ]);
 
         $user = Auth::user();
@@ -315,7 +315,7 @@ class DashboardController extends Controller
     {
         $request->validate([
             'cover_letter' => ['nullable', 'string', 'max:1000'],
-            'resume_url' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:2048'],
+            'resume_url' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
         ]);
 
         $job = JobOffer::findOrFail($jobId);

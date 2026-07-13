@@ -152,7 +152,7 @@
                 <i class="fas fa-check-circle mr-2"></i>Candidature envoyée
               </a>
               @else
-              <a href="{{ route('user.jobs.show', $job->id) }}" class="mt-5 block w-full py-4 bg-rdc-blue text-white text-center rounded-xl font-bold hover:bg-rdc-blue-dark transition shadow-lg shadow-blue-500/20">
+              <a href="{{ route('user.jobs.apply.form', $job->id) }}" class="mt-5 block w-full py-4 bg-rdc-blue text-white text-center rounded-xl font-bold hover:bg-rdc-blue-dark transition shadow-lg shadow-blue-500/20">
                 Postuler maintenant
               </a>
               @endif

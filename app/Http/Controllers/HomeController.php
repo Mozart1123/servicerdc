@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\JobOffer;
+use App\Models\NewsletterSubscriber;
 use App\Models\Service;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -42,5 +45,21 @@ class HomeController extends Controller
     public function dashboard()
     {
         return redirect()->route(auth()->user()->dashboard_route);
+    }
+
+    /**
+     * Store a new newsletter subscriber.
+     */
+    public function subscribeNewsletter(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+        ]);
+
+        NewsletterSubscriber::firstOrCreate([
+            'email' => $validated['email'],
+        ]);
+
+        return back()->with('success', 'Merci ! Votre mail a bien été enregistré pour recevoir notre newsletter.');
     }
 }

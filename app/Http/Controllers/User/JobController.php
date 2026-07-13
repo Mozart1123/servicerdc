@@ -53,9 +53,26 @@ class JobController extends Controller
             ->get();
 
         $userApplication = Auth::user()->jobApplications()->where('job_offer_id', $id)->first();
-        $userCv          = Auth::user()->cv;
 
-        return view('user.jobs.show', compact('job', 'relatedJobs', 'userApplication', 'userCv'));
+        return view('user.jobs.show', compact('job', 'relatedJobs', 'userApplication'));
+    }
+
+    public function showApplyForm(int $id): View|RedirectResponse
+    {
+        $job = JobOffer::with('user')->findOrFail($id);
+        $user = Auth::user();
+
+        if (JobApplication::where('job_offer_id', $job->id)->where('user_id', $user->id)->exists()) {
+            return redirect()->route('user.applications.index')->with('info', 'Vous avez déjà postulé à cette offre.');
+        }
+
+        $userCv = $user->cv;
+        if (!$userCv) {
+            return redirect()->route('user.cv.index', ['return_to' => route('user.jobs.apply.form', $job->id)])
+                ->with('error', 'Complétez d’abord votre CV pour postuler.');
+        }
+
+        return view('user.jobs.apply', compact('job', 'user', 'userCv'));
     }
 
     public function apply(Request $request, JobOffer $job): RedirectResponse
@@ -67,26 +84,24 @@ class JobController extends Controller
         }
 
         if (!$user->cv) {
-            return redirect()->route('user.cv.index')->with('warning', 'Veuillez créer votre CV avant de postuler.');
+            return redirect()->route('user.cv.index', ['return_to' => route('user.jobs.apply.form', $job->id)])
+                ->with('error', 'Complétez d’abord votre CV pour postuler.');
         }
 
         $request->validate([
-            'cv_attachment' => ['required', 'file', 'mimes:pdf,doc,docx,png,jpg,jpeg', 'max:5120'],
+            'cover_letter' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $attachmentPath = null;
-        if ($request->hasFile('cv_attachment')) {
-            $attachmentPath = $request->file('cv_attachment')->store('cv_attachments', 'public');
-        }
-
         $application = JobApplication::create([
-            'job_offer_id'  => $job->id,
-            'user_id'       => $user->id,
-            'cv_id'         => $user->cv->id,
-            'cover_letter'  => null,
-            'cv_attachment' => $attachmentPath,
-            'status'        => 'pending',
-            'applied_at'    => now(),
+            'job_offer_id'    => $job->id,
+            'user_id'         => $user->id,
+            'cv_id'           => $user->cv->id,
+            'applicant_name'  => $user->name,
+            'applicant_email' => $user->email,
+            'applicant_phone' => $user->phone ?? null,
+            'cover_letter'    => $request->input('cover_letter'),
+            'status'          => JobApplication::STATUS_PENDING,
+            'applied_at'      => now(),
         ]);
 
         $recruiterId = $job->employer_id ?? $job->user_id;
@@ -103,7 +118,7 @@ class JobController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Votre candidature a été envoyée.');
+        return redirect()->route('user.applications.index')->with('success', 'Votre candidature a été envoyée.');
     }
 
     /**
@@ -185,8 +200,8 @@ class JobController extends Controller
             'contract_type' => ['required', 'string', 'max:50'],
             'description'   => ['required', 'string'],
             'requirements'  => ['nullable', 'string'],
-            'company_logo'  => ['nullable', 'image', 'max:2048'],
-            'cover_image'   => ['nullable', 'image', 'max:2048'],
+            'company_logo'  => ['nullable', 'image', 'max:5120'],
+            'cover_image'   => ['nullable', 'image', 'max:5120'],
         ]);
 
         $user = Auth::user();
@@ -242,8 +257,8 @@ class JobController extends Controller
             'requirements'  => ['nullable', 'string'],
             'salary_range'  => ['nullable', 'string', 'max:100'],
             'deadline'      => ['nullable', 'date'],
-            'company_logo'  => ['nullable', 'image', 'max:2048'],
-            'cover_image'   => ['nullable', 'image', 'max:2048'],
+            'company_logo'  => ['nullable', 'image', 'max:5120'],
+            'cover_image'   => ['nullable', 'image', 'max:5120'],
         ]);
 
         if ($request->hasFile('company_logo')) {

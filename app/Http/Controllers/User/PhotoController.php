@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
-    private const IMAGE_RULES = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
+    private const IMAGE_RULES = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'];
     private const CV_RULES    = ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120'];
 
     /**
