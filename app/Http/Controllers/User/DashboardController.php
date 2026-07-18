@@ -177,16 +177,31 @@ class DashboardController extends Controller
      */
     public function updateProfile(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'city' => ['nullable', 'string', 'max:255'],
-            'bio' => ['nullable', 'string', 'max:500'],
-            'profile_photo' => ['nullable', 'image', 'max:5120'],
-        ]);
-
         $user = Auth::user();
-        $user->update($request->only(['name', 'phone', 'city', 'bio']));
+
+        $rules = [
+            'name'          => ['required', 'string', 'max:255'],
+            'phone'         => ['nullable', 'string', 'max:20'],
+            'city'          => ['nullable', 'string', 'max:255'],
+            'bio'           => ['nullable', 'string', 'max:500'],
+            'profile_photo' => ['nullable', 'image', 'max:5120'],
+        ];
+
+        // company_description is only allowed for recruiters
+        if ($user->isRecruiter()) {
+            $rules['company_description'] = ['nullable', 'string', 'max:600'];
+        }
+
+        $request->validate($rules);
+
+        $fields = $request->only(['name', 'phone', 'city', 'bio']);
+
+        // Only persist company_description when the user is actually a recruiter
+        if ($user->isRecruiter()) {
+            $fields['company_description'] = $request->input('company_description');
+        }
+
+        $user->update($fields);
 
         if ($request->hasFile('profile_photo')) {
             if ($user->profile_photo) {

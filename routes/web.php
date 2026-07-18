@@ -28,6 +28,7 @@ use App\Http\Controllers\User\CvController as UserCvController;
 use App\Http\Controllers\User\MessageController as UserMessageController;
 use App\Http\Controllers\User\PhotoController as UserPhotoController;
 use App\Http\Controllers\User\NotificationController as UserNotificationController;
+use App\Http\Controllers\User\RecruiterProfileController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
 use App\Http\Controllers\SuperAdmin\SystemController as SuperAdminSystemController;
@@ -181,6 +182,9 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
 
         // Artisan public profile (from within app)
         Route::get('/artisans/{artisan}', [UserServiceController::class, 'artisanProfile'])->name('artisans.show');
+
+        // Recruiter public profile
+        Route::get('/recruiters/{id}', [RecruiterProfileController::class, 'show'])->name('recruiters.show');
 
         // Notifications
         Route::get('/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');

@@ -66,13 +66,7 @@ class JobController extends Controller
             return redirect()->route('user.applications.index')->with('info', 'Vous avez déjà postulé à cette offre.');
         }
 
-        $userCv = $user->cv;
-        if (!$userCv) {
-            return redirect()->route('user.cv.index', ['return_to' => route('user.jobs.apply.form', $job->id)])
-                ->with('error', 'Complétez d’abord votre CV pour postuler.');
-        }
-
-        return view('user.jobs.apply', compact('job', 'user', 'userCv'));
+        return view('user.jobs.apply', compact('job', 'user'));
     }
 
     public function apply(Request $request, JobOffer $job): RedirectResponse
@@ -83,23 +77,22 @@ class JobController extends Controller
             return back()->with('error', 'Vous avez déjà postulé à cette offre.');
         }
 
-        if (!$user->cv) {
-            return redirect()->route('user.cv.index', ['return_to' => route('user.jobs.apply.form', $job->id)])
-                ->with('error', 'Complétez d’abord votre CV pour postuler.');
-        }
-
-        $request->validate([
-            'cover_letter' => ['nullable', 'string', 'max:1000'],
+        $validated = $request->validate([
+            'cv_attachment' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+            'message'       => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $cvPath = $request->file('cv_attachment')->store('job_applications/cvs', 'public');
 
         $application = JobApplication::create([
             'job_offer_id'    => $job->id,
             'user_id'         => $user->id,
-            'cv_id'           => $user->cv->id,
+            'cv_id'           => $user->cv ? $user->cv->id : null, // Optional fallback reference
             'applicant_name'  => $user->name,
             'applicant_email' => $user->email,
             'applicant_phone' => $user->phone ?? null,
-            'cover_letter'    => $request->input('cover_letter'),
+            'message'         => $validated['message'] ?? null,
+            'cv_attachment'   => $cvPath,
             'status'          => JobApplication::STATUS_PENDING,
             'applied_at'      => now(),
         ]);
@@ -308,8 +301,8 @@ class JobController extends Controller
             'type'         => 'application_approved',
             'related_type' => 'application',
             'related_id'   => $application->id,
-            'title'        => 'Candidature approuvée 🎉',
-            'message'      => "Félicitations ! Votre candidature pour \"{$application->jobOffer->title}\" a été approuvée.",
+            'title'        => 'Candidature acceptée 🎉',
+            'message'      => "Votre candidature pour {$application->jobOffer->title} chez {$application->jobOffer->company_name} a été acceptée !",
             'action_url'   => route('user.applications.index'),
             'is_read'      => false,
         ]);
@@ -329,8 +322,8 @@ class JobController extends Controller
             'type'         => 'application_rejected',
             'related_type' => 'application',
             'related_id'   => $application->id,
-            'title'        => 'Désolé',
-            'message'      => "Votre candidature pour \"{$application->jobOffer->title}\" n'a pas été retenue.",
+            'title'        => 'Candidature non retenue',
+            'message'      => "Votre candidature pour {$application->jobOffer->title} chez {$application->jobOffer->company_name} n'a pas été retenue.",
             'action_url'   => route('user.applications.index'),
             'is_read'      => false,
         ]);

@@ -447,7 +447,7 @@
                             if (e.message.sender_id !== myId) {
                                 appendMessage(e.message, false);
 
-                                fetch('{{ route("messages.read", $activeConversation->id) }}', {
+                                fetch('{{ route("user.messages.read", $activeConversation->id) }}', {
                                     method: 'POST',
                                     headers: {
                                         'X-CSRF-TOKEN': '{{ csrf_token() }}',

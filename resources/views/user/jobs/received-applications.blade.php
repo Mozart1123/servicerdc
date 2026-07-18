@@ -210,6 +210,14 @@ function openCvModal(appId) {
                 ? `/storage/${cv.profile_photo}`
                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(app.user.name)}&background=29B6D1&color=fff&size=128`;
 
+            let fallbackCvHtml = '';
+            if (!app.cv_attachment && cv && cv.cv_file) {
+                fallbackCvHtml = `<a href="/storage/${cv.cv_file}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 rounded-xl transition">
+                                   <i class="fas fa-file-pdf"></i>
+                                   <span>Ancien profil CV complet</span>
+                               </a>`;
+            }
+
             document.getElementById('cvModalContent').innerHTML = `
                 <div class="flex items-center gap-5 p-5 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
                     <img src="${photoUrl}" class="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow" />
@@ -219,32 +227,24 @@ function openCvModal(appId) {
                         <p class="text-xs text-slate-500">${app.user.email} ${app.user.phone ? '• ' + app.user.phone : ''}</p>
                     </div>
                 </div>
+                
+                ${app.message ? `
+                <div class="mb-6">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Message</p>
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-700 whitespace-pre-wrap">${app.message}</div>
+                </div>` : ''}
+
                 <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">CV Uploadé</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fichier CV</p>
                     <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-50 text-sm">
                         ${app.cv_attachment 
                             ? `<a href="/storage/${app.cv_attachment}" target="_blank" class="inline-flex items-center gap-2 text-rdc-blue font-bold hover:underline">
                                    <i class="fas fa-file-download"></i>
                                    <span>Télécharger le CV</span>
                                </a>`
-                            : '<span class="text-slate-500 italic">Aucun CV uploadé.</span>'}
+                            : fallbackCvHtml || '<span class="text-slate-500 italic">Aucun CV joint.</span>'}
                     </div>
                 </div>
-                ${cv ? `
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Compétences</p>
-                        <div class="flex flex-wrap gap-1.5">
-                            ${(Array.isArray(cv.skills) ? cv.skills : String(cv.skills||'').split(',')).map(s => `<span class="px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600">${String(s).trim()}</span>`).join('')}
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Expérience</p>
-                        <p class="text-sm text-slate-700 font-medium">${cv.experience || '—'}</p>
-                    </div>
-                </div>
-                ${cv.cv_file ? `<a href="/storage/${cv.cv_file}" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-rdc-blue transition"><i class="fas fa-file-pdf"></i> Télécharger le CV</a>` : ''}
-                ` : '<div class="p-4 bg-amber-50 rounded-xl border border-amber-100 text-sm text-amber-700 text-center">Ce candidat n\'a pas encore créé de CV ProConnect.</div>'}
             `;
         })
         .catch(() => {

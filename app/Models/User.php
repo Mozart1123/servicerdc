@@ -53,6 +53,7 @@ class User extends Authenticatable
         'apple_id',
         'profile_photo',
         'bio',
+        'company_description',
         'skills',
         'interests',
     ];

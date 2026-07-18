@@ -86,6 +86,17 @@
                     @error('bio') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                 </div>
             </div>
+
+            @if(auth()->user()->isRecruiter())
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Description de l'entreprise</label>
+                <textarea name="company_description" rows="5"
+                          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm resize-none"
+                          placeholder="Décrivez votre entreprise (activité, valeurs, culture)...">{{ old('company_description', auth()->user()->company_description) }}</textarea>
+                <p class="text-xs text-slate-400 mt-1">Apparaîtra sur la page de votre entreprise et dans vos offres d'emploi (300 à 600 caractères recommandés).</p>
+                @error('company_description') <p class="text-xs text-red-500 font-medium mt-1">{{ $message }}</p> @enderror
+            </div>
+            @endif
         </section>
 
         <div class="flex flex-col sm:flex-row items-center justify-start gap-4 pt-4">
