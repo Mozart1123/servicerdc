@@ -12,10 +12,10 @@
    class="flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group overflow-hidden">
 
     {{-- Card Body --}}
-    <div class="p-5 flex-1 flex flex-col gap-4">
+    <div class="p-4 flex-1 flex flex-col gap-2">
         {{-- Logo + Company --}}
         <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0 flex items-center justify-center">
+            <div class="w-11 h-11 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0 flex items-center justify-center">
                 @if($logoUrl)
                     <img src="{{ $logoUrl }}" alt="{{ $job->company_name }}" class="w-full h-full object-cover">
                 @else
@@ -36,7 +36,7 @@
         </div>
 
         {{-- Title --}}
-        <h3 class="font-bold text-slate-900 text-sm leading-snug group-hover:text-[#16a3b0] transition-colors line-clamp-2 break-words">
+        <h3 class="font-semibold text-slate-900 text-base leading-snug group-hover:text-[#16a3b0] transition-colors line-clamp-2 break-words">
             {{ $job->title }}
         </h3>
 
@@ -59,7 +59,7 @@
     </div>
 
     {{-- Card Footer --}}
-    <div class="px-5 py-3.5 border-t border-slate-50 flex items-center justify-between bg-slate-50/50">
+    <div class="px-4 pt-2 pb-3 border-t border-slate-50 flex items-center justify-between bg-slate-50/50">
         <span class="text-[10px] text-slate-400 font-medium">
             <i class="far fa-clock mr-1"></i>{{ $job->created_at->diffForHumans() }}
         </span>
