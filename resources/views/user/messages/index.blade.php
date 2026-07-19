@@ -51,8 +51,15 @@
 
                     {{-- Avatar avec indicateur en ligne --}}
                     <div class="relative shrink-0">
-                        <img src="{{ $other->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($other->name ?? 'U').'&background=16a3b0&color=fff&size=80' }}"
-                             class="w-12 h-12 rounded-full object-cover border border-slate-200" alt="{{ $other->name }}">
+                        @php $otherInitials = collect(explode(' ', $other->name ?? 'U'))->map(fn($w) => strtoupper($w[0] ?? ''))->take(2)->join(''); @endphp
+                        @if($other->photo_url)
+                            <img src="{{ $other->photo_url }}"
+                                 class="w-12 h-12 rounded-full object-cover border border-slate-200" alt="{{ $other->name }}">
+                        @else
+                            <div class="w-12 h-12 rounded-full bg-[#16a3b0] text-white flex items-center justify-center text-sm font-bold border border-[#16a3b0]/30">
+                                {{ $otherInitials }}
+                            </div>
+                        @endif
                         {{-- Indicateur en ligne (géré dynamiquement via JS) --}}
                         <span id="online-status-list-{{ $other->id }}" class="absolute bottom-0 right-0 w-3 h-3 bg-slate-300 border-2 border-white rounded-full transition-colors"></span>
                         {{-- Badge non lus --}}
@@ -120,8 +127,15 @@
 
                     {{-- Avatar du contact --}}
                     <div class="shrink-0">
-                        <img src="{{ $other->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($other->name ?? 'U').'&background=16a3b0&color=fff&size=80' }}"
-                             class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover" alt="{{ $other->name }}">
+                        @php $otherInitialsH = collect(explode(' ', $other->name ?? 'U'))->map(fn($w) => strtoupper($w[0] ?? ''))->take(2)->join(''); @endphp
+                        @if($other->photo_url)
+                            <img src="{{ $other->photo_url }}"
+                                 class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover" alt="{{ $other->name }}">
+                        @else
+                            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#16a3b0] text-white flex items-center justify-center text-sm font-bold">
+                                {{ $otherInitialsH }}
+                            </div>
+                        @endif
                     </div>
 
                     {{-- Nom + statut --}}
@@ -162,12 +176,25 @@
                         
                         {{-- Avatar contact (messages reçus) --}}
                         @if(!$isMe)
-                        <img src="{{ $other->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($other->name ?? 'U').'&background=16a3b0&color=fff&size=80' }}"
-                             class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shadow-sm" alt="">
+                        @php $senderInitials = collect(explode(' ', $other->name ?? 'U'))->map(fn($w) => strtoupper($w[0] ?? ''))->take(2)->join(''); @endphp
+                        @if($other->photo_url)
+                            <img src="{{ $other->photo_url }}"
+                                 class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shadow-sm" alt="">
+                        @else
+                            <div class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#16a3b0] text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                {{ $senderInitials }}
+                            </div>
+                        @endif
                         @endif
 
-                        {{-- Contenu du message --}}
+                        {{-- Contenu du message (bubble normale ou message système) --}}
                         <div class="min-w-0">
+                            @if($msg->is_system ?? false)
+                            <div class="bubble shadow-sm bg-amber-50 text-amber-800 border border-amber-200 text-xs">
+                                <div class="flex items-center gap-1.5 mb-1 font-bold text-amber-600"><i class="fas fa-robot text-[10px]"></i> Message automatique</div>
+                                <p>{{ $msg->body }}</p>
+                            </div>
+                            @else
                             <div class="bubble shadow-sm {{ $isMe ? 'bg-[#16a3b0] text-white' : 'bg-white text-slate-800 border border-slate-200' }}">
                                 @if($msg->body)
                                 <p>{{ $msg->body }}</p>
@@ -190,6 +217,7 @@
                                 </div>
                                 @endif
                             </div>
+                            @endif
                         </div>
                     </div>
 

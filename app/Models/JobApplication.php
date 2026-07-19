@@ -21,6 +21,7 @@ class JobApplication extends Model
         'applied_at',
         'reviewed_at',
         'admin_notes',
+        'rejection_reason',
     ];
 
     protected $casts = [

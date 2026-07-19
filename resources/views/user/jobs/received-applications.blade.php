@@ -79,12 +79,19 @@
                             'hired'     => ['bg'=>'bg-purple-50','text'=>'text-purple-600','border'=>'border-purple-100','label'=>'Embauché(e)'],
                             default     => ['bg'=>'bg-amber-50','text'=>'text-amber-600','border'=>'border-amber-100','label'=>'En attente'],
                         };
+                        $initials = collect(explode(' ', $app->user->name ?? 'U'))->map(fn($w) => strtoupper($w[0] ?? ''))->take(2)->join('');
                     @endphp
                     <tr class="group hover:bg-slate-50/40 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <img src="{{ $app->user->photo_url }}"
-                                     class="w-10 h-10 rounded-xl object-cover border border-slate-100" alt="">
+                                @if($app->user->photo_url)
+                                    <img src="{{ $app->user->photo_url }}"
+                                         class="w-10 h-10 rounded-xl object-cover border border-slate-100" alt="">
+                                @else
+                                    <div class="w-10 h-10 rounded-xl bg-[#16a3b0] text-white flex items-center justify-center text-sm font-bold border border-[#16a3b0]/30 shrink-0">
+                                        {{ $initials }}
+                                    </div>
+                                @endif
                                 <div>
                                     <div class="font-bold text-slate-900 text-sm">{{ $app->user->name }}</div>
                                     <div class="text-[10px] text-rdc-blue font-bold hover:underline">
@@ -138,14 +145,12 @@
                                         <i class="fas fa-phone-alt text-xs"></i>
                                     </button>
                                 </form>
-                                {{-- Reject --}}
-                                <form action="{{ route('user.applications.reject', $app->id) }}" method="POST"
-                                      onsubmit="return confirm('Refuser cette candidature ?')">
-                                    @csrf
-                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm" title="Refuser">
-                                        <i class="fas fa-times text-xs"></i>
-                                    </button>
-                                </form>
+                                {{-- Reject — opens modal --}}
+                                <button type="button"
+                                        onclick="openRejectModal({{ $app->id }}, '{{ addslashes($app->user->name) }}')"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm" title="Refuser">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
                                 @elseif($app->status === 'interview')
                                 {{-- Hire --}}
                                 <form action="{{ route('user.applications.hire', $app->id) }}" method="POST"
@@ -178,6 +183,43 @@
     </div>
 </div>
 
+{{-- ═══ REJECT MODAL ═══ --}}
+<div id="rejectModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden">
+        <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h3 class="text-xl font-heading font-black text-slate-900">Refuser la candidature</h3>
+                <p id="rejectModalSubtitle" class="text-sm text-slate-500 mt-0.5"></p>
+            </div>
+            <button onclick="closeRejectModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-red-500 transition">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+        <form id="rejectForm" method="POST" class="p-8 space-y-5">
+            @csrf
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">
+                    Motif du refus <span class="text-red-500">*</span>
+                </label>
+                <textarea name="rejection_reason" rows="4" required maxlength="1000"
+                    placeholder="Expliquez brièvement pourquoi cette candidature n'a pas été retenue. Ce message sera envoyé automatiquement au candidat."
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:ring-2 focus:ring-red-300 focus:border-red-300 resize-none transition-all"></textarea>
+                <p class="text-xs text-slate-400 mt-1.5">Ce motif sera envoyé automatiquement au candidat dans la messagerie.</p>
+            </div>
+            <div class="flex gap-3 pt-1">
+                <button type="button" onclick="closeRejectModal()"
+                    class="flex-1 px-5 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition text-sm">
+                    Annuler
+                </button>
+                <button type="submit"
+                    class="flex-1 px-5 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition text-sm shadow-lg shadow-red-500/20">
+                    <i class="fas fa-times mr-1.5"></i> Confirmer le refus
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- CV Modal --}}
 <div id="cvModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
     <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden" id="cvModalBox">
@@ -195,6 +237,27 @@
 
 @push('scripts')
 <script>
+// ── Reject Modal ──────────────────────────────────────────
+function openRejectModal(appId, candidateName) {
+    document.getElementById('rejectModalSubtitle').textContent = 'Candidat : ' + candidateName;
+    document.getElementById('rejectForm').action = `/user/applications/${appId}/reject`;
+    document.querySelector('#rejectForm textarea[name=rejection_reason]').value = '';
+    const modal = document.getElementById('rejectModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRejectModal();
+});
+
+// ── CV Modal ──────────────────────────────────────────────
 function openCvModal(appId) {
     document.getElementById('cvModal').classList.remove('hidden');
     document.getElementById('cvModal').classList.add('flex');
@@ -206,9 +269,15 @@ function openCvModal(appId) {
             if (!data.success) return;
             const app = data.application;
             const cv = app.user?.cv;
+            const name = app.user?.name || 'Candidat';
+            const initials = name.split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2);
             const photoUrl = cv?.profile_photo
                 ? `/storage/${cv.profile_photo}`
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(app.user.name)}&background=29B6D1&color=fff&size=128`;
+                : null;
+
+            const avatarHtml = photoUrl
+                ? `<img src="${photoUrl}" class="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow" />`
+                : `<div class="w-20 h-20 rounded-2xl bg-[#16a3b0] text-white flex items-center justify-center text-2xl font-black border-2 border-white shadow">${initials}</div>`;
 
             let fallbackCvHtml = '';
             if (!app.cv_attachment && cv && cv.cv_file) {
@@ -220,10 +289,10 @@ function openCvModal(appId) {
 
             document.getElementById('cvModalContent').innerHTML = `
                 <div class="flex items-center gap-5 p-5 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-                    <img src="${photoUrl}" class="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow" />
+                    ${avatarHtml}
                     <div>
-                        <h4 class="text-xl font-black text-slate-900">${app.user.name}</h4>
-                        <p class="text-xs text-rdc-blue font-bold uppercase tracking-widest mb-1">${cv ? (cv.full_name || app.user.name) : 'Candidat'}</p>
+                        <h4 class="text-xl font-black text-slate-900">${name}</h4>
+                        <p class="text-xs text-rdc-blue font-bold uppercase tracking-widest mb-1">${cv ? (cv.full_name || name) : 'Candidat'}</p>
                         <p class="text-xs text-slate-500">${app.user.email} ${app.user.phone ? '• ' + app.user.phone : ''}</p>
                     </div>
                 </div>

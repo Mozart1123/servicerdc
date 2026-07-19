@@ -283,7 +283,7 @@ class JobController extends Controller
     public function approveApplication(int $applicationId): RedirectResponse
     {
         $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
-        $user        = Auth::user();
+        $recruiter   = Auth::user();
 
         $application->update(['status' => 'approved']);
 
@@ -298,15 +298,40 @@ class JobController extends Controller
             'is_read'      => false,
         ]);
 
-        Conversation::findOrCreateBetween($application->user_id, $user->id, 'job', $application->id);
+        // Create / retrieve conversation and send automatic system message
+        $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
 
-        return back()->with('success', 'Candidature approuvée.');
+        $systemText = "Votre candidature pour \"" . ($application->jobOffer->title ?? 'ce poste') . "\" a été acceptée. " .
+                      "{$recruiter->name} vous contactera prochainement pour planifier un entretien.";
+
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id'       => $recruiter->id,
+            'receiver_id'     => $application->user_id,
+            'content'         => $systemText,
+            'message'         => $systemText,
+            'is_read'         => false,
+            'is_system'       => true,
+        ]);
+
+        return back()->with('success', 'Candidature approuvée et message envoyé au candidat.');
     }
 
-    public function rejectApplication(int $applicationId): RedirectResponse
+    public function rejectApplication(Request $request, int $applicationId): RedirectResponse
     {
         $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
-        $application->update(['status' => 'rejected']);
+        $recruiter   = Auth::user();
+
+        $request->validate([
+            'rejection_reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $reason = $request->input('rejection_reason');
+
+        $application->update([
+            'status'           => 'rejected',
+            'rejection_reason' => $reason,
+        ]);
 
         Notification::create([
             'user_id'      => $application->user_id,
@@ -319,7 +344,22 @@ class JobController extends Controller
             'is_read'      => false,
         ]);
 
-        return back()->with('info', 'Candidature refusée.');
+        // Create / retrieve conversation and send automatic system message
+        $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
+
+        $systemText = "Votre candidature pour \"" . ($application->jobOffer->title ?? 'ce poste') . "\" n'a pas été retenue. Motif : " . $reason;
+
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id'       => $recruiter->id,
+            'receiver_id'     => $application->user_id,
+            'content'         => $systemText,
+            'message'         => $systemText,
+            'is_read'         => false,
+            'is_system'       => true,
+        ]);
+
+        return back()->with('info', 'Candidature refusée et message envoyé au candidat.');
     }
 
     public function interviewApplication(int $applicationId): RedirectResponse
