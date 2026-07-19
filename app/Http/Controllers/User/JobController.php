@@ -20,22 +20,13 @@ class JobController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = JobOffer::active()->notExpired();
-
-        if ($request->filled('category'))      { $query->byCategory($request->category); }
-        if ($request->filled('contract_type')) { $query->byContractType($request->contract_type); }
-        if ($request->filled('location'))      { $query->byLocation($request->location); }
-        if ($request->filled('search'))        { $query->search($request->search); }
-
-        $jobs = $query->with('user', 'applications')
+        $user = Auth::user();
+        $applications = $user->jobApplications()
+            ->with('jobOffer')
             ->latest()
-            ->paginate(12)
-            ->appends($request->query());
+            ->paginate(10);
 
-        $contractTypes      = JobOffer::distinct()->pluck('contract_type')->filter()->values()->toArray();
-        $userApplicationIds = Auth::user()->jobApplications()->pluck('job_offer_id')->toArray();
-
-        return view('user.jobs.index', compact('jobs', 'contractTypes', 'userApplicationIds'));
+        return view('user.jobs.index', compact('applications'));
     }
 
     /**
