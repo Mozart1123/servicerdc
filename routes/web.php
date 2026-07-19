@@ -129,6 +129,11 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
         });
 
+        // Account Main Menu (Mobile)
+        Route::get('/account', function () {
+            return view('user.account');
+        })->name('account');
+
         // Profile
         Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserDashboardController::class, 'profile'])->name('profile.edit');
