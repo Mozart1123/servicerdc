@@ -62,6 +62,7 @@ Route::get('/public/services', [PublicController::class, 'services'])->name('pub
 Route::get('/public/services/{id}', [PublicController::class, 'serviceShow'])->name('public.services.show');
 Route::get('/public/jobs', [PublicController::class, 'jobs'])->name('public.jobs.index');
 Route::get('/public/jobs/{id}', [PublicController::class, 'jobShow'])->name('public.jobs.show');
+Route::get('/public/jobs/{id}/apply', [PublicController::class, 'jobApplyRedirect'])->name('public.jobs.apply');
 Route::get('/public/artisans', [PublicController::class, 'artisans'])->name('public.artisans.index');
 Route::get('/public/artisans/{id}', [PublicController::class, 'artisanShow'])->name('public.artisans.show');
 

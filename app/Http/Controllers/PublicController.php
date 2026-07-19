@@ -93,15 +93,35 @@ class PublicController extends Controller
      */
     public function jobShow(int $id): View
     {
-        $job = JobOffer::with('user')->findOrFail($id);
+        $job = JobOffer::with(['user', 'applications', 'employer'])->findOrFail($id);
 
         $related = JobOffer::where('status', 'active')
+            ->where(function ($q) { $q->where('deadline', '>=', now())->orWhereNull('deadline'); })
             ->where('id', '!=', $id)
             ->latest()
             ->take(4)
             ->get();
 
         return view('public.jobs.show', compact('job', 'related'));
+    }
+
+    /**
+     * Apply redirect: sets intended URL then redirects to login (guests)
+     * or directly to the apply form (authenticated users).
+     * Uses Laravel's built-in intended() — no open redirect possible.
+     */
+    public function jobApplyRedirect(int $id): \Illuminate\Http\RedirectResponse
+    {
+        $job = JobOffer::findOrFail($id);
+
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            // Already authenticated — go straight to the apply form
+            return redirect()->route('user.jobs.apply.form', $job->id);
+        }
+
+        // Store the intended destination (the apply form URL) in session
+        // redirect()->guest() is Laravel's canonical secure way to handle this
+        return redirect()->guest(route('user.jobs.apply.form', $job->id));
     }
 
     /**
