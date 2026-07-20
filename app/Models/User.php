@@ -150,6 +150,12 @@ class User extends Authenticatable
     // Relationships
     // ==========================================
 
+    public function artisanLevel()
+    {
+        return $this->hasOne(ArtisanLevel::class);
+    }
+
+
     public function jobApplications()
     {
         return $this->hasMany(JobApplication::class);

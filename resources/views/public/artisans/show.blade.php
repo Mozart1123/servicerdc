@@ -32,7 +32,24 @@
                                  class="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-lg" alt="{{ $artisan->name }}">
                         @endif
                         <div class="mb-1 flex-1">
-                            <h1 class="text-xl font-bold text-slate-900">{{ $artisan->name }}</h1>
+                            <div class="flex items-center gap-3">
+                                <h1 class="text-xl font-bold text-slate-900">{{ $artisan->name }}</h1>
+                                @if($artisan->artisanLevel && $artisan->artisanLevel->level !== 'nouveau')
+                                    @php
+                                        $level = $artisan->artisanLevel;
+                                        $badgeClass = match($level->level) {
+                                            'actif' => 'bg-slate-100 text-slate-600',
+                                            'verifie' => 'bg-[#29B6D1]/10 text-[#29B6D1]',
+                                            'elite' => 'bg-amber-100 text-amber-600',
+                                            default => 'bg-slate-100 text-slate-600'
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold {{ $badgeClass }}">
+                                        <i class="fas {{ $level->level_icon }}"></i>
+                                        {{ $level->level_label }}
+                                    </span>
+                                @endif
+                            </div>
                             <p class="text-sm text-[#29B6D1] font-semibold">{{ $artisan->profession ?? 'Artisan' }}</p>
                             <p class="text-xs text-slate-400 font-medium mt-0.5">
                                 <i class="fas fa-map-marker-alt mr-1"></i>{{ $artisan->city ?? 'RDC' }}

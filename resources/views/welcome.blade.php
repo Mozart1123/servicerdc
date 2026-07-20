@@ -384,13 +384,13 @@
             <div class="container mx-auto px-4 py-4">
                 <div class="flex justify-between items-center">
                     <!-- Logo -->
-                    <a href="/" class="flex items-center space-x-2 sm:space-x-3 group min-w-0">
+                    <a href="/" class="flex items-center space-x-2 sm:space-x-3 group shrink-0 lg:mr-8">
                         <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-white flex items-center justify-center 
                                     group-hover:scale-105 transition-transform duration-300 shadow-lg shrink-0">
                             <img src="/assets/img/logo.png?v=1.2" alt="Logo" class="w-full h-full object-contain">
                         </div>
-                        <div class="truncate">
-                            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">Pro<span class="text-rdc-blue">Connect</span></h1>
+                        <div>
+                            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Pro<span class="text-rdc-blue">Connect</span></h1>
                             <p class="text-[10px] text-gray-600 hidden xs:block truncate">Plateforme de services & emplois</p>
                         </div>
                     </a>

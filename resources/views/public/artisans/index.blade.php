@@ -61,7 +61,24 @@
                     </div>
 
                     {{-- Info --}}
-                    <h3 class="font-bold text-slate-900 text-sm group-hover:text-[#29B6D1] transition-colors">{{ $artisan->name }}</h3>
+                    <div class="flex items-center justify-center gap-2">
+                        <h3 class="font-bold text-slate-900 text-sm group-hover:text-[#29B6D1] transition-colors">{{ $artisan->name }}</h3>
+                        @if($artisan->artisanLevel && $artisan->artisanLevel->level !== 'nouveau')
+                            @php
+                                $level = $artisan->artisanLevel;
+                                $badgeClass = match($level->level) {
+                                    'actif' => 'bg-slate-100 text-slate-600',
+                                    'verifie' => 'bg-[#29B6D1]/10 text-[#29B6D1]',
+                                    'elite' => 'bg-amber-100 text-amber-600',
+                                    default => 'bg-slate-100 text-slate-600'
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold {{ $badgeClass }}">
+                                <i class="fas {{ $level->level_icon }}"></i>
+                                {{ $level->level_label }}
+                            </span>
+                        @endif
+                    </div>
                     <p class="text-xs text-[#29B6D1] font-semibold mt-0.5">{{ $artisan->profession ?? 'Artisan' }}</p>
                     <p class="text-xs text-slate-400 font-medium mt-1">
                         <i class="fas fa-map-marker-alt mr-1"></i>{{ $artisan->city ?? 'RDC' }}

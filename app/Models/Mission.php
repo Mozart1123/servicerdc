@@ -19,15 +19,23 @@ class Mission extends Model
         'start_date',
         'end_date',
         'amount',
+        'payment_channel',
+        'commission_amount',
+        'commission_status',
+        'payout_status',
+        'contact_unlocked_at',
         'rating',
         'feedback',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'amount' => 'decimal:2',
-        'rating' => 'integer',
+        'start_date'          => 'date',
+        'end_date'            => 'date',
+        'amount'              => 'decimal:2',
+        'commission_amount'   => 'decimal:2',
+        'contact_unlocked_at' => 'datetime',
+        'rating'              => 'integer',
+        'payout_status'       => 'string',
     ];
 
     // ==========================================
@@ -56,6 +64,14 @@ class Mission extends Model
     public function artisan()
     {
         return $this->belongsTo(User::class, 'artisan_id');
+    }
+
+    /**
+     * Get K-PAY audit transactions for this mission.
+     */
+    public function kpayTransactions()
+    {
+        return $this->hasMany(KpayTransaction::class);
     }
 
     // ==========================================

@@ -89,13 +89,10 @@ class DashboardController extends Controller
 
             $stats['my_services_count']   = $user->services()->count();
             $stats['pending_demands_count'] = $pendingDemandsCount;
-            $stats['reviews_count'] = \App\Models\Review::forArtisan($user->id)->count()
-                + \App\Models\ArtisanRating::where('artisan_id', $user->id)->count();
-            $missionAvg = \App\Models\Review::forArtisan($user->id)->avg('rating') ?? 0;
-            $ratingAvg  = \App\Models\ArtisanRating::where('artisan_id', $user->id)->avg('rating') ?? 0;
-            $stats['avg_rating'] = $stats['reviews_count'] > 0
-                ? round(($missionAvg + $ratingAvg) / 2, 1)
-                : 0;
+            $stats['reviews_count'] = \App\Models\Review::forArtisan($user->id)->count();
+            $artisanLevel = \App\Models\ArtisanLevel::where('user_id', $user->id)->first();
+            $stats['avg_rating'] = $artisanLevel?->average_rating
+                ?? \App\Models\Review::forArtisan($user->id)->avg('rating') ?? 0;
 
             $artisanMissions = $user->missionsAsArtisan()
                 ->with('client', 'service')
@@ -598,5 +595,71 @@ class DashboardController extends Controller
     public function visitors(): View
     {
         return view('user.visitors');
+    }
+
+    /**
+     * Display the artisan's level/reputation page.
+     */
+    public function level(): View
+    {
+        $user = Auth::user();
+        if ($user->user_type !== 'artisan') {
+            abort(403);
+        }
+
+        $level = \App\Models\ArtisanLevel::firstOrCreate(
+            ['user_id' => $user->id],
+            ['level' => \App\Models\ArtisanLevel::LEVEL_NOUVEAU]
+        );
+
+        $hasPremium = \App\Models\Subscription::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+            })
+            ->whereHas('subscriptionPlan', fn($q) => $q->where('slug', 'premium'))
+            ->exists();
+
+        $openDisputes = \App\Models\SupportTicket::where('user_id', $user->id)
+            ->where('ticket_type', 'dispute')
+            ->where('status', 'open')
+            ->count();
+            
+        $accountAgeDays = $user->created_at->diffInDays(now());
+        $platformRatio = $level->total_missions > 0 ? ($level->missions_via_platform / $level->total_missions) : 0;
+
+        $nextLevel = null;
+        $progress = 0;
+        $missingText = [];
+
+        if ($level->level === \App\Models\ArtisanLevel::LEVEL_NOUVEAU) {
+            $nextLevel = 'Actif';
+            // Actif: 5+ missions, >=50% platform
+            $progress = min(100, ($level->total_missions / 5) * 100);
+            if ($level->total_missions < 5) $missingText[] = (5 - $level->total_missions) . " mission(s)";
+            if ($platformRatio < 0.50) $missingText[] = "un taux de missions sur plateforme de 50%";
+        } elseif ($level->level === \App\Models\ArtisanLevel::LEVEL_ACTIF) {
+            $nextLevel = 'Vérifié';
+            // Verifie: 10+ missions, >=60% platform, avg rating >=4.0, premium
+            $progress = min(100, ($level->total_missions / 10) * 100);
+            if ($level->total_missions < 10) $missingText[] = (10 - $level->total_missions) . " mission(s)";
+            if ($platformRatio < 0.60) $missingText[] = "un taux de missions sur plateforme de 60%";
+            if ($level->average_rating < 4.0) $missingText[] = "une note moyenne d'au moins 4.0";
+            if (!$hasPremium) $missingText[] = "un abonnement Premium actif";
+        } elseif ($level->level === \App\Models\ArtisanLevel::LEVEL_VERIFIE) {
+            $nextLevel = 'Élite';
+            // Elite: 30+ missions, >=85% platform, avg rating >=4.5, 0 disputes, premium, age >= 180
+            $progress = min(100, ($level->total_missions / 30) * 100);
+            if ($level->total_missions < 30) $missingText[] = (30 - $level->total_missions) . " mission(s)";
+            if ($platformRatio < 0.85) $missingText[] = "un taux de missions sur plateforme de 85%";
+            if ($level->average_rating < 4.5) $missingText[] = "une note moyenne d'au moins 4.5";
+            if ($openDisputes > 0) $missingText[] = "la résolution de vos litiges ouverts";
+            if (!$hasPremium) $missingText[] = "un abonnement Premium actif";
+            if ($accountAgeDays < 180) $missingText[] = (180 - $accountAgeDays) . " jours d'ancienneté";
+        }
+
+        $missingMessage = count($missingText) > 0 ? "Il vous manque : " . implode(', ', $missingText) . "." : "";
+
+        return view('user.dashboards.level', compact('level', 'nextLevel', 'progress', 'missingMessage'));
     }
 }

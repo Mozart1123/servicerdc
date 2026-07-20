@@ -51,7 +51,8 @@ Route::middleware(['auth:sanctum', 'api.role:client'])
         Route::post('/cv', [\App\Http\Controllers\Client\CvController::class, 'store'])->name('cv.store');
 
         // Payments
-        Route::post('/payments/initiate', [\App\Http\Controllers\Client\PaymentController::class, 'initiatePayment'])->name('payments.initiate');
+        Route::post('/payments/initiate',        [\App\Http\Controllers\Client\PaymentController::class, 'initiatePayment'])->name('payments.initiate')->middleware('throttle:5,1');
+        Route::get('/payments/status/{ref}',     [\App\Http\Controllers\Client\PaymentController::class, 'checkStatus'])->name('payments.status');
     });
 
 // ─── Recruiter Routes ──────────────────────────────────────────────────────
@@ -98,3 +99,10 @@ Route::prefix('webhooks/kpay')->name('api.webhooks.kpay.')->group(function () {
     Route::post('/payouts',  [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handlePayout'])->name('payouts');
     Route::post('/refunds',  [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handleRefund'])->name('refunds');
 });
+
+// ─── K-PAY Public Utilities (no auth needed) ────────────────────────────────
+Route::post('/payments/predict-provider', function (\Illuminate\Http\Request $request) {
+    $service  = app(\App\Services\KpayService::class);
+    $provider = $service->predictProvider($request->input('phone_number', ''));
+    return response()->json(['provider' => $provider]);
+})->name('api.payments.predict-provider');

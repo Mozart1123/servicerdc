@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\ArtisanRating;
+use App\Models\Review;
 use App\Models\Conversation;
 use App\Models\Mission;
 use App\Models\Notification;
-use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\User;
@@ -171,8 +170,9 @@ class ServiceRequestController extends Controller
             ->latest()
             ->get();
 
-        $serviceRatings = ArtisanRating::where('artisan_id', $user->id)
-            ->with('user', 'serviceRequest')
+        $serviceRatings = Review::where('artisan_id', $user->id)
+            ->whereNotNull('migrated_from_artisan_rating_id') // from old ArtisanRating
+            ->with('client')
             ->latest()
             ->get();
 
@@ -189,12 +189,12 @@ class ServiceRequestController extends Controller
         ])->merge($serviceRatings->map(fn($r) => (object)[
             'id'        => 'rating_' . $r->id,
             'source'    => 'service',
-            'client'    => $r->user,
+            'client'    => $r->client,
             'rating'    => $r->rating,
-            'comment'   => $r->comment,
+            'comment'   => $r->feedback,
             'status'    => 'approved',
             'status_label' => 'Approuvé',
-            'service_name' => $r->serviceRequest?->requested_service_name ?? 'Service',
+            'service_name' => 'Service (migré)',
             'date'      => $r->created_at,
         ]))->sortByDesc('date')->values();
 
@@ -382,12 +382,12 @@ class ServiceRequestController extends Controller
             return back()->with('error', 'Artisan introuvable.');
         }
 
-        ArtisanRating::create([
-            'user_id'            => $user->id,
-            'artisan_id'         => $artisanId,
-            'service_request_id' => $serviceRequest->id,
-            'rating'             => $validated['rating'],
-            'comment'            => $validated['comment'] ?? null,
+        Review::create([
+            'client_id'  => $user->id,
+            'artisan_id' => $artisanId,
+            'rating'     => $validated['rating'],
+            'feedback'   => $validated['comment'] ?? null,
+            'status'     => 'approved', // Direct approval for service-request ratings
         ]);
 
         Notification::create([

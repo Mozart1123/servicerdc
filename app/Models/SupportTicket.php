@@ -7,14 +7,32 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SupportTicket extends Model
 {
-    protected $fillable = ['user_id', 'subject', 'message', 'priority', 'status', 'admin_reply', 'replied_at'];
+    protected $fillable = [
+        'user_id',
+        'mission_id',
+        'subject',
+        'message',
+        'ticket_type',
+        'priority',
+        'status',
+        'resolution',
+        'refund_amount',
+        'admin_reply',
+        'replied_at',
+    ];
 
     protected $casts = [
-        'replied_at' => 'datetime',
+        'replied_at'    => 'datetime',
+        'refund_amount' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function mission(): BelongsTo
+    {
+        return $this->belongsTo(Mission::class);
     }
 }

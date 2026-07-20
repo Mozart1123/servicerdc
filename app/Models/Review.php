@@ -17,6 +17,7 @@ class Review extends Model
         'feedback',
         'status',
         'rejection_reason',
+        'migrated_from_artisan_rating_id',
     ];
 
     protected $casts = [

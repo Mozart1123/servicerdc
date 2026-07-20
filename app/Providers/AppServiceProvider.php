@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Review;
+use App\Observers\ReviewObserver;
 use App\View\Composers\ClientLayoutComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Share layout-selection variables with all user.* views (Client vs Dashboard)
         View::composer('user.*', ClientLayoutComposer::class);
+
+        // Observers
+        Review::observe(ReviewObserver::class);
 
         \Illuminate\Support\Facades\Gate::define('super-admin', function (\App\Models\User $user) {
             return $user->isSuperAdmin();

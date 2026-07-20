@@ -142,7 +142,14 @@ class PublicController extends Controller
             $query->where('city', 'like', '%' . $request->city . '%');
         }
 
-        $artisans = $query->withCount('services')->latest()->paginate(12)->appends($request->query());
+        $artisans = $query->with(['artisanLevel'])
+            ->withCount('services')
+            ->leftJoin('artisan_levels', 'users.id', '=', 'artisan_levels.user_id')
+            ->orderByRaw("FIELD(artisan_levels.level, 'nouveau', 'actif', 'verifie', 'elite') DESC")
+            ->latest('users.created_at')
+            ->select('users.*') // Ensure we only select user columns
+            ->paginate(12)
+            ->appends($request->query());
 
         return view('public.artisans.index', compact('artisans'));
     }
@@ -152,7 +159,7 @@ class PublicController extends Controller
      */
     public function artisanShow(int $id): View
     {
-        $artisan  = User::where('user_type', 'artisan')->with('services')->findOrFail($id);
+        $artisan  = User::where('user_type', 'artisan')->with(['services', 'artisanLevel'])->findOrFail($id);
         $services = $artisan->services()->where('status', 'active')->latest()->get();
 
         return view('public.artisans.show', compact('artisan', 'services'));

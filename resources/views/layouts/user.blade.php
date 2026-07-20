@@ -237,6 +237,12 @@
                             Abonnement Pro
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('user.artisan.level') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.level') ? 'bg-amber-50 text-amber-600 shadow-md shadow-amber-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-trophy text-lg {{ request()->routeIs('user.artisan.level') ? 'text-amber-500' : 'text-slate-400 group-hover:text-amber-500' }}"></i>
+                            Mon Niveau
+                        </a>
+                    </li>
                 </ul>
 
             @elseif($userType === 'recruiter' || $userType === 'job_seeker')

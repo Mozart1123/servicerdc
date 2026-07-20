@@ -127,6 +127,7 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::post('/service-requests/{serviceRequest}/start', [UserServiceRequestController::class, 'startMission'])->name('service-requests.start');
             Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
             Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
+            Route::get('/artisan/level', [UserDashboardController::class, 'level'])->name('artisan.level');
         });
 
         // Account Main Menu (Mobile)

@@ -56,7 +56,7 @@ class KpayService
                 'status' => $response->status(),
                 'body' => $response->json()
             ]);
-            throw new Exception('Failed to initiate payment: ' . $response->json('message', 'Unknown error'));
+            throw new Exception($response->json('message', 'Unknown error'), $response->status());
         }
 
         return $response->json();
