@@ -383,6 +383,7 @@ class ServiceRequestController extends Controller
         }
 
         Review::create([
+            'service_request_id' => $serviceRequest->id,
             'client_id'  => $user->id,
             'artisan_id' => $artisanId,
             'rating'     => $validated['rating'],
