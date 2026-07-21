@@ -42,11 +42,12 @@ class ServiceRequest extends Model
     ];
 
     // Status constants
-    const STATUS_PENDING   = 'pending';
-    const STATUS_ACCEPTED  = 'accepted';
-    const STATUS_REJECTED  = 'rejected';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_PENDING     = 'pending';
+    const STATUS_ACCEPTED    = 'accepted';
+    const STATUS_IN_PROGRESS = 'in_progress';
+    const STATUS_REJECTED    = 'rejected';
+    const STATUS_COMPLETED   = 'completed';
+    const STATUS_CANCELLED   = 'cancelled';
 
     // ==========================================
     // Relationships
@@ -60,6 +61,16 @@ class ServiceRequest extends Model
     public function service()
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function mission()
+    {
+        return $this->hasOne(Mission::class, 'service_request_id');
+    }
+
+    public function ratings()
+    {
+        return $this->belongsTo(User::class, 'artisan_id');
     }
 
     public function artisan()
@@ -105,25 +116,27 @@ class ServiceRequest extends Model
     public function getStatusLabelAttribute(): string
     {
         return match($this->status) {
-            'pending'   => 'En attente',
-            'accepted'  => 'Acceptée',
-            'rejected'  => 'Refusée',
-            'completed' => 'Terminée',
-            'cancelled' => 'Annulée',
-            'addressed' => 'Traitée',
-            default     => $this->status,
+            'pending'     => 'En attente',
+            'accepted'    => 'Acceptée',
+            'in_progress' => 'En cours',
+            'rejected'    => 'Refusée',
+            'completed'   => 'Terminée',
+            'cancelled'   => 'Annulée',
+            'addressed'   => 'Traitée',
+            default       => $this->status,
         };
     }
 
     public function getStatusColorAttribute(): string
     {
         return match($this->status) {
-            'pending'   => 'amber',
-            'accepted'  => 'emerald',
-            'rejected'  => 'red',
-            'completed' => 'blue',
-            'cancelled' => 'slate',
-            default     => 'slate',
+            'pending'     => 'amber',
+            'accepted'    => 'orange',
+            'in_progress' => 'emerald',
+            'rejected'    => 'red',
+            'completed'   => 'blue',
+            'cancelled'   => 'slate',
+            default       => 'slate',
         };
     }
 
@@ -148,6 +161,6 @@ class ServiceRequest extends Model
 
     public function canBeCancelledBy(int $userId): bool
     {
-        return $this->user_id === $userId && in_array($this->status, [self::STATUS_PENDING]);
+        return $this->user_id === $userId && in_array($this->status, [self::STATUS_PENDING, self::STATUS_ACCEPTED]);
     }
 }

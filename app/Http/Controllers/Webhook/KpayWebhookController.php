@@ -281,10 +281,40 @@ class KpayWebhookController extends Controller
         $mission->commission_status = 'paid';
         $mission->payout_status     = 'pending_payout'; // artisan payout is now owed
         $mission->contact_unlocked_at = now();
-        if ($mission->status === 'pending') {
-            $mission->status = 'in_progress';
-        }
         $mission->save();
+
+        // ── SYNC WITH SERVICEREQUEST ──
+        $serviceRequest = $mission->serviceRequest;
+        if ($serviceRequest) {
+            if ($serviceRequest->status === 'cancelled' || $serviceRequest->status === 'rejected') {
+                // Payment succeeded but request was cancelled -> Potential refund needed
+                Log::alert("K-PAY Webhook: mission #{$mission->id} paid BUT ServiceRequest #{$serviceRequest->id} is {$serviceRequest->status}. Manual refund may be required.");
+                
+                $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id'    => $admin->id,
+                        'type'       => 'refund_needed',
+                        'title'      => 'Alerte: Paiement sur demande annulée',
+                        'message'    => "Paiement reçu pour la Mission #{$mission->id} alors que la demande liée est annulée/rejetée. Un remboursement peut être nécessaire.",
+                        'action_url' => route('admin.missions.index'),
+                        'is_read'    => false,
+                    ]);
+                }
+            } elseif ($serviceRequest->status === 'accepted') {
+                $serviceRequest->update([
+                    'status'      => 'in_progress',
+                    'accepted_at' => now(), // Starts the chrono on the UI
+                ]);
+                $mission->update([
+                    'status'     => 'in_progress',
+                    'start_date' => now(),
+                ]);
+            }
+        } elseif ($mission->status === 'pending') {
+            $mission->status = 'in_progress';
+            $mission->save();
+        }
 
         Log::info("K-PAY Webhook: mission #{$mission->id} commission paid. Payout pending for artisan #{$mission->artisan_id}.");
 

@@ -130,7 +130,7 @@
                             <i class="fas fa-exclamation-triangle text-slate-400"></i>
                             {{ $req->urgency_label }}
                         </span>
-                        @if($req->status === 'accepted' && $req->accepted_at)
+                        @if(in_array($req->status, ['in_progress']) && $req->accepted_at)
                         <span class="flex items-center gap-1 text-emerald-600 font-medium" data-accepted-at="{{ $req->accepted_at->toIso8601String() }}" id="timer-badge-{{ $req->id }}">
                             <i class="fas fa-stopwatch"></i><span>00:00:00</span>
                         </span>
@@ -150,7 +150,7 @@
 
                 {{-- Actions --}}
                 <div class="flex items-center gap-2 shrink-0 flex-wrap">
-                    @if(in_array($req->status, ['accepted', 'completed']) && ($req->artisan_id || $req->service?->artisan_id))
+                    @if(in_array($req->status, ['accepted', 'in_progress', 'completed']) && ($req->artisan_id || $req->service?->artisan_id))
                     @php $artisanId = $req->artisan_id ?? $req->service->artisan_id; @endphp
                     <a href="{{ route('user.messages.start.user', $artisanId) }}"
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#16a3b0] text-white text-xs font-medium rounded-lg hover:bg-[#138b96] transition-colors">

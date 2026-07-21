@@ -83,7 +83,7 @@
                         @endif
                         <span><i class="fas fa-fire mr-1 text-orange-400"></i>{{ $req->urgency_label }}</span>
                         <span><i class="fas fa-dollar-sign mr-1"></i>{{ $req->budget_range }}</span>
-                        @if($req->status === 'accepted' && $req->accepted_at)
+                        @if($req->status === 'in_progress' && $req->accepted_at)
                         <span class="text-emerald-600 font-bold" data-accepted-at="{{ $req->accepted_at->toIso8601String() }}">
                             <i class="fas fa-stopwatch mr-1"></i><span>00:00:00</span>
                         </span>
@@ -130,6 +130,9 @@
                        class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white text-sm font-bold rounded-xl hover:bg-rdc-blue-dark transition">
                         <i class="fas fa-comments"></i> Discuter
                     </a>
+                    @endif
+
+                    @if($req->status === 'in_progress')
                     <form action="{{ route('user.service-requests.complete', $req->id) }}" method="POST"
                           onsubmit="return confirm('Marquer ce service comme terminé ?')">
                         @csrf
@@ -144,6 +147,10 @@
                             <i class="fas fa-ban"></i> Annuler
                         </button>
                     </form>
+                    <a href="{{ route('user.messages.start.user', $req->user_id) }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white text-sm font-bold rounded-xl hover:bg-rdc-blue-dark transition">
+                        <i class="fas fa-comments"></i> Discuter
+                    </a>
                     @endif
 
                     @if($req->status === 'completed')

@@ -85,23 +85,23 @@ class ServiceRequestController extends Controller
     {
         $serviceRequest->update([
             'status'      => 'accepted',
-            'accepted_at' => now(),
+            // accepted_at is set when payment is made (chrono starts)
         ]);
         $artisan = Auth::user();
 
         // Create a Mission to track the work (start/end dates, rating, feedback)
         Mission::firstOrCreate(
             [
+                'service_request_id' => $serviceRequest->id,
                 'service_id'  => $serviceRequest->service_id,
                 'client_id'   => $serviceRequest->user_id,
                 'artisan_id'  => $artisan->id,
-                'title'       => $serviceRequest->requested_service_name ?? ($serviceRequest->service->title ?? 'Mission'),
             ],
             [
+                'title'       => $serviceRequest->requested_service_name ?? ($serviceRequest->service->title ?? 'Mission'),
                 'description' => $serviceRequest->description,
                 'status'      => 'pending',
                 'amount'      => $serviceRequest->budget_max ?? 0,
-                'start_date'  => now(),
             ]
         );
 
@@ -111,14 +111,45 @@ class ServiceRequestController extends Controller
             'related_type' => 'request',
             'related_id'   => $serviceRequest->id,
             'title'        => 'Demande acceptée 🎉',
-            'message'      => "L'artisan {$artisan->name} a accepté votre demande.",
+            'message'      => "L'artisan {$artisan->name} a accepté votre demande. Choisissez votre mode de paiement pour démarrer.",
             'action_url'   => route('user.service-requests.index'),
             'is_read'      => false,
         ]);
 
         Conversation::findOrCreateBetween($serviceRequest->user_id, $artisan->id, 'service', $serviceRequest->id);
 
-        return back()->with('success', 'Demande acceptée. Mission créée, chronomètre lancé !');
+        return back()->with('success', 'Demande acceptée. En attente du paiement du client pour démarrer le chrono.');
+    }
+
+    public function payCash(ServiceRequest $serviceRequest): RedirectResponse
+    {
+        if ($serviceRequest->status !== 'accepted') {
+            return back()->with('error', 'Le paiement ne peut être effectué qu\'une fois la demande acceptée.');
+        }
+
+        $serviceRequest->update([
+            'status'      => 'in_progress',
+            'accepted_at' => now(), // Start chrono
+        ]);
+
+        if ($serviceRequest->mission) {
+            $serviceRequest->mission->update([
+                'status'          => 'in_progress',
+                'payment_channel' => 'cash',
+                'start_date'      => now(),
+            ]);
+        }
+
+        Notification::create([
+            'user_id'    => $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id,
+            'type'       => 'mission_started',
+            'title'      => 'Paiement en espèces - Mission démarrée',
+            'message'    => "Le client a choisi le paiement en espèces. Le chrono a démarré.",
+            'action_url'   => route('user.service-requests.index'),
+            'is_read'    => false,
+        ]);
+
+        return back()->with('success', 'Paiement en espèces sélectionné. Le chrono a démarré !');
     }
 
     public function reject(ServiceRequest $serviceRequest): RedirectResponse
@@ -233,8 +264,22 @@ class ServiceRequestController extends Controller
 
     public function show(ServiceRequest $serviceRequest): View
     {
-        $serviceRequest->load('user', 'service.artisan');
-        return view('user.service-requests.show', compact('serviceRequest'));
+        $serviceRequest->load(['user', 'service.artisan', 'mission']);
+
+        // Load conversation if one exists between client and artisan
+        $conversation = null;
+        $artisanId    = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if ($artisanId) {
+            $oneCol = \Schema::hasColumn('conversations', 'user_one_id') ? 'user_one_id' : 'user_one';
+            $twoCol = \Schema::hasColumn('conversations', 'user_two_id') ? 'user_two_id' : 'user_two';
+            $conversation = \App\Models\Conversation::where(function ($q) use ($serviceRequest, $artisanId, $oneCol, $twoCol) {
+                $q->where($oneCol, $serviceRequest->user_id)->where($twoCol, $artisanId);
+            })->orWhere(function ($q) use ($serviceRequest, $artisanId, $oneCol, $twoCol) {
+                $q->where($oneCol, $artisanId)->where($twoCol, $serviceRequest->user_id);
+            })->first();
+        }
+
+        return view('user.service-requests.show', compact('serviceRequest', 'conversation'));
     }
 
     /**
@@ -242,16 +287,17 @@ class ServiceRequestController extends Controller
      */
     public function startMission(ServiceRequest $serviceRequest): RedirectResponse
     {
-        $serviceRequest->update(['status' => 'accepted']);
+        // Guard: only proceed if payment was made (status must be accepted)
+        if ($serviceRequest->status !== 'accepted') {
+            return back()->with('error', 'La mission ne peut démarrer qu\'après le paiement du client.');
+        }
 
-        $mission = Mission::where('artisan_id', Auth::id())
-            ->where(function ($q) use ($serviceRequest) {
-                $q->where('service_id', $serviceRequest->service_id)
-                  ->orWhere('title', $serviceRequest->requested_service_name);
-            })
-            ->where('status', 'pending')
-            ->first();
+        $serviceRequest->update([
+            'status'      => 'in_progress',
+            'accepted_at' => now(),
+        ]);
 
+        $mission = $serviceRequest->mission;
         if ($mission) {
             $mission->update([
                 'status'     => 'in_progress',
@@ -264,7 +310,7 @@ class ServiceRequestController extends Controller
             'type'       => 'mission_started',
             'title'      => 'Mission démarrée !',
             'message'    => "L'artisan a commencé le travail sur votre demande.",
-            'action_url' => route('user.missions.index'),
+            'action_url' => route('user.service-requests.index'),
             'is_read'    => false,
         ]);
 
@@ -276,23 +322,25 @@ class ServiceRequestController extends Controller
      */
     public function complete(ServiceRequest $serviceRequest): RedirectResponse
     {
+        // Guard: only artisan can complete
+        if ($serviceRequest->artisan_id !== Auth::id()) {
+            abort(403);
+        }
+        if ($serviceRequest->status !== 'in_progress') {
+            return back()->with('error', 'Le service doit être en cours pour être terminé.');
+        }
+
         $serviceRequest->update([
             'status'       => 'completed',
             'completed_at' => now(),
         ]);
 
-        $mission = Mission::where('artisan_id', Auth::id())
-            ->where(function ($q) use ($serviceRequest) {
-                $q->where('service_id', $serviceRequest->service_id)
-                  ->orWhere('title', $serviceRequest->requested_service_name);
-            })
-            ->whereIn('status', ['pending', 'in_progress'])
-            ->first();
-
+        $mission = $serviceRequest->mission;
         if ($mission) {
             $mission->update([
                 'status'   => 'completed',
                 'end_date' => now(),
+                'payout_status' => $mission->payment_channel === 'cash' ? 'pending_payout' : $mission->payout_status,
             ]);
         }
 
@@ -328,15 +376,9 @@ class ServiceRequestController extends Controller
     {
         $serviceRequest->update(['status' => 'cancelled']);
 
-        $mission = Mission::where('artisan_id', Auth::id())
-            ->where(function ($q) use ($serviceRequest) {
-                $q->where('service_id', $serviceRequest->service_id)
-                  ->orWhere('title', $serviceRequest->requested_service_name);
-            })
-            ->whereNotIn('status', ['completed', 'cancelled'])
-            ->first();
+        $mission = $serviceRequest->mission;
 
-        if ($mission) {
+        if ($mission && !in_array($mission->status, ['completed', 'cancelled'])) {
             $mission->update([
                 'status'   => 'cancelled',
                 'end_date' => now(),

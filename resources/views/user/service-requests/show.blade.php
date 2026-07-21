@@ -29,7 +29,7 @@
             <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2 mb-1">
                     <h2 class="text-xl font-bold text-slate-900">{{ $serviceRequest->requested_service_name ?? 'Demande de service' }}</h2>
-                    @php $c = match($serviceRequest->status) {'accepted'=>'emerald','rejected'=>'red','completed'=>'blue','cancelled'=>'slate',default=>'amber'}; @endphp
+                    @php $c = match($serviceRequest->status) {'accepted'=>'orange','in_progress'=>'emerald','rejected'=>'red','completed'=>'blue','cancelled'=>'slate',default=>'amber'}; @endphp
                     <span class="px-2.5 py-0.5 bg-{{ $c }}-50 text-{{ $c }}-600 text-xs font-bold uppercase rounded-full border border-{{ $c }}-200">
                         {{ $serviceRequest->status_label }}
                     </span>
@@ -40,7 +40,7 @@
     </div>
 
     {{-- Live Timer / Elapsed Time Card --}}
-    @if($serviceRequest->status === 'accepted' && $serviceRequest->accepted_at)
+    @if(in_array($serviceRequest->status, ['in_progress', 'completed']) && $serviceRequest->accepted_at)
     <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl shadow-xl shadow-emerald-200 p-6 text-white" data-aos="fade-up" id="timer-card">
         <div class="flex items-center justify-between">
             <div>
@@ -134,14 +134,14 @@
 
     {{-- Action Buttons --}}
     <div class="flex flex-wrap gap-3" data-aos="fade-up">
-        @if(in_array($serviceRequest->status, ['accepted', 'completed']) && isset($conversation))
+        @if(in_array($serviceRequest->status, ['accepted', 'in_progress', 'completed']) && isset($conversation))
         <a href="{{ route('user.messages.index', ['id' => $conversation->id]) }}"
            class="inline-flex items-center gap-2 px-6 py-3 bg-rdc-blue text-white font-bold rounded-xl hover:bg-rdc-blue-dark transition shadow-lg shadow-blue-200">
             <i class="fas fa-comments"></i> Discuter avec l'artisan
         </a>
         @endif
 
-        @if($serviceRequest->status === 'accepted' && $serviceRequest->artisan_id === auth()->id())
+        @if($serviceRequest->status === 'in_progress' && $serviceRequest->artisan_id === auth()->id())
         <form action="{{ route('user.service-requests.complete', $serviceRequest->id) }}" method="POST">
             @csrf
             <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-200">
@@ -150,7 +150,7 @@
         </form>
         @endif
 
-        @if($serviceRequest->status === 'pending' && $serviceRequest->user_id === auth()->id())
+        @if(in_array($serviceRequest->status, ['pending', 'accepted']) && $serviceRequest->user_id === auth()->id())
         <form action="{{ route('user.service-requests.cancel', $serviceRequest->id) }}" method="POST"
               onsubmit="return confirm('Etes-vous sur de vouloir annuler cette demande ?')">
             @csrf
@@ -165,6 +165,143 @@
             <i class="fas fa-arrow-left"></i> Retour
         </a>
     </div>
+
+    {{-- Payment Choice (Client Only, when accepted and waiting for payment) --}}
+    @if($serviceRequest->status === 'accepted' && $serviceRequest->user_id === auth()->id() && $serviceRequest->mission)
+    @php $mission = $serviceRequest->mission; @endphp
+    <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm mt-6" data-aos="fade-up"
+         x-data="{
+            phone: '',
+            provider: '',
+            loading: false,
+            detecting: false,
+            pollInterval: null,
+            ref: null,
+            state: 'idle',
+            toast: { show: false, message: '', type: 'success' },
+            showToast(msg, type = 'success') {
+                this.toast = { show: true, message: msg, type };
+                setTimeout(() => this.toast.show = false, 5000);
+            },
+            async detectProvider() {
+                if (this.phone.replace(/\D/g,'').length < 9) return;
+                this.detecting = true;
+                try {
+                    const r = await fetch('/api/payments/predict-provider', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ phone_number: this.phone })
+                    });
+                    const d = await r.json();
+                    if (d.provider) this.provider = d.provider;
+                } catch(e) {}
+                this.detecting = false;
+            },
+            async pay() {
+                if (!this.phone) { this.showToast('Veuillez saisir un numero de telephone.', 'error'); return; }
+                this.loading = true;
+                try {
+                    const r = await fetch('/api/client/payments/initiate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Authorization': 'Bearer {{ session("api_token", "") }}' },
+                        body: JSON.stringify({ provider: this.provider || 'VODACOM_MPESA_COD', phone_number: this.phone, payment_type: 'mission', reference_id: {{ $mission->id }} })
+                    });
+                    const d = await r.json();
+                    if (!r.ok) { this.showToast(d.error ?? 'Erreur paiement.', 'error'); this.loading = false; return; }
+                    this.ref = d.reference; this.state = 'pending';
+                    this.showToast('Confirmez le prompt USSD sur votre telephone.', 'success');
+                    this.startPolling();
+                } catch(e) { this.showToast('Erreur reseau.', 'error'); }
+                this.loading = false;
+            },
+            startPolling() {
+                if (this.pollInterval) clearInterval(this.pollInterval);
+                let attempts = 0;
+                this.pollInterval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 24) { clearInterval(this.pollInterval); this.state = 'expired'; return; }
+                    try {
+                        const r = await fetch('/api/client/payments/status/' + this.ref, { headers: { 'Accept': 'application/json' } });
+                        const d = await r.json();
+                        if (d.status === 'success') { this.state = 'success'; clearInterval(this.pollInterval); setTimeout(() => window.location.reload(), 2500); }
+                        else if (d.status === 'failed') { this.state = 'failed'; clearInterval(this.pollInterval); this.showToast('Paiement echoue.', 'error'); }
+                    } catch(e) {}
+                }, 5000);
+            }
+         }">
+
+        {{-- Toast --}}
+        <div x-show="toast.show" x-transition
+             :class="toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'"
+             class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3"
+             style="display:none">
+            <i class="fas" :class="toast.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+            <span x-text="toast.message"></span>
+        </div>
+
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-rdc-blue flex items-center justify-center">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Demarrer le service</h3>
+                <p class="text-[10px] font-bold text-slate-400">Choisissez votre mode de paiement pour lancer le chrono</p>
+            </div>
+            <div class="ml-auto text-right">
+                <p class="text-2xl font-heading font-black text-slate-900">${{ number_format($mission->amount ?? 0, 2) }}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Montant convenu</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- K-PAY Option --}}
+            <div class="border-2 border-rdc-blue/20 rounded-2xl p-5">
+                <h4 class="font-bold text-slate-900 mb-1"><i class="fas fa-mobile-screen-button mr-2 text-rdc-blue"></i>Paiement Mobile (K-PAY)</h4>
+                <p class="text-xs text-slate-500 mb-4">Commission de {{ number_format($mission->commission_amount ?? ($mission->amount * 0.15), 2) }} $ debitee par push USSD.</p>
+
+                <div x-show="state === 'idle' || state === 'failed'" class="space-y-3">
+                    <div class="relative">
+                        <input type="tel" x-model="phone" @input.debounce.600ms="detectProvider()"
+                               placeholder="+243 9xx xxx xxx"
+                               class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 outline-none pr-14">
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-rdc-blue uppercase" x-show="provider && !detecting" x-text="provider.split('_')[0]"></div>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2" x-show="detecting"><i class="fas fa-circle-notch animate-spin text-rdc-blue text-xs"></i></div>
+                    </div>
+                    <button @click="pay()" :disabled="loading" class="w-full relative px-6 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-black rounded-xl text-[10px] uppercase tracking-widest transition-all disabled:opacity-60">
+                        <span :class="{'opacity-0': loading}">Payer via K-PAY</span>
+                        <div x-show="loading" class="absolute inset-0 flex items-center justify-center"><i class="fas fa-circle-notch animate-spin"></i></div>
+                    </button>
+                </div>
+
+                <div x-show="state === 'pending'" style="display:none" class="py-4 text-center">
+                    <i class="fas fa-mobile-screen text-3xl text-blue-500 animate-bounce mb-2"></i>
+                    <p class="text-sm font-bold text-slate-900">Verifiez votre telephone</p>
+                    <p class="text-xs text-slate-500 mt-1">Prompt USSD envoye au <b x-text="phone"></b></p>
+                </div>
+
+                <div x-show="state === 'success'" style="display:none" class="py-4 text-center">
+                    <i class="fas fa-check-circle text-3xl text-emerald-500 mb-2"></i>
+                    <p class="text-sm font-bold text-slate-900">Paiement valide ! Demarrage...</p>
+                </div>
+            </div>
+
+            {{-- Cash Option --}}
+            <div class="border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-1"><i class="fas fa-money-bill-wave mr-2 text-emerald-600"></i>Paiement en especes</h4>
+                    <p class="text-xs text-slate-500">Paiement direct de la main a la main. Le chrono demarre immediatement.</p>
+                </div>
+                <form action="{{ route('user.service-requests.pay-cash', $serviceRequest->id) }}" method="POST" class="mt-4"
+                      onsubmit="return confirm('Confirmez le paiement en especes ? Le service demarrera immediatement.')">
+                    @csrf
+                    <button type="submit" class="w-full px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl text-[10px] uppercase tracking-widest transition-all">
+                        Choisir paiement Cash
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Rating Section --}}
     @if($serviceRequest->status === 'completed' && $serviceRequest->user_id === auth()->id())

@@ -10,6 +10,7 @@ class Mission extends Model
     use HasFactory;
 
     protected $fillable = [
+        'service_request_id',
         'service_id',
         'client_id',
         'artisan_id',
@@ -64,6 +65,11 @@ class Mission extends Model
     public function artisan()
     {
         return $this->belongsTo(User::class, 'artisan_id');
+    }
+
+    public function serviceRequest()
+    {
+        return $this->belongsTo(ServiceRequest::class, 'service_request_id');
     }
 
     /**

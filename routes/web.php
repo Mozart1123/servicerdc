@@ -125,6 +125,7 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::post('/service-requests/{serviceRequest}/reject', [UserServiceRequestController::class, 'reject'])->name('service-requests.reject');
             Route::post('/service-requests/{serviceRequest}/complete', [UserServiceRequestController::class, 'complete'])->name('service-requests.complete');
             Route::post('/service-requests/{serviceRequest}/start', [UserServiceRequestController::class, 'startMission'])->name('service-requests.start');
+            Route::post('/service-requests/{serviceRequest}/pay-cash', [UserServiceRequestController::class, 'payCash'])->name('service-requests.pay-cash');
             Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
             Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
             Route::get('/artisan/level', [UserDashboardController::class, 'level'])->name('artisan.level');
