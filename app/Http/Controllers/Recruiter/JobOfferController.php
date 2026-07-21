@@ -38,12 +38,20 @@ class JobOfferController extends Controller
     public function store(StoreJobOfferRequest $request): JsonResponse
     {
         $user      = $request->user();
+        
+        if (!$user->isPremiumRecruiter() && JobOffer::where('employer_id', $user->id)->active()->count() >= 3) {
+            return response()->json([
+                'message' => 'Vous avez atteint la limite de 3 offres actives. Passez au plan Premium pour publier des offres illimitées.'
+            ], 403);
+        }
+
         $validated = $request->validated();
 
         $job = JobOffer::create(array_merge($validated, [
             'employer_id'  => $user->id,
             'company_name' => $user->name,
             'status'       => $validated['status'] ?? 'active',
+            'is_urgent'    => ($validated['is_urgent'] ?? false) && $user->isPremiumRecruiter(),
         ]));
 
         return response()->json([
@@ -75,44 +83,53 @@ class JobOfferController extends Controller
             $query->where('job_offer_id', $jobId);
         }
 
-        $applications = $query->get()->map(fn(JobApplication $app) => [
-            'id'           => $app->id,
-            'status'       => $app->status,
-            'status_label' => $app->status_label,
-            'applied_at'   => $app->created_at?->format('d/m/Y H:i'),
-            'job'          => [
-                'id'            => $app->jobOffer?->id,
-                'title'         => $app->jobOffer?->title,
-                'location'      => $app->jobOffer?->location,
-                'contract_type' => $app->jobOffer?->contract_type,
-                'deadline'      => optional($app->jobOffer?->deadline)->format('d/m/Y') ?? (string)($app->jobOffer?->deadline ?? ''),
-            ],
-            'applicant' => [
-                'id'    => $app->user?->id,
-                'name'  => $app->user?->name,
-                'email' => $app->user?->email,
-                'phone' => $app->user?->phone,
-            ],
-            'cv' => $app->user?->cv ? [
-                'full_name'      => $app->user->cv->full_name,
-                'email'          => $app->user->cv->email,
-                'phone_number'   => $app->user->cv->phone_number,
-                'address'        => $app->user->cv->address,
-                'education'      => $app->user->cv->education,
-                'skills'         => $app->user->cv->skills,
-                'experience'     => $app->user->cv->experience,
-                'languages'      => $app->user->cv->languages,
-                'cv_file_path'   => $app->user->cv->cv_file_path,
-                'portfolio_link' => $app->user->cv->portfolio_link,
-            ] : null,
-        ]);
+        $allApps = $query->get();
+        $lockedCount = $allApps->where('is_premium_locked', true)->count();
+
+        $applications = $allApps->map(function (JobApplication $app) {
+            $isLocked = $app->is_premium_locked;
+            
+            return [
+                'id'           => $app->id,
+                'status'       => $isLocked ? 'locked' : $app->status,
+                'status_label' => $isLocked ? 'Verrouillée' : $app->status_label,
+                'is_locked'    => $isLocked,
+                'applied_at'   => $app->created_at?->format('d/m/Y H:i'),
+                'job'          => [
+                    'id'            => $app->jobOffer?->id,
+                    'title'         => $app->jobOffer?->title,
+                    'location'      => $app->jobOffer?->location,
+                    'contract_type' => $app->jobOffer?->contract_type,
+                    'deadline'      => optional($app->jobOffer?->deadline)->format('d/m/Y') ?? (string)($app->jobOffer?->deadline ?? ''),
+                ],
+                'applicant' => $isLocked ? null : [
+                    'id'    => $app->user?->id,
+                    'name'  => $app->user?->name,
+                    'email' => $app->user?->email,
+                    'phone' => $app->user?->phone,
+                ],
+                'cv' => ($isLocked || !$app->user?->cv) ? null : [
+                    'full_name'      => $app->user->cv->full_name,
+                    'email'          => $app->user->cv->email,
+                    'phone_number'   => $app->user->cv->phone_number,
+                    'address'        => $app->user->cv->address,
+                    'education'      => $app->user->cv->education,
+                    'skills'         => $app->user->cv->skills,
+                    'experience'     => $app->user->cv->experience,
+                    'languages'      => $app->user->cv->languages,
+                    'cv_file_path'   => $app->user->cv->cv_file_path,
+                    'portfolio_link' => $app->user->cv->portfolio_link,
+                ],
+            ];
+        });
 
         return response()->json([
-            'data'     => $applications,
-            'total'    => $applications->count(),
-            'pending'  => $applications->where('status', 'pending')->count(),
-            'approved' => $applications->where('status', 'approved')->count(),
-            'rejected' => $applications->where('status', 'rejected')->count(),
+            'data'                 => $applications,
+            'total'                => $applications->count(),
+            'pending'              => $applications->where('status', 'pending')->count(),
+            'approved'             => $applications->where('status', 'approved')->count(),
+            'rejected'             => $applications->where('status', 'rejected')->count(),
+            'premium_locked_count' => $lockedCount,
         ]);
     }
 
@@ -131,6 +148,10 @@ class JobOfferController extends Controller
         // Authorization: ensure application belongs to recruiter's job
         if ($app->jobOffer?->employer_id !== request()->user()->id) {
             abort(403, 'Vous n\'êtes pas autorisé à consulter cette candidature.');
+        }
+
+        if ($app->is_premium_locked) {
+            abort(403, 'Cette candidature est verrouillée. Passez au plan Premium pour la consulter.');
         }
 
         return response()->json(['data' => $app]);

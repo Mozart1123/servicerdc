@@ -12,6 +12,7 @@ class SubscriptionPlanSeeder extends Seeder
     public function run(): void
     {
         $plans = [
+            // B2C (Artisan) Plans
             [
                 'name'          => 'Starter',
                 'slug'          => 'starter',
@@ -75,6 +76,28 @@ class SubscriptionPlanSeeder extends Seeder
                     'Accès API partenaires',
                     'Manager dédié',
                     'Support 24/7 WhatsApp',
+                ],
+            ],
+            // B2B / Recruiter Plans
+            [
+                'name'          => 'Recruteur Premium',
+                'slug'          => 'recruiter-premium',
+                'description'   => 'Pour les recruteurs professionnels : offres illimitées et accès total.',
+                'price_monthly' => 5.00,
+                'price_yearly'  => 50.00,
+                'currency'      => 'USD',
+                'color'         => 'emerald',
+                'icon'          => 'fa-briefcase',
+                'is_popular'    => true,
+                'is_active'     => true,
+                'max_services'  => 0, // not applicable for recruiter
+                'sort_order'    => 4,
+                'features'      => [
+                    'Offres d\'emploi illimitées',
+                    'Accès à 100% des candidatures',
+                    'Badge "Urgent" disponible',
+                    'Priorité dans les résultats de recherche',
+                    'Support prioritaire',
                 ],
             ],
         ];

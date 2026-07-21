@@ -26,10 +26,12 @@ class JobOffer extends Model
         'requirements',
         'status',
         'deadline',
+        'is_urgent',
     ];
 
     protected $casts = [
-        'deadline' => 'date',
+        'deadline'  => 'date',
+        'is_urgent' => 'boolean',
     ];
 
     // ==========================================

@@ -24,6 +24,10 @@ class JobApplication extends Model
         'rejection_reason',
     ];
 
+    protected $appends = [
+        'is_premium_locked',
+    ];
+
     protected $casts = [
         'applied_at'  => 'datetime',
         'reviewed_at' => 'datetime',
@@ -100,5 +104,38 @@ class JobApplication extends Model
     public function canBeWithdrawnBy(int $userId): bool
     {
         return $this->user_id === $userId && $this->status === self::STATUS_PENDING;
+    }
+
+    public function getIsPremiumLockedAttribute(): bool
+    {
+        $user = auth()->user();
+        
+        if (!$user) return false;
+
+        // The applicant always sees their own application
+        if ($user->id === $this->user_id) {
+            return false;
+        }
+        
+        // Admin/Super Admin see everything
+        if (in_array($user->role, ['admin', 'super_admin'])) {
+            return false;
+        }
+
+        $employer = $this->jobOffer->employer ?? $this->jobOffer->user;
+        if (!$employer) return false;
+
+        // If recruiter is premium, it's not locked
+        if ($employer->isPremiumRecruiter()) {
+            return false;
+        }
+
+        // Check if this application is within the first 10 for this job
+        $top10Ids = static::where('job_offer_id', $this->job_offer_id)
+                          ->orderBy('created_at', 'asc')
+                          ->limit(10)
+                          ->pluck('id');
+                          
+        return !$top10Ids->contains($this->id);
     }
 }

@@ -42,11 +42,17 @@ class ProcessSubscriptionReminders extends Command
         foreach ($activeSubscriptions as $subscription) {
             $endsAt = Carbon::parse($subscription->ends_at)->startOfDay();
             
-            // Check if it's already expired (past midnight today)
             if ($endsAt->lt($today)) {
                 $subscription->status = 'expired';
                 $subscription->save();
                 
+                // If it's a recruiter premium subscription expiring, remove 'is_urgent' from all active job offers
+                if ($subscription->plan && $subscription->plan->slug === 'recruiter-premium') {
+                    \App\Models\JobOffer::where('employer_id', $subscription->user_id)
+                                        ->where('is_urgent', true)
+                                        ->update(['is_urgent' => false]);
+                }
+
                 $this->notifyUser($subscription, 'Abonnement expiré', 'Votre abonnement a expiré. Renouvelez-le pour continuer à profiter de vos avantages Premium.');
                 Log::info("Subscription {$subscription->id} expired.");
                 continue;

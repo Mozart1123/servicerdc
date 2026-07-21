@@ -186,12 +186,19 @@ class JobController extends Controller
             'requirements'  => ['nullable', 'string'],
             'company_logo'  => ['nullable', 'image', 'max:5120'],
             'cover_image'   => ['nullable', 'image', 'max:5120'],
+            'is_urgent'     => ['nullable', 'boolean'],
         ]);
 
         $user = Auth::user();
+
+        if (!$user->isPremiumRecruiter() && JobOffer::where('employer_id', $user->id)->active()->count() >= 3) {
+            return back()->with('error', 'Vous avez atteint la limite de 3 offres actives. Passez au plan Premium pour publier des offres illimitées.')->withInput();
+        }
+
         $validated['user_id']     = $user->id;
         $validated['employer_id'] = $user->id;
         $validated['status']      = 'active';
+        $validated['is_urgent']   = $request->boolean('is_urgent') && $user->isPremiumRecruiter();
 
         if ($request->hasFile('company_logo')) {
             $validated['company_logo'] = $request->file('company_logo')->store('job_images', 'public');
@@ -243,7 +250,10 @@ class JobController extends Controller
             'deadline'      => ['nullable', 'date'],
             'company_logo'  => ['nullable', 'image', 'max:5120'],
             'cover_image'   => ['nullable', 'image', 'max:5120'],
+            'is_urgent'     => ['nullable', 'boolean'],
         ]);
+
+        $validated['is_urgent'] = $request->boolean('is_urgent') && Auth::user()->isPremiumRecruiter();
 
         if ($request->hasFile('company_logo')) {
             if ($job->company_logo) {

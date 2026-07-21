@@ -34,7 +34,14 @@ class JobOfferController extends Controller
             $query->byCategory($category);
         }
 
-        $query->orderByDesc('created_at');
+        $query->orderByDesc('is_urgent')
+              ->orderByRaw("(SELECT COUNT(*) FROM subscriptions 
+                             INNER JOIN subscription_plans ON subscriptions.subscription_plan_id = subscription_plans.id
+                             WHERE subscriptions.user_id = job_offers.employer_id 
+                             AND subscriptions.status = 'active'
+                             AND (subscriptions.ends_at IS NULL OR subscriptions.ends_at >= NOW())
+                             AND subscription_plans.slug = 'recruiter-premium') DESC")
+              ->orderByDesc('created_at');
 
         $jobs = $query->paginate((int) $request->query('per_page', 10));
 

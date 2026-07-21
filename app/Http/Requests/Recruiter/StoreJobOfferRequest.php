@@ -25,6 +25,7 @@ class StoreJobOfferRequest extends FormRequest
             'category'      => ['required', 'string', 'max:100'],
             'deadline'      => ['required', 'date', 'after:today'],
             'status'        => ['sometimes', 'in:active,closed'],
+            'is_urgent'     => ['nullable', 'boolean'],
         ];
     }
 
