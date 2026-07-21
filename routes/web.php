@@ -225,6 +225,10 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::post('/subscription/subscribe', [UserSubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
         Route::post('/subscription/cancel', [UserSubscriptionController::class, 'cancel'])->name('subscription.cancel');
 
+        // Artisan — Gains & Retraits
+        Route::get('/gains', [\App\Http\Controllers\User\PayoutController::class, 'index'])->name('gains.index');
+        Route::post('/gains/request', [\App\Http\Controllers\User\PayoutController::class, 'store'])->name('gains.request');
+
         // Placeholder Routes for Premium UX
         Route::get('/favorites', [UserDashboardController::class, 'favorites'])->name('favorites');
         Route::get('/new', [UserDashboardController::class, 'newOpportunities'])->name('new');
@@ -403,6 +407,14 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::prefix('missions')->name('missions.')->group(function (): void {
             Route::get('/', [AdminMissionController::class, 'index'])->name('index');
             Route::get('/{mission}', [AdminMissionController::class, 'show'])->name('show');
+        });
+
+        // Payout Requests (demandes de retrait artisans)
+        Route::prefix('finances/payout-requests')->name('finances.payout-requests.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\PayoutRequestController::class, 'index'])->name('index');
+            Route::post('/{id}/approve', [\App\Http\Controllers\Admin\PayoutRequestController::class, 'approve'])->name('approve');
+            Route::post('/{id}/reject', [\App\Http\Controllers\Admin\PayoutRequestController::class, 'reject'])->name('reject');
+            Route::get('/{artisanId}/missions', [\App\Http\Controllers\Admin\PayoutRequestController::class, 'artisanMissions'])->name('missions');
         });
     });
 
