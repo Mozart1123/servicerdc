@@ -3,8 +3,44 @@
 @section('header_title', 'Mon niveau & Réputation')
 
 @section('content')
-<div class="space-y-12 pb-20 max-w-4xl mx-auto">
-    
+<div class="space-y-8 pb-20 max-w-4xl mx-auto">
+
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-sm font-medium flex items-center gap-3">
+            <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
+            <div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-sm font-medium flex items-center gap-3">
+            <i class="fas fa-exclamation-triangle text-red-500 text-lg"></i>
+            <div>
+                @foreach($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- Grace Period Banner (if applicable) -->
+    @if($level->isInGracePeriod())
+        <div class="bg-amber-50 border border-amber-200 p-6 rounded-[2.5rem] shadow-sm flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 flex-none flex items-center justify-center text-amber-600 text-xl">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div>
+                <h4 class="text-base font-black text-amber-900 uppercase tracking-wider">Période de grâce active</h4>
+                <p class="text-xs text-amber-800 font-medium mt-1 leading-relaxed">
+                    Vous conservez votre niveau actuel pendant une période de grâce de 30 jours (jusqu'au {{ $level->grace_period_ends_at->format('d/m/Y') }}). 
+                    Veuillez faire vérifier votre identité ci-dessous avant cette date pour conserver définitivement votre statut.
+                </p>
+            </div>
+        </div>
+    @endif
+
+    <!-- Current Level Card -->
     <div class="relative bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm text-center">
         <h2 class="text-3xl font-black text-slate-900 mb-2">Niveau Actuel</h2>
         
@@ -37,6 +73,105 @@
         </div>
     </div>
 
+    <!-- Identity Verification Section -->
+    <div class="bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm space-y-6">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-rdc-blue/10 flex items-center justify-center text-rdc-blue text-xl">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-black text-slate-900 uppercase">Vérification d'Identité</h3>
+                <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Requis pour accéder aux niveaux Vérifié & Élite</p>
+            </div>
+        </div>
+
+        @if($level->verification_status === 'approved')
+            <!-- Approved State -->
+            <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/30">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-black text-emerald-950 uppercase tracking-wider">Identité Vérifiée</h4>
+                        <p class="text-xs text-emerald-800 font-medium mt-0.5">Validée le {{ $level->verified_at ? $level->verified_at->format('d/m/Y') : 'Récemment' }} par notre équipe de modération.</p>
+                    </div>
+                </div>
+                @if($level->identity_document_path)
+                    <a href="{{ route('user.identity-verification.download') }}" target="_blank" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-sm">
+                        <i class="fas fa-eye mr-2"></i> Voir mon document
+                    </a>
+                @endif
+            </div>
+
+        @elseif($level->verification_status === 'pending')
+            <!-- Pending State -->
+            <div class="bg-blue-50 border border-blue-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-500/30 animate-pulse">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-black text-blue-950 uppercase tracking-wider">Vérification en cours</h4>
+                        <p class="text-xs text-blue-800 font-medium mt-0.5">Votre pièce d'identité est en cours d'examen par notre équipe. Vous recevrez une notification dès validation.</p>
+                    </div>
+                </div>
+                @if($level->identity_document_path)
+                    <a href="{{ route('user.identity-verification.download') }}" target="_blank" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-sm">
+                        <i class="fas fa-file-alt mr-2"></i> Voir le fichier transmis
+                    </a>
+                @endif
+            </div>
+
+        @else
+            <!-- Not Submitted or Rejected State -->
+            @if($level->verification_status === 'rejected')
+                <div class="bg-red-50 border border-red-100 rounded-3xl p-6 mb-4 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-red-500 text-white flex items-center justify-center text-lg shadow-md flex-none mt-0.5">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-black text-red-950 uppercase tracking-wider">Demande refusée</h4>
+                        <p class="text-xs text-red-800 font-medium mt-1">
+                            <span class="font-bold">Motif du refus :</span> {{ $level->verification_rejection_reason ?? 'Document non conforme ou illisible.' }}
+                        </p>
+                        <p class="text-[11px] text-red-700 font-medium mt-1">Veuillez soumettre à nouveau une pièce d'identité valide ci-dessous.</p>
+                    </div>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('user.identity-verification.store') }}" enctype="multipart/form-data" class="space-y-5 bg-slate-50 border border-slate-100 p-6 rounded-3xl">
+                @csrf
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Type of Document -->
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Type de pièce d'identité</label>
+                        <select name="identity_document_type" required class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-medium focus:ring-4 focus:ring-rdc-blue/10 focus:border-rdc-blue transition-all">
+                            <option value="" disabled selected>Sélectionnez un document</option>
+                            <option value="national_id" {{ old('identity_document_type') == 'national_id' ? 'selected' : '' }}>Carte Nationale d'Identité</option>
+                            <option value="passport" {{ old('identity_document_type') == 'passport' ? 'selected' : '' }}>Passeport</option>
+                            <option value="driving_license" {{ old('identity_document_type') == 'driving_license' ? 'selected' : '' }}>Permis de conduire</option>
+                        </select>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Fichier (Photo/Scan)</label>
+                        <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png" required class="w-full bg-white border border-slate-200 rounded-2xl p-3 text-xs font-medium text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rdc-blue/10 file:text-rdc-blue hover:file:bg-rdc-blue/20 transition-all">
+                        <span class="text-[10px] text-slate-400 mt-1 block">Formats acceptés : PDF, JPG, PNG (Max 5 Mo). Stockage privé et sécurisé.</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2">
+                    <i class="fas fa-upload"></i>
+                    Soumettre mon document pour vérification
+                </button>
+            </form>
+        @endif
+    </div>
+
+    <!-- Next Level Progress Card -->
     @if($nextLevel)
     <div class="relative bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm">
         <div class="flex items-center gap-4 mb-8">
@@ -78,5 +213,6 @@
         <p class="text-sm text-amber-800 font-medium leading-relaxed">Félicitations, vous avez atteint le niveau maximum sur ProConnect. Maintenez vos excellentes performances pour conserver ce statut.</p>
     </div>
     @endif
+
 </div>
 @endsection

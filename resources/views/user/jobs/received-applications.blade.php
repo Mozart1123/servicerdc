@@ -36,6 +36,28 @@
         @endforeach
     </div>
 
+    @if(!auth()->user()->isPremiumRecruiter())
+        @php
+            $hasLockedApps = $applications->contains(fn($a) => $a->is_premium_locked);
+        @endphp
+        @if($hasLockedApps)
+        <div class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-200 p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4" data-aos="fade-up">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-amber-500 text-white rounded-xl flex items-center justify-center text-lg shadow-md shadow-amber-500/20">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div>
+                    <h4 class="font-heading font-black text-slate-900 text-sm">Candidatures supplémentaires verrouillées</h4>
+                    <p class="text-xs text-slate-500 mt-0.5">Vous avez reçu plus de 10 candidatures. Passez à l'abonnement Premium pour déverrouiller et voir les détails des candidats supplémentaires.</p>
+                </div>
+            </div>
+            <a href="{{ route('user.subscription.index') }}" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition whitespace-nowrap uppercase tracking-wider">
+                Devenir Premium
+            </a>
+        </div>
+        @endif
+    @endif
+
     {{-- Filters --}}
     <form method="GET" action="{{ route('user.applications.received') }}" class="flex flex-col md:flex-row gap-4" data-aos="fade-up" data-aos-delay="100">
         <div class="relative flex-1">
@@ -94,9 +116,15 @@
                                 @endif
                                 <div>
                                     <div class="font-bold text-slate-900 text-sm">{{ $app->user->name }}</div>
-                                    <div class="text-[10px] text-rdc-blue font-bold hover:underline">
-                                        <a href="mailto:{{ $app->user->email }}">{{ $app->user->email }}</a>
-                                    </div>
+                                    @if($app->is_premium_locked)
+                                        <div class="text-[10px] text-red-400 font-bold uppercase tracking-tight">
+                                            <i class="fas fa-lock text-[8px] mr-1"></i> Réservé Premium
+                                        </div>
+                                    @else
+                                        <div class="text-[10px] text-rdc-blue font-bold hover:underline">
+                                            <a href="mailto:{{ $app->user->email }}">{{ $app->user->email }}</a>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </td>
@@ -105,10 +133,16 @@
                             <div class="text-[10px] text-slate-400 uppercase font-black tracking-tight mt-0.5">{{ $app->jobOffer->contract_type ?? '' }}</div>
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $sc['bg'] }} {{ $sc['text'] }} text-[10px] font-black rounded-full uppercase tracking-widest border {{ $sc['border'] }}">
-                                @if($app->status === 'pending')<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>@endif
-                                {{ $sc['label'] }}
-                            </span>
+                            @if($app->is_premium_locked)
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-500 border-red-100 text-[10px] font-black rounded-full uppercase tracking-widest border">
+                                    <i class="fas fa-lock text-[8px]"></i> Verrouillée
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $sc['bg'] }} {{ $sc['text'] }} text-[10px] font-black rounded-full uppercase tracking-widest border {{ $sc['border'] }}">
+                                    @if($app->status === 'pending')<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>@endif
+                                    {{ $sc['label'] }}
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-center">
                             <div class="text-xs font-bold text-slate-600">{{ $app->created_at->format('d/m/Y') }}</div>
@@ -116,50 +150,57 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-end gap-2 flex-wrap">
-                                {{-- Voir dossier --}}
-                                <button onclick="openCvModal({{ $app->id }})"
-                                    class="px-3 py-1.5 bg-slate-100 text-slate-600 text-[10px] font-black rounded-xl hover:bg-rdc-blue hover:text-white transition uppercase tracking-widest">
-                                    Dossier
-                                </button>
+                                @if($app->is_premium_locked)
+                                    <a href="{{ route('user.subscription.index') }}"
+                                       class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] font-black rounded-xl hover:shadow-md transition uppercase tracking-widest inline-flex items-center gap-1">
+                                        <i class="fas fa-lock text-[8px]"></i> Débloquer
+                                    </a>
+                                @else
+                                    {{-- Voir dossier --}}
+                                    <button onclick="openCvModal({{ $app->id }})"
+                                        class="px-3 py-1.5 bg-slate-100 text-slate-600 text-[10px] font-black rounded-xl hover:bg-rdc-blue hover:text-white transition uppercase tracking-widest">
+                                        Dossier
+                                    </button>
 
-                                {{-- Discuss when approved --}}
-                                @if(in_array($app->status, ['approved', 'accepted', 'interview', 'hired']))
-                                <a href="{{ route('user.messages.start.user', $app->user_id) }}"
-                                   class="px-3 py-1.5 bg-rdc-blue text-white text-[10px] font-black rounded-xl hover:bg-rdc-blue-dark transition uppercase tracking-widest inline-flex items-center gap-1">
-                                    <i class="fas fa-comments"></i> Discuter
-                                </a>
-                                @endif
+                                    {{-- Discuss when approved --}}
+                                    @if(in_array($app->status, ['approved', 'accepted', 'interview', 'hired']))
+                                    <a href="{{ route('user.messages.start.user', $app->user_id) }}"
+                                       class="px-3 py-1.5 bg-rdc-blue text-white text-[10px] font-black rounded-xl hover:bg-rdc-blue-dark transition uppercase tracking-widest inline-flex items-center gap-1">
+                                        <i class="fas fa-comments"></i> Discuter
+                                    </a>
+                                    @endif
 
-                                @if($app->status === 'pending')
-                                {{-- Approve --}}
-                                <form action="{{ route('user.applications.approve', $app->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition shadow-sm" title="Approuver">
-                                        <i class="fas fa-check text-xs"></i>
+                                    @if($app->status === 'pending')
+                                    {{-- Approve --}}
+                                    <form action="{{ route('user.applications.approve', $app->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition shadow-sm" title="Approuver">
+                                            <i class="fas fa-check text-xs"></i>
+                                        </button>
+                                    </form>
+                                    {{-- Interview --}}
+                                    <form action="{{ route('user.applications.interview', $app->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition shadow-sm" title="Inviter à un entretien">
+                                            <i class="fas fa-phone-alt text-xs"></i>
+                                        </button>
+                                    </form>
+                                    {{-- Reject — opens modal --}}
+                                    <button type="button"
+                                            onclick="openRejectModal({{ $app->id }}, '{{ addslashes($app->user->name) }}')"
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm" title="Refuser">
+                                        <i class="fas fa-times text-xs"></i>
                                     </button>
-                                </form>
-                                {{-- Interview --}}
-                                <form action="{{ route('user.applications.interview', $app->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition shadow-sm" title="Inviter à un entretien">
-                                        <i class="fas fa-phone-alt text-xs"></i>
-                                    </button>
-                                </form>
-                                {{-- Reject — opens modal --}}
-                                <button type="button"
-                                        onclick="openRejectModal({{ $app->id }}, '{{ addslashes($app->user->name) }}')"
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm" title="Refuser">
-                                    <i class="fas fa-times text-xs"></i>
-                                </button>
-                                @elseif($app->status === 'interview')
-                                {{-- Hire --}}
-                                <form action="{{ route('user.applications.hire', $app->id) }}" method="POST"
-                                      onsubmit="return confirm('Marquer comme embauché ?')">
-                                    @csrf
-                                    <button type="submit" class="px-3 py-1.5 bg-purple-50 text-purple-600 text-[10px] font-black rounded-xl hover:bg-purple-500 hover:text-white transition uppercase tracking-widest">
-                                        <i class="fas fa-trophy mr-1"></i> Embaucher
-                                    </button>
-                                </form>
+                                    @elseif($app->status === 'interview')
+                                    {{-- Hire --}}
+                                    <form action="{{ route('user.applications.hire', $app->id) }}" method="POST"
+                                          onsubmit="return confirm('Marquer comme embauché ?')">
+                                        @csrf
+                                        <button type="submit" class="px-3 py-1.5 bg-purple-50 text-purple-600 text-[10px] font-black rounded-xl hover:bg-purple-500 hover:text-white transition uppercase tracking-widest">
+                                            <i class="fas fa-trophy mr-1"></i> Embaucher
+                                        </button>
+                                    </form>
+                                    @endif
                                 @endif
                             </div>
                         </td>
@@ -281,7 +322,7 @@ function openCvModal(appId) {
 
             let fallbackCvHtml = '';
             if (!app.cv_attachment && cv && cv.cv_file) {
-                fallbackCvHtml = `<a href="/storage/${cv.cv_file}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 rounded-xl transition">
+                fallbackCvHtml = `<a href="/user/cv/${cv.id}/download" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 rounded-xl transition">
                                    <i class="fas fa-file-pdf"></i>
                                    <span>Ancien profil CV complet</span>
                                </a>`;
@@ -307,7 +348,7 @@ function openCvModal(appId) {
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fichier CV</p>
                     <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-50 text-sm">
                         ${app.cv_attachment 
-                            ? `<a href="/storage/${app.cv_attachment}" target="_blank" class="inline-flex items-center gap-2 text-rdc-blue font-bold hover:underline">
+                            ? `<a href="/user/job-applications/${app.id}/download-cv" target="_blank" class="inline-flex items-center gap-2 text-rdc-blue font-bold hover:underline">
                                    <i class="fas fa-file-download"></i>
                                    <span>Télécharger le CV</span>
                                </a>`

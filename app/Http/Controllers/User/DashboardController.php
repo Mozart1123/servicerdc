@@ -29,9 +29,13 @@ class DashboardController extends Controller
     /**
      * Display the user dashboard overview.
      */
-    public function index(): View
+    public function index()
     {
         $user = Auth::user();
+
+        if ($user->hasAdminAccess()) {
+            return redirect()->route($user->dashboard_route);
+        }
 
         // Base shared stats (all user types)
         $unreadMessages = 0;
@@ -617,7 +621,7 @@ class DashboardController extends Controller
             ->where(function ($q) {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
             })
-            ->whereHas('subscriptionPlan', fn($q) => $q->where('slug', 'premium'))
+            ->whereHas('subscriptionPlan', fn($q) => $q->whereIn('slug', ['pro', 'elite']))
             ->exists();
 
         $openDisputes = \App\Models\SupportTicket::where('user_id', $user->id)
@@ -640,15 +644,16 @@ class DashboardController extends Controller
             if ($platformRatio < 0.50) $missingText[] = "un taux de missions sur plateforme de 50%";
         } elseif ($level->level === \App\Models\ArtisanLevel::LEVEL_ACTIF) {
             $nextLevel = 'Vérifié';
-            // Verifie: 10+ missions, >=60% platform, avg rating >=4.0, premium
+            // Verifie: 10+ missions, >=60% platform, avg rating >=4.0, premium, identity approved
             $progress = min(100, ($level->total_missions / 10) * 100);
             if ($level->total_missions < 10) $missingText[] = (10 - $level->total_missions) . " mission(s)";
             if ($platformRatio < 0.60) $missingText[] = "un taux de missions sur plateforme de 60%";
             if ($level->average_rating < 4.0) $missingText[] = "une note moyenne d'au moins 4.0";
             if (!$hasPremium) $missingText[] = "un abonnement Premium actif";
+            if (!$level->isIdentityApproved() && !$level->isInGracePeriod()) $missingText[] = "la vérification validée de votre identité";
         } elseif ($level->level === \App\Models\ArtisanLevel::LEVEL_VERIFIE) {
             $nextLevel = 'Élite';
-            // Elite: 30+ missions, >=85% platform, avg rating >=4.5, 0 disputes, premium, age >= 180
+            // Elite: 30+ missions, >=85% platform, avg rating >=4.5, 0 disputes, premium, age >= 180, identity approved
             $progress = min(100, ($level->total_missions / 30) * 100);
             if ($level->total_missions < 30) $missingText[] = (30 - $level->total_missions) . " mission(s)";
             if ($platformRatio < 0.85) $missingText[] = "un taux de missions sur plateforme de 85%";
@@ -656,6 +661,7 @@ class DashboardController extends Controller
             if ($openDisputes > 0) $missingText[] = "la résolution de vos litiges ouverts";
             if (!$hasPremium) $missingText[] = "un abonnement Premium actif";
             if ($accountAgeDays < 180) $missingText[] = (180 - $accountAgeDays) . " jours d'ancienneté";
+            if (!$level->isIdentityApproved() && !$level->isInGracePeriod()) $missingText[] = "la vérification validée de votre identité";
         }
 
         $missingMessage = count($missingText) > 0 ? "Il vous manque : " . implode(', ', $missingText) . "." : "";

@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -41,9 +43,21 @@ class AuthenticatedSessionController extends Controller
             'password.required' => 'Le mot de passe est requis.',
         ]);
 
+        $throttleKey = Str::transliterate(Str::lower($credentials['email']) . '|' . $request->ip());
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return back()->withErrors([
+                'email' => "Trop de tentatives de connexion. Veuillez réessayer dans {$seconds} secondes.",
+            ])->onlyInput('email');
+        }
+
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            RateLimiter::clear($throttleKey);
+
             $user = Auth::user();
 
             if ($user->status === User::STATUS_SUSPENDED) {
@@ -61,6 +75,8 @@ class AuthenticatedSessionController extends Controller
             return $this->redirectToDashboard($user);
         }
 
+        RateLimiter::hit($throttleKey, 60);
+
         return back()->withErrors([
             'email' => 'Ces identifiants ne correspondent pas à nos enregistrements.',
         ])->onlyInput('email');
@@ -76,7 +92,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home')
+        return redirect()->route('login')
             ->with('status', 'Vous avez été déconnecté avec succès.');
     }
 

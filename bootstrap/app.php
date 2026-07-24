@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,13 +19,19 @@ return Application::configure(basePath: dirname(__DIR__))
             '/login',
         ]);
 
+        // Append security headers to every HTTP response (web + API)
+        $middleware->append(SecurityHeaders::class);
+
         // Register custom middleware aliases
         $middleware->alias([
             'role'                     => \App\Http\Middleware\RoleMiddleware::class,
             'api.role'                 => \App\Http\Middleware\ApiRoleMiddleware::class,
             'prevent.client.dashboard' => \App\Http\Middleware\PreventClientDashboardAccess::class,
+            'ensure.user_type'         => \App\Http\Middleware\EnsureUserTypeIsSelected::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            return redirect()->route('login')->with('error', 'Votre session a expiré, veuillez vous reconnecter.');
+        });
     })->create();

@@ -78,22 +78,28 @@ Route::view('/sitemap', 'public.static.sitemap')->name('sitemap');
 // Guest Routes
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store']);
     Route::get('/forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class, 'store'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetController::class, 'store'])->name('password.email')->middleware('throttle:5,1');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 
-    // Social Authentication
-    Route::get('/auth/{provider}', [App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToProvider'])->name('social.redirect');
-    Route::get('/auth/{provider}/callback', [App\Http\Controllers\Auth\SocialAuthController::class, 'handleProviderCallback'])->name('social.callback');
+    // Social Authentication — TEMPORAIREMENT DÉSACTIVÉ (réactiver lors de la prochaine mise à jour)
+    // Route::get('/auth/{provider}', [App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToProvider'])->name('social.redirect');
+    // Route::get('/auth/{provider}/callback', [App\Http\Controllers\Auth\SocialAuthController::class, 'handleProviderCallback'])->name('social.callback');
 });
 
-// Auth Routes
+// Auth & Logout Routes
 Route::middleware('auth')->group(function (): void {
-    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::match(['get', 'post'], '/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    // Sélection du type de profil (connexion sociale) — TEMPORAIREMENT DÉSACTIVÉ
+    // Route::get('/auth/select-user-type', [App\Http\Controllers\Auth\SocialAuthController::class, 'showSelectUserType'])->name('auth.select-user-type');
+    // Route::post('/auth/select-user-type', [App\Http\Controllers\Auth\SocialAuthController::class, 'storeUserType'])->name('auth.select-user-type.store');
+});
+
+Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 });
 
@@ -170,6 +176,8 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::put('/cv', [\App\Http\Controllers\User\CvController::class, 'update'])->name('cv.update');
         Route::delete('/cv', [\App\Http\Controllers\User\CvController::class, 'destroy'])->name('cv.destroy');
         Route::post('/cv/file-upload', [\App\Http\Controllers\User\CvController::class, 'fileUpload'])->name('cv.file.upload');
+        Route::get('/cv/{cv}/download', [\App\Http\Controllers\User\CvController::class, 'download'])->name('cv.download');
+        Route::get('/job-applications/{id}/download-cv', [UserJobController::class, 'downloadApplicationCv'])->name('applications.download-cv');
 
         Route::middleware([PreventClientDashboardAccess::class])->group(function (): void {
             // Jobs — recruiter publishes offers
@@ -229,6 +237,10 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         // Artisan — Gains & Retraits
         Route::get('/gains', [\App\Http\Controllers\User\PayoutController::class, 'index'])->name('gains.index');
         Route::post('/gains/request', [\App\Http\Controllers\User\PayoutController::class, 'store'])->name('gains.request');
+
+        // Artisan — Identity Verification
+        Route::post('/identity-verification', [\App\Http\Controllers\User\ArtisanIdentityVerificationController::class, 'store'])->name('identity-verification.store');
+        Route::get('/identity-verification/download', [\App\Http\Controllers\User\ArtisanIdentityVerificationController::class, 'download'])->name('identity-verification.download');
 
         // Placeholder Routes for Premium UX
         Route::get('/favorites', [UserDashboardController::class, 'favorites'])->name('favorites');
@@ -304,6 +316,14 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::get('/documents', [AdminUserController::class, 'documents'])->name('docs');
             Route::post('/documents/{id}/verify', [AdminUserController::class, 'verifyDocument'])->name('docs.verify');
             Route::post('/documents/{id}/reject', [AdminUserController::class, 'rejectDocument'])->name('docs.reject');
+        });
+
+        // Admin — Artisan Identity Verifications
+        Route::prefix('verifications')->name('verifications.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'index'])->name('index');
+            Route::get('/{id}/download', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'download'])->name('download');
+            Route::post('/{id}/approve', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'approve'])->name('approve');
+            Route::post('/{id}/reject', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'reject'])->name('reject');
         });
 
         Route::prefix('moderation')->name('moderation.')->group(function () {
@@ -433,8 +453,10 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::prefix('users')->name('users.')->group(function (): void {
             Route::get('/', [SuperAdminUserController::class, 'index'])->name('index');
             Route::get('/create', [SuperAdminUserController::class, 'create'])->name('create');
+            Route::post('/', [SuperAdminUserController::class, 'store'])->name('store');
             Route::get('/{id}', [SuperAdminUserController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [SuperAdminUserController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [SuperAdminUserController::class, 'update'])->name('update');
             Route::delete('/{id}', [SuperAdminUserController::class, 'destroy'])->name('destroy');
             Route::post('/{id}/promote', [SuperAdminDashboardController::class, 'promoteUser'])->name('promote');
             Route::post('/{id}/toggle-status', [SuperAdminUserController::class, 'toggleStatus'])->name('toggle-status');

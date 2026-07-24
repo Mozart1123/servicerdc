@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cv;
+use App\Models\JobApplication;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -118,16 +119,18 @@ class CvController extends Controller
 
         if ($request->hasFile('cv_file')) {
             if ($cv->cv_file) {
+                Storage::disk('local')->delete($cv->cv_file);
                 Storage::disk('public')->delete($cv->cv_file);
             }
-            $cv->cv_file = $request->file('cv_file')->store('cv_files', 'public');
+            $cv->cv_file = $request->file('cv_file')->store('cv_files', 'local');
         }
 
         if ($request->hasFile('diploma_file')) {
             if ($cv->diploma_file) {
+                Storage::disk('local')->delete($cv->diploma_file);
                 Storage::disk('public')->delete($cv->diploma_file);
             }
-            $cv->diploma_file = $request->file('diploma_file')->store('cv_diplomas', 'public');
+            $cv->diploma_file = $request->file('diploma_file')->store('cv_diplomas', 'local');
         }
 
         $cv->save();
@@ -276,10 +279,11 @@ class CvController extends Controller
         $cv   = $user->cv ?? new Cv(['user_id' => $user->id]);
 
         if ($cv->cv_file) {
+            Storage::disk('local')->delete($cv->cv_file);
             Storage::disk('public')->delete($cv->cv_file);
         }
 
-        $cv->cv_file = $request->file('cv_file')->store('cv_files', 'public');
+        $cv->cv_file = $request->file('cv_file')->store('cv_files', 'local');
         $cv->full_name    = $cv->full_name ?? $user->name;
         $cv->email        = $user->email;
         $cv->phone_number = $cv->phone_number ?? $user->phone;
@@ -294,6 +298,42 @@ class CvController extends Controller
     }
 
     /**
+     * Download the CV file securely.
+     */
+    public function download(Cv $cv)
+    {
+        $user = Auth::user();
+
+        $isOwner = $cv->user_id === $user->id;
+        $isAdmin = in_array($user->role, ['admin', 'super_admin']);
+        $isRecruiter = JobApplication::where('user_id', $cv->user_id)
+            ->whereHas('jobOffer', function ($query) use ($user) {
+                $query->where('employer_id', $user->id)
+                      ->orWhere('user_id', $user->id);
+            })->exists();
+
+        if (!$isOwner && !$isAdmin && !$isRecruiter) {
+            abort(403, 'Accès non autorisé à ce document.');
+        }
+
+        $path = $cv->cv_file ?? $cv->cv_file_path;
+
+        if (!$path) {
+            abort(404, 'Fichier CV introuvable.');
+        }
+
+        if (Storage::disk('local')->exists($path)) {
+            return Storage::disk('local')->response($path);
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->response($path);
+        }
+
+        abort(404, 'Fichier CV introuvable sur le serveur.');
+    }
+
+    /**
      * Delete the user's CV (record and file).
      */
     public function destroy(): RedirectResponse
@@ -301,9 +341,11 @@ class CvController extends Controller
         $user = Auth::user();
         if ($user->cv) {
             if ($user->cv->cv_file) {
+                Storage::disk('local')->delete($user->cv->cv_file);
                 Storage::disk('public')->delete($user->cv->cv_file);
             }
             if ($user->cv->diploma_file) {
+                Storage::disk('local')->delete($user->cv->diploma_file);
                 Storage::disk('public')->delete($user->cv->diploma_file);
             }
             $user->cv->delete();

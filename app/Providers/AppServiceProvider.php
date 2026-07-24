@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Models\Review;
 use App\Observers\ReviewObserver;
 use App\View\Composers\ClientLayoutComposer;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS for all generated URLs in production only
+        // (avoids breaking local dev which runs on plain HTTP)
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         // Share layout-selection variables with all user.* views (Client vs Dashboard)
         View::composer('user.*', ClientLayoutComposer::class);
 

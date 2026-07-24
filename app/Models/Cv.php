@@ -77,6 +77,6 @@ class Cv extends Model
     public function getCvFileUrlAttribute(): ?string
     {
         $path = $this->cv_file ?? $this->cv_file_path;
-        return $path ? Storage::url($path) : null;
+        return $path && $this->id ? route('user.cv.download', $this->id) : null;
     }
 }

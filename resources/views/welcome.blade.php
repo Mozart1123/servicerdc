@@ -551,9 +551,9 @@
                                     </div>
                                 @else
                                     @if(auth()->user()->role === 'admin' || auth()->user()->role === 'super_admin')
-                                        <a href="{{ route('admin.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-gray-800 to-gray-900 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center space-x-2">
+                                        <a href="{{ route(auth()->user()->dashboard_route) }}" class="px-5 py-2.5 bg-gradient-to-r from-gray-800 to-gray-900 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center space-x-2">
                                             <i class="fas fa-shield-alt"></i>
-                                            <span>Dashboard Admin</span>
+                                            <span>Dashboard {{ auth()->user()->role === 'super_admin' ? 'SuperAdmin' : 'Admin' }}</span>
                                         </a>
                                     @else
                                         <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center space-x-2">

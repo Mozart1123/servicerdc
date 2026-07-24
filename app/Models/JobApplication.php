@@ -133,6 +133,7 @@ class JobApplication extends Model
         // Check if this application is within the first 10 for this job
         $top10Ids = static::where('job_offer_id', $this->job_offer_id)
                           ->orderBy('created_at', 'asc')
+                          ->orderBy('id', 'asc')
                           ->limit(10)
                           ->pluck('id');
                           

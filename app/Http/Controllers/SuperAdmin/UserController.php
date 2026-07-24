@@ -45,6 +45,33 @@ class UserController extends Controller
     }
 
     /**
+     * Store a newly created user.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', 'in:user,admin,super_admin'],
+            'user_type' => ['required', 'in:client,artisan,job_seeker,recruiter'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => $request->role,
+            'user_type' => $request->user_type,
+            'phone' => $request->phone,
+            'status' => 'active',
+        ]);
+
+        return redirect()->route('super-admin.users.index')->with('success', 'User created successfully.');
+    }
+
+    /**
      * Show a single user.
      */
     public function show($id)
@@ -60,6 +87,39 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         return view('super-admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update the specified user.
+     */
+    public function update(Request $request, $id): RedirectResponse
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8'],
+            'role' => ['required', 'in:user,admin,super_admin'],
+            'user_type' => ['required', 'in:client,artisan,job_seeker,recruiter'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+            'user_type' => $request->user_type,
+            'phone' => $request->phone,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('super-admin.users.index')->with('success', 'User updated successfully.');
     }
 
     /**

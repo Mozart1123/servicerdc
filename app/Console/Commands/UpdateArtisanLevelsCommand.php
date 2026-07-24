@@ -26,6 +26,8 @@ class UpdateArtisanLevelsCommand extends Command
         $updated = 0;
 
         foreach ($artisans as $artisan) {
+            $existing = ArtisanLevel::firstOrNew(['user_id' => $artisan->id]);
+
             // ── 1. Calcul des missions ────────────────────────────────────────────
             $completedMissions       = $artisan->missionsAsArtisan()->where('status', 'completed');
             $totalMissions           = $completedMissions->count();
@@ -43,7 +45,7 @@ class UpdateArtisanLevelsCommand extends Command
                 ->where(function ($q) {
                     $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
                 })
-                ->whereHas('subscriptionPlan', fn($q) => $q->where('slug', 'premium'))
+                ->whereHas('subscriptionPlan', fn($q) => $q->whereIn('slug', ['pro', 'elite']))
                 ->exists();
 
             // ── 4. Litiges ouverts non résolus ───────────────────────────────────
@@ -55,18 +57,20 @@ class UpdateArtisanLevelsCommand extends Command
             // ── 5. Ancienneté (30+ jours pour Élite) ─────────────────────────────
             $accountAgeDays = $artisan->created_at->diffInDays(now());
 
-            // ── 6. Calcul du niveau selon les seuils ─────────────────────────────
+            // ── 6. Statut de vérification d'identité & période de grâce ─────────
+            $isIdentityVerified = $existing->isIdentityApproved() || $existing->isInGracePeriod();
+
+            // ── 7. Calcul du niveau selon les seuils ─────────────────────────────
             $level = $this->computeLevel(
                 $totalMissions,
                 $platformRatio,
                 $avgRating,
                 $hasPremium,
                 $openDisputes,
-                $accountAgeDays
+                $accountAgeDays,
+                $isIdentityVerified
             );
 
-            // ── 7. Upsert dans artisan_levels ─────────────────────────────────────
-            $existing = ArtisanLevel::firstOrNew(['user_id' => $artisan->id]);
             $levelChanged = $existing->level !== $level;
 
             $existing->fill([
@@ -93,9 +97,9 @@ class UpdateArtisanLevelsCommand extends Command
      *
      * Nouveau  → par défaut
      * Actif    → 5+ missions dont ≥50% via plateforme
-     * Vérifié  → 10+ missions, ≥60% platform, note ≥4.0, Premium actif
+     * Vérifié  → 10+ missions, ≥60% platform, note ≥4.0, Premium actif, Identité Vérifiée (ou période de grâce)
      * Élite    → 30+ missions, ≥85% platform, note ≥4.5, aucun litige ouvert,
-     *            Premium actif, compte ≥180 jours
+     *            Premium actif, compte ≥180 jours, Identité Vérifiée (ou période de grâce)
      */
     private function computeLevel(
         int $totalMissions,
@@ -103,10 +107,12 @@ class UpdateArtisanLevelsCommand extends Command
         float $avgRating,
         bool $hasPremium,
         int $openDisputes,
-        int $accountAgeDays
+        int $accountAgeDays,
+        bool $isIdentityVerified
     ): string {
-        // Élite
+        // Élite (exige impérativement une identité vérifiée ou une période de grâce active)
         if (
+            $isIdentityVerified &&
             $totalMissions >= 30 &&
             $platformRatio >= 0.85 &&
             $avgRating >= 4.5 &&
@@ -117,8 +123,9 @@ class UpdateArtisanLevelsCommand extends Command
             return ArtisanLevel::LEVEL_ELITE;
         }
 
-        // Vérifié
+        // Vérifié (exige impérativement une identité vérifiée ou une période de grâce active)
         if (
+            $isIdentityVerified &&
             $totalMissions >= 10 &&
             $platformRatio >= 0.60 &&
             $avgRating >= 4.0 &&

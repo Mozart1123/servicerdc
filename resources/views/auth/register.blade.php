@@ -16,6 +16,13 @@
     </div>
 
     <!-- Error Messages -->
+    @if (session('error'))
+        <div class="mb-6 p-4 bg-red-50 border border-rdc-red/20 rounded-xl flex items-start animate-fade-in shadow-sm w-full" role="alert">
+            <i class="fas fa-exclamation-circle text-rdc-red mt-0.5 mr-3 flex-shrink-0"></i>
+            <span class="text-rdc-red text-xs font-medium">{{ session('error') }}</span>
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="mb-6 p-4 bg-red-50 border border-rdc-red/20 rounded-xl flex items-start animate-fade-in shadow-sm w-full" role="alert">
             <i class="fas fa-exclamation-circle text-rdc-red mt-0.5 mr-3 flex-shrink-0"></i>
@@ -145,7 +152,7 @@
             <div class="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
         </button>
 
-        <!-- Divider -->
+        {{-- SOCIAL LOGIN TEMPORAIREMENT DÉSACTIVÉ — réactiver lors de la prochaine mise à jour
         <div class="relative py-2">
             <div class="absolute inset-0 flex items-center">
                 <div class="w-full border-t border-slate-200"></div>
@@ -155,7 +162,6 @@
             </div>
         </div>
 
-        <!-- Social Login -->
         <div class="grid grid-cols-2 gap-3">
             <a href="{{ url('auth/google') }}" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
@@ -166,6 +172,7 @@
                 <span class="text-xs font-semibold text-slate-600 group-hover:text-slate-900">Facebook</span>
             </a>
         </div>
+        --}}
     </form>
 
     <div class="mt-6 text-center text-[13px] sm:text-sm text-slate-500">

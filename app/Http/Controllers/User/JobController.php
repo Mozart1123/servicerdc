@@ -73,7 +73,7 @@ class JobController extends Controller
             'message'       => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $cvPath = $request->file('cv_attachment')->store('job_applications/cvs', 'public');
+        $cvPath = $request->file('cv_attachment')->store('job_applications/cvs', 'local');
 
         $application = JobApplication::create([
             'job_offer_id'    => $job->id,
@@ -410,6 +410,26 @@ class JobController extends Controller
         })->with('user', 'jobOffer', 'cv');
         
         $applications = $query->latest()->paginate(15);
+
+        // Apply Premium locking mask
+        $applications->getCollection()->transform(function (JobApplication $app) {
+            if ($app->is_premium_locked) {
+                if ($app->relationLoaded('user')) {
+                    $maskedUser = clone $app->user;
+                    $maskedUser->name = 'Candidat';
+                    $maskedUser->email = '***@***.***';
+                    $maskedUser->phone = '**********';
+                    $maskedUser->profile_photo = null;
+                    $app->setRelation('user', $maskedUser);
+                }
+                if ($app->relationLoaded('cv')) {
+                    $app->setRelation('cv', null);
+                }
+                $app->cv_attachment = null;
+            }
+            return $app;
+        });
+
         $stats = [
             'total'     => $query->count(),
             'pending'   => $query->where('status', 'pending')->count(),
@@ -424,6 +444,48 @@ class JobController extends Controller
     public function applicationDetails(int $id): \Illuminate\Http\JsonResponse
     {
         $application = JobApplication::with(['user.cv', 'jobOffer'])->findOrFail($id);
+
+        // Authorization: ensure application belongs to recruiter's job
+        if ($application->jobOffer?->employer_id !== auth()->id() && $application->jobOffer?->user_id !== auth()->id()) {
+            abort(403, 'Vous n\'êtes pas autorisé à consulter cette candidature.');
+        }
+
+        if ($application->is_premium_locked) {
+            abort(403, 'Cette candidature est verrouillée. Passez au plan Premium pour la consulter.');
+        }
+
         return response()->json(['success' => true, 'application' => $application]);
+    }
+
+    public function downloadApplicationCv(int $id)
+    {
+        $application = JobApplication::with('jobOffer')->findOrFail($id);
+        $user = Auth::user();
+
+        $isApplicant = $application->user_id === $user->id;
+        $isAdmin = in_array($user->role, ['admin', 'super_admin']);
+        $isEmployer = $application->jobOffer && (
+            $application->jobOffer->employer_id === $user->id ||
+            $application->jobOffer->user_id === $user->id
+        );
+
+        if (!$isApplicant && !$isAdmin && !$isEmployer) {
+            abort(403, 'Accès non autorisé à ce document.');
+        }
+
+        $path = $application->cv_attachment;
+        if (!$path) {
+            abort(404, 'Aucune pièce jointe trouvée pour cette candidature.');
+        }
+
+        if (Storage::disk('local')->exists($path)) {
+            return Storage::disk('local')->response($path);
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->response($path);
+        }
+
+        abort(404, 'Fichier introuvable sur le serveur.');
     }
 }

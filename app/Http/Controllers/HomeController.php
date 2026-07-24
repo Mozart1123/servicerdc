@@ -44,7 +44,11 @@ class HomeController extends Controller
 
     public function dashboard()
     {
-        return redirect()->route(auth()->user()->dashboard_route);
+        $user = auth()->user();
+        if ($user && $user->user_type === \App\Models\User::TYPE_CLIENT && $user->role === \App\Models\User::ROLE_USER) {
+            return redirect()->route('home');
+        }
+        return redirect()->route($user->dashboard_route);
     }
 
     /**
