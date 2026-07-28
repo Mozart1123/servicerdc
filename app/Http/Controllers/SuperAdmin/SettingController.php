@@ -62,6 +62,8 @@ class SettingController extends Controller
             }
         }
 
+        \Illuminate\Support\Facades\Cache::forget('maintenance_mode');
+
         $newSettings = Setting::all()->pluck('value', 'key')->toArray();
 
         $this->auditLog('updated', 'Updated System Settings', null, [

@@ -13,6 +13,7 @@ use App\Models\Organization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Super Admin Dashboard Controller
@@ -132,5 +133,42 @@ class DashboardController extends Controller
 
         $label = $newStatus === 'active' ? 'activated' : 'suspended';
         return redirect()->back()->with('success', "{$user->name} has been {$label}.");
+    }
+
+    /**
+     * Show the profile edit page for Super Admin.
+     */
+    public function profile(): View
+    {
+        $user = auth()->user();
+        return view('super-admin.profile', compact('user'));
+    }
+
+    /**
+     * Update the profile of the logged-in Super Admin.
+     */
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'current_password' => ['nullable', 'required_with:password', 'current_password'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ], [
+            'current_password.current_password' => 'Le mot de passe actuel est incorrect.',
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->back()->with('success', 'Votre profil a été mis à jour avec succès.');
     }
 }

@@ -1306,8 +1306,8 @@
                             <div style="font-size:11px;color:var(--text-muted);">{{ auth()->user()->email }}</div>
                         </div>
                     </div>
-                    <a href="#" class="action-item"><i class="fas fa-user"></i> Profile</a>
-                    <a href="#" class="action-item"><i class="fas fa-gear"></i> Settings</a>
+                    <a href="{{ route('super-admin.profile.edit') }}" class="action-item"><i class="fas fa-user"></i> Profile</a>
+                    <a href="{{ route('super-admin.system.settings.index') }}" class="action-item"><i class="fas fa-gear"></i> Settings</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="action-item danger"

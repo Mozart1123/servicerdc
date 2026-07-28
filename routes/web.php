@@ -449,6 +449,9 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::post('/roles/{id}/update', [SuperAdminUserController::class, 'updateRole'])->name('roles.update');
         Route::get('/sessions', [SuperAdminUserController::class, 'sessions'])->name('sessions');
 
+        Route::get('/profile', [SuperAdminDashboardController::class, 'profile'])->name('profile.edit');
+        Route::put('/profile', [SuperAdminDashboardController::class, 'updateProfile'])->name('profile.update');
+
         // Admin Hierarchy
         Route::prefix('users')->name('users.')->group(function (): void {
             Route::get('/', [SuperAdminUserController::class, 'index'])->name('index');
