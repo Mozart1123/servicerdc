@@ -505,71 +505,60 @@
                                     </div>
                                 </div>
 
-                                @if(auth()->user()->user_type === 'client' || auth()->user()->role === 'user')
-                                    <!-- Client Dropdown -->
-                                    <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-                                        <button @click="open = !open" class="flex items-center gap-2 focus:outline-none py-2">
-                                            <img src="{{ auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}" class="w-10 h-10 rounded-full border-2 border-rdc-blue object-cover">
-                                            <span class="font-bold text-gray-700 hidden sm:block">{{ auth()->user()->name }}</span>
-                                            <i class="fas fa-chevron-down text-xs text-gray-400 hidden sm:block transition-transform" :class="{'rotate-180': open}"></i>
-                                        </button>
-                                        
-                                        <div x-show="open" style="display: none;"
-                                             x-transition:enter="transition ease-out duration-200"
-                                             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                             x-transition:leave="transition ease-in duration-75"
-                                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-                                             class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 origin-top-right">
-                                            <div class="p-2 space-y-1">
-                                                <div class="px-4 py-2 border-b border-gray-100 mb-2">
-                                                    <p class="text-sm font-bold text-gray-900">{{ auth()->user()->name }}</p>
-                                                    <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
-                                                </div>
-                                                <a href="{{ route('user.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                {{-- Dropdown Menu (adapté au rôle réel) --}}
+                                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                                    <button @click="open = !open" class="flex items-center gap-2 focus:outline-none py-2">
+                                        <img src="{{ auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}" class="w-10 h-10 rounded-full border-2 border-rdc-blue object-cover">
+                                        <span class="font-bold text-gray-700 hidden sm:block">{{ auth()->user()->name }}</span>
+                                        <i class="fas fa-chevron-down text-xs text-gray-400 hidden sm:block transition-transform" :class="{'rotate-180': open}"></i>
+                                    </button>
+
+                                    <div x-show="open" style="display: none;"
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                         x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                         class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 origin-top-right">
+                                        <div class="p-2 space-y-1">
+                                            {{-- En-tête nom/email --}}
+                                            <div class="px-4 py-2 border-b border-gray-100 mb-2">
+                                                <p class="text-sm font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                                                <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                                            </div>
+
+                                            {{-- Tableau de bord : dynamique selon le rôle --}}
+                                            <a href="{{ route(auth()->user()->dashboard_route) }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                <i class="fas fa-gauge w-5 text-center"></i> Tableau de bord
+                                            </a>
+
+                                            {{-- Liens client/artisan/recruiter : uniquement pour role === 'user' --}}
+                                            @if(auth()->user()->role === 'user')
+                                                <a href="{{ route('user.profile') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
                                                     <i class="fas fa-user w-5 text-center"></i> Mon profil
                                                 </a>
-                                                <a href="{{ route('user.applications.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                <a href="{{ route('user.applications.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
                                                     <i class="fas fa-file-alt w-5 text-center"></i> Mes candidatures
                                                 </a>
-                                                <a href="{{ route('user.service-requests.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                <a href="{{ route('user.service-requests.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
                                                     <i class="fas fa-clipboard-list w-5 text-center"></i> Mes demandes
                                                 </a>
-                                                <a href="{{ route('user.messages.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                <a href="{{ route('user.messages.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
                                                     <i class="fas fa-envelope w-5 text-center"></i> Messages
                                                 </a>
-                                                <div class="border-t border-gray-100 my-1"></div>
-                                                <form method="POST" action="{{ route('logout') }}" class="m-0">
-                                                    @csrf
-                                                    <button type="submit" class="w-full flex items-center px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                                        <i class="fas fa-sign-out-alt w-5 text-center"></i> Déconnexion
-                                                    </button>
-                                                </form>
-                                            </div>
+                                            @endif
+
+                                            <div class="border-t border-gray-100 my-1"></div>
+                                            <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                                @csrf
+                                                <button type="submit" class="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                                    <i class="fas fa-sign-out-alt w-5 text-center"></i> Déconnexion
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
-                                @else
-                                    @if(auth()->user()->role === 'admin' || auth()->user()->role === 'super_admin')
-                                        <a href="{{ route(auth()->user()->dashboard_route) }}" class="px-5 py-2.5 bg-gradient-to-r from-gray-800 to-gray-900 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center space-x-2">
-                                            <i class="fas fa-shield-alt"></i>
-                                            <span>Dashboard {{ auth()->user()->role === 'super_admin' ? 'SuperAdmin' : 'Admin' }}</span>
-                                        </a>
-                                    @else
-                                        <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 flex items-center space-x-2">
-                                            <i class="fas fa-th-large"></i>
-                                            <span>Dashboard</span>
-                                        </a>
-                                    @endif
-
-                                    <!-- Logout -->
-                                    <form method="POST" action="{{ route('logout') }}" class="m-0">
-                                        @csrf
-                                        <button type="submit" class="p-2.5 text-gray-500 hover:text-rdc-red transition-colors rounded-lg border border-gray-200 hover:border-rdc-red/30" aria-label="Déconnexion">
-                                            <i class="fas fa-sign-out-alt text-lg"></i>
-                                        </button>
-                                    </form>
-                                @endif
+                                </div>
                             </div>
                         @endauth
 

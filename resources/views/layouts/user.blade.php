@@ -7,6 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', 'Tableau de bord') | ProConnect</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
 
     <!-- Vite compiled CSS + JS (Tailwind v4) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

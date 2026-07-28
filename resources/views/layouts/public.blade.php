@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'ProConnect') | Plateforme de services & emplois RDC</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
     <meta name="description" content="@yield('meta_description', 'Trouvez des artisans qualifiés et des offres d\'emploi en République Démocratique du Congo.')">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -48,80 +50,76 @@
                 {{-- Auth Buttons --}}
                 <div class="flex items-center gap-3">
                     @auth
-                        @if(auth()->user()->user_type === 'client' || auth()->user()->role === 'user')
-                            {{-- Notification Bell (Client only) --}}
-                            @php
-                                $pubUnreadCount = \App\Models\Notification::where('user_id', auth()->id())
-                                    ->where('is_read', false)->count();
-                            @endphp
-                            <a href="{{ route('user.notifications.index') }}"
-                               class="relative p-2 text-slate-400 hover:text-[#29B6D1] transition-colors rounded-lg hover:bg-blue-50"
-                               title="Notifications">
-                                <i class="fas fa-bell text-lg"></i>
-                                @if($pubUnreadCount > 0)
-                                    <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animate-pulse">
-                                        {{ $pubUnreadCount > 9 ? '9+' : $pubUnreadCount }}
-                                    </span>
-                                @endif
-                            </a>
+                        {{-- Cloche de notifications (tous les utilisateurs connectés) --}}
+                        @php
+                            $pubUnreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                                ->where('is_read', false)->count();
+                        @endphp
+                        <a href="{{ route('user.notifications.index') }}"
+                           class="relative p-2 text-slate-400 hover:text-[#29B6D1] transition-colors rounded-lg hover:bg-blue-50"
+                           title="Notifications">
+                            <i class="fas fa-bell text-lg"></i>
+                            @if($pubUnreadCount > 0)
+                                <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white animate-pulse">
+                                    {{ $pubUnreadCount > 9 ? '9+' : $pubUnreadCount }}
+                                </span>
+                            @endif
+                        </a>
 
-                            {{-- Client Dropdown Menu --}}
-                            <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                        {{-- Dropdown Menu (adapté au rôle réel) --}}
+                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                            <button @click="open = !open" class="flex items-center gap-2 focus:outline-none py-2">
+                                <img src="{{ auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}" class="w-10 h-10 rounded-full border-2 border-[#29B6D1] object-cover">
+                                <span class="font-bold text-slate-700 hidden sm:block">{{ auth()->user()->name }}</span>
+                                <i class="fas fa-chevron-down text-xs text-slate-400 hidden sm:block transition-transform" :class="{'rotate-180': open}"></i>
+                            </button>
 
-                                <button @click="open = !open" class="flex items-center gap-2 focus:outline-none py-2">
-                                    <img src="{{ auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}" class="w-10 h-10 rounded-full border-2 border-[#29B6D1] object-cover">
-                                    <span class="font-bold text-slate-700 hidden sm:block">{{ auth()->user()->name }}</span>
-                                    <i class="fas fa-chevron-down text-xs text-slate-400 hidden sm:block transition-transform" :class="{'rotate-180': open}"></i>
-                                </button>
-                                
-                                <div x-show="open" style="display: none;"
-                                     x-transition:enter="transition ease-out duration-200"
-                                     x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                     x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-                                     class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 origin-top-right">
-                                    <div class="p-2 space-y-1">
-                                        <div class="px-4 py-2 border-b border-slate-100 mb-2">
-                                            <p class="text-sm font-bold text-slate-800">{{ auth()->user()->name }}</p>
-                                            <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
-                                        </div>
-                                        <a href="{{ route('user.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
+                            <div x-show="open" style="display: none;"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                 class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 origin-top-right">
+                                <div class="p-2 space-y-1">
+                                    {{-- En-tête nom/email --}}
+                                    <div class="px-4 py-2 border-b border-slate-100 mb-2">
+                                        <p class="text-sm font-bold text-slate-800">{{ auth()->user()->name }}</p>
+                                        <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
+                                    </div>
+
+                                    {{-- Tableau de bord : dynamique selon le rôle --}}
+                                    <a href="{{ route(auth()->user()->dashboard_route) }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
+                                        <i class="fas fa-gauge w-5 text-center"></i> Tableau de bord
+                                    </a>
+
+                                    {{-- Liens client/artisan/recruiter : uniquement pour role === 'user' --}}
+                                    @if(auth()->user()->role === 'user')
+                                        <a href="{{ route('user.profile') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
                                             <i class="fas fa-user w-5 text-center"></i> Mon profil
                                         </a>
-                                        <a href="{{ route('user.applications.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
+                                        <a href="{{ route('user.applications.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
                                             <i class="fas fa-file-alt w-5 text-center"></i> Mes candidatures
                                         </a>
-                                        <a href="{{ route('user.service-requests.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
+                                        <a href="{{ route('user.service-requests.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
                                             <i class="fas fa-clipboard-list w-5 text-center"></i> Mes demandes
                                         </a>
-                                        <a href="{{ route('user.messages.index') }}" class="flex items-center px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
+                                        <a href="{{ route('user.messages.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
                                             <i class="fas fa-envelope w-5 text-center"></i> Messages
                                         </a>
-                                        <div class="border-t border-slate-100 my-1"></div>
-                                        <form method="POST" action="{{ route('logout') }}" class="m-0">
-                                            @csrf
-                                            <button type="submit" class="w-full flex items-center px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                                <i class="fas fa-sign-out-alt w-5 text-center"></i> Déconnexion
-                                            </button>
-                                        </form>
-                                    </div>
+                                    @endif
+
+                                    <div class="border-t border-slate-100 my-1"></div>
+                                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                        @csrf
+                                        <button type="submit" class="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                            <i class="fas fa-sign-out-alt w-5 text-center"></i> Déconnexion
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
-                        @else
-                            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'super_admin')
-                                <a href="{{ route('admin.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-slate-800 to-slate-900 text-white text-sm font-bold rounded-xl hover:shadow-lg transition-all duration-300">Dashboard Admin</a>
-                            @else
-                                <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-gradient-to-r from-[#29B6D1] to-[#1E9CB5] text-white text-sm font-bold rounded-xl hover:shadow-lg transition-all duration-300">Dashboard</a>
-                            @endif
-                            <form method="POST" action="{{ route('logout') }}" class="m-0">
-                                @csrf
-                                <button type="submit" class="p-2.5 text-slate-400 hover:text-red-500 transition-colors border border-slate-200 rounded-xl hover:border-red-200" title="Déconnexion">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                </button>
-                            </form>
-                        @endif
+                        </div>
                     @else
                         <a href="{{ route('login') }}" class="text-sm font-semibold text-slate-600 hover:text-[#29B6D1] transition-colors">Connexion</a>
                         <a href="{{ route('register') }}" class="px-4 py-2 bg-[#29B6D1] text-white text-sm font-bold rounded-xl hover:bg-[#1E9CB5] transition-all shadow-sm">S'inscrire</a>
