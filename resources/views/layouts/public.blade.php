@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'ProConnect') | Plateforme de services & emplois RDC</title>
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('android-chrome-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('android-chrome-512x512.png') }}">
     <meta name="description" content="@yield('meta_description', 'Trouvez des artisans qualifiés et des offres d\'emploi en République Démocratique du Congo.')">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
