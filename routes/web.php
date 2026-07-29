@@ -74,6 +74,7 @@ Route::view('/privacy', 'public.static.privacy')->name('privacy');
 Route::view('/terms', 'public.static.terms')->name('terms');
 Route::view('/legal', 'public.static.legal')->name('legal');
 Route::view('/sitemap', 'public.static.sitemap')->name('sitemap');
+Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap.xml');
 
 // Guest Routes
 Route::middleware('guest')->group(function (): void {

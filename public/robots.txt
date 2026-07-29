@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /super-admin/
+Disallow: /user/
+Disallow: /api/
+
+Sitemap: https://proconnectrdc.com/sitemap.xml
