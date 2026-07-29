@@ -252,7 +252,88 @@
                 </div>
 
 
-                
+                <!-- Notifications Dropdown -->
+                @php
+                    $adminUnreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                        ->where('is_read', false)->count();
+                    $adminRecentNotifications = \App\Models\Notification::where('user_id', auth()->id())
+                        ->latest()
+                        ->take(5)
+                        ->get();
+                @endphp
+                <div class="relative" x-data="{ notifOpen: false }" @click.outside="notifOpen = false">
+                    <button @click="notifOpen = !notifOpen" 
+                            class="relative w-10 h-10 flex items-center justify-center bg-slate-100 text-slate-600 hover:text-rdc-blue hover:bg-slate-200/70 rounded-xl transition-all"
+                            title="Notifications">
+                        <i class="fas fa-bell text-base"></i>
+                        @if($adminUnreadCount > 0)
+                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white animate-pulse">
+                                {{ $adminUnreadCount > 9 ? '9+' : $adminUnreadCount }}
+                            </span>
+                        @endif
+                    </button>
+
+                    <div x-show="notifOpen" x-cloak x-transition
+                         class="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                        
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-bell text-rdc-blue"></i>
+                                <span class="font-extrabold text-sm text-slate-800">Notifications</span>
+                                @if($adminUnreadCount > 0)
+                                    <span class="px-2 py-0.5 text-[10px] font-black bg-red-500 text-white rounded-full">{{ $adminUnreadCount }} non lue(s)</span>
+                                @endif
+                            </div>
+                            @if($adminUnreadCount > 0)
+                                <form method="POST" action="{{ route('user.notifications.read-all') }}" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="text-xs font-bold text-rdc-blue hover:underline">
+                                        Tout marquer lu
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+
+                        <div class="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                            @forelse($adminRecentNotifications as $notif)
+                                <div class="p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors {{ !$notif->is_read ? 'bg-sky-50/40' : '' }}">
+                                    <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                        <i class="fas {{ $notif->is_read ? 'fa-bell-slash' : 'fa-bell' }}"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-bold text-slate-800 leading-snug">
+                                            {{ $notif->title ?? ($notif->data['title'] ?? 'Notification') }}
+                                        </p>
+                                        <p class="text-xs text-slate-500 leading-snug mt-1">
+                                            {{ $notif->message ?? ($notif->data['message'] ?? '') }}
+                                        </p>
+                                        <div class="flex items-center justify-between mt-2 text-[10px] text-slate-400">
+                                            <span>{{ $notif->created_at ? $notif->created_at->diffForHumans() : '' }}</span>
+                                            @if(!$notif->is_read)
+                                                <form method="POST" action="{{ route('user.notifications.read', $notif->id) }}" class="m-0">
+                                                    @csrf
+                                                    <button type="submit" class="font-bold text-rdc-blue hover:underline">Marquer lu</button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="p-8 text-center text-slate-400">
+                                    <i class="fas fa-bell-slash text-2xl mb-2 opacity-30 block"></i>
+                                    <span class="text-xs font-medium">Aucune notification</span>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <div class="p-3 border-t border-slate-100 bg-slate-50/50 text-center">
+                            <a href="{{ route('user.notifications.index') }}" class="text-xs font-bold text-rdc-blue hover:underline inline-flex items-center gap-1">
+                                Voir toutes les notifications <i class="fas fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Profile Toggle -->
                 <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
                     <div class="hidden md:block text-right">

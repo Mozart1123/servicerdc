@@ -1288,10 +1288,86 @@
                 onclick="document.getElementById('search-wrap').style.display='block';this.style.display='none';">
                 <i class="fas fa-magnifying-glass"></i>
             </button>
-            <a href="#" class="icon-btn" title="Notifications">
-                <i class="fas fa-bell"></i>
-                <span class="notif-dot"></span>
-            </a>
+            @php
+                $saUnreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                    ->where('is_read', false)->count();
+                $saRecentNotifications = \App\Models\Notification::where('user_id', auth()->id())
+                    ->latest()
+                    ->take(6)
+                    ->get();
+            @endphp
+            <div x-data="{ notifOpen: false }" @click.outside="notifOpen = false" style="position:relative;">
+                <button class="icon-btn" title="Notifications" @click="notifOpen = !notifOpen" style="position:relative;background:none;border:none;cursor:pointer;padding:8px;">
+                    <i class="fas fa-bell"></i>
+                    @if($saUnreadCount > 0)
+                        <span class="notif-dot" style="position:absolute;top:4px;right:4px;width:16px;height:16px;background:#ef4444;color:#fff;border-radius:50%;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg-card, #ffffff);">
+                            {{ $saUnreadCount > 9 ? '9+' : $saUnreadCount }}
+                        </span>
+                    @endif
+                </button>
+
+                <div x-show="notifOpen" x-cloak x-transition class="action-dropdown"
+                    style="min-width:320px;max-width:360px;right:0;top:calc(100% + 8px);padding:0;overflow:hidden;border-radius:12px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);z-index:999;">
+                    
+                    {{-- En-tête --}}
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border,#e2e8f0);background:var(--bg-card,#ffffff);">
+                        <div style="font-weight:700;font-size:13px;color:var(--text-primary,#0f172a);display:flex;align-items:center;gap:6px;">
+                            <i class="fas fa-bell text-sky-500"></i> Notifications
+                            @if($saUnreadCount > 0)
+                                <span style="background:#ef4444;color:#ffffff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:9999px;">{{ $saUnreadCount }} non lue(s)</span>
+                            @endif
+                        </div>
+                        @if($saUnreadCount > 0)
+                            <form method="POST" action="{{ route('user.notifications.read-all') }}" style="margin:0;">
+                                @csrf
+                                <button type="submit" style="font-size:11px;color:#29B6D1;background:none;border:none;cursor:pointer;font-weight:600;">
+                                    Tout marquer lu
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    {{-- Liste des notifications --}}
+                    <div style="max-height:300px;overflow-y:auto;background:var(--bg-card,#ffffff);">
+                        @forelse($saRecentNotifications as $notif)
+                            <div style="padding:10px 16px;border-bottom:1px solid var(--border,#f1f5f9);display:flex;align-items:flex-start;gap:10px;{{ !$notif->is_read ? 'background:rgba(41,182,209,0.06);' : '' }}">
+                                <div style="width:32px;height:32px;border-radius:50%;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;">
+                                    <i class="fas {{ $notif->is_read ? 'fa-bell-slash' : 'fa-bell' }}"></i>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:12px;font-weight:600;color:var(--text-primary,#1e293b);line-height:1.3;margin-bottom:2px;">
+                                        {{ $notif->title ?? ($notif->data['title'] ?? 'Notification') }}
+                                    </div>
+                                    <div style="font-size:11px;color:var(--text-secondary,#64748b);line-height:1.3;margin-bottom:4px;">
+                                        {{ $notif->message ?? ($notif->data['message'] ?? '') }}
+                                    </div>
+                                    <div style="font-size:10px;color:var(--text-muted,#94a3b8);display:flex;align-items:center;gap:8px;">
+                                        <span>{{ $notif->created_at ? $notif->created_at->diffForHumans() : '' }}</span>
+                                        @if(!$notif->is_read)
+                                            <form method="POST" action="{{ route('user.notifications.read', $notif->id) }}" style="margin:0;display:inline;">
+                                                @csrf
+                                                <button type="submit" style="font-size:10px;color:#29B6D1;background:none;border:none;cursor:pointer;padding:0;font-weight:600;">Marquer lu</button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div style="padding:24px 16px;text-align:center;color:var(--text-muted,#94a3b8);">
+                                <i class="fas fa-bell-slash" style="font-size:24px;margin-bottom:8px;opacity:0.4;display:block;"></i>
+                                <span style="font-size:12px;">Aucune notification pour le moment</span>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    {{-- Footer --}}
+                    <div style="padding:10px 16px;border-top:1px solid var(--border,#e2e8f0);text-align:center;background:var(--bg-body,#f8fafc);">
+                        <a href="{{ route('user.notifications.index') }}" style="font-size:12px;font-weight:600;color:#29B6D1;text-decoration:none;">
+                            Voir toutes les notifications <i class="fas fa-arrow-right" style="font-size:10px;margin-left:4px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
             <div x-data="{ open: false }" @click.outside="open = false" style="position:relative;">
                 <button class="user-menu-btn" @click="open = !open">
                     <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
