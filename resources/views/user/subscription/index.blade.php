@@ -241,31 +241,16 @@
 
       <!-- PAYMENT METHODS -->
       <section class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8" data-aos="fade-in">
-        <h3 class="text-2xl font-bold mb-6">Méthodes de paiement</h3>
+        <h3 class="text-2xl font-bold mb-2">Mode de paiement accepté</h3>
+        <p class="text-sm text-gray-500 mb-6">Tous les paiements s'effectuent exclusivement par Mobile Money.</p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div class="p-5 border rounded-2xl hover:border-rdc-blue hover:bg-cyan-50 transition cursor-pointer">
-            <i class="fas fa-mobile-screen-button text-3xl text-rdc-blue mb-3"></i>
-            <h4 class="font-bold">Mobile Money</h4>
+        <div class="flex items-center gap-5 p-6 border-2 border-emerald-200 bg-emerald-50 rounded-2xl max-w-sm">
+          <div class="w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-3xl flex-shrink-0">
+            <i class="fas fa-mobile-screen-button"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900">Mobile Money</h4>
             <p class="text-sm text-gray-500">M-Pesa, Airtel Money, Orange Money</p>
-          </div>
-
-          <div class="p-5 border rounded-2xl hover:border-rdc-blue hover:bg-cyan-50 transition cursor-pointer">
-            <i class="fas fa-credit-card text-3xl text-rdc-yellow mb-3"></i>
-            <h4 class="font-bold">Carte bancaire</h4>
-            <p class="text-sm text-gray-500">Visa, Mastercard</p>
-          </div>
-
-          <div class="p-5 border rounded-2xl hover:border-rdc-blue hover:bg-cyan-50 transition cursor-pointer">
-            <i class="fas fa-building-columns text-3xl text-green-600 mb-3"></i>
-            <h4 class="font-bold">Banque</h4>
-            <p class="text-sm text-gray-500">Virement bancaire sécurisé</p>
-          </div>
-
-          <div class="p-5 border rounded-2xl hover:border-rdc-blue hover:bg-cyan-50 transition cursor-pointer">
-            <i class="fas fa-money-bill-wave text-3xl text-rdc-red mb-3"></i>
-            <h4 class="font-bold">Paiement cash</h4>
-            <p class="text-sm text-gray-500">Paiement auprès d'un agent</p>
           </div>
         </div>
       </section>

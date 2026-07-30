@@ -33,14 +33,14 @@
                         </div>
                     @endif
 
-                    {{-- Payment Method Selector --}}
-                    <div x-data="{ method: '{{ old('payment_method', 'mobile_money') }}' }" class="space-y-4">
+                    {{-- Payment Method: Mobile Money uniquement --}}
+                    <div class="space-y-4">
                         <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Mode de paiement <span class="text-red-500">*</span></label>
 
+                        <input type="hidden" name="payment_method" value="mobile_money">
+
                         {{-- Mobile Money --}}
-                        <div @click="method = 'mobile_money'"
-                             :class="method === 'mobile_money' ? 'border-rdc-blue bg-blue-50 shadow-md' : 'border-slate-200 hover:border-slate-300'"
-                             class="border-2 rounded-2xl p-5 cursor-pointer transition-all flex items-center gap-4">
+                        <div class="border-2 border-emerald-400 bg-emerald-50 rounded-2xl p-5 flex items-center gap-4">
                             <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-2xl flex-shrink-0">
                                 <i class="fas fa-mobile-screen-button"></i>
                             </div>
@@ -48,89 +48,19 @@
                                 <p class="font-black text-slate-900">Mobile Money</p>
                                 <p class="text-xs font-bold text-slate-400">M-Pesa, Airtel Money, Orange Money</p>
                             </div>
-                            <div :class="method === 'mobile_money' ? 'bg-rdc-blue border-rdc-blue' : 'bg-white border-slate-300'"
-                                 class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all">
-                                <div x-show="method === 'mobile_money'" class="w-3 h-3 bg-white rounded-full"></div>
+                            <div class="w-6 h-6 rounded-full border-2 bg-emerald-500 border-emerald-500 flex items-center justify-center">
+                                <div class="w-3 h-3 bg-white rounded-full"></div>
                             </div>
-                            <input type="radio" name="payment_method" value="mobile_money" x-bind:checked="method === 'mobile_money'" class="sr-only">
                         </div>
 
-                        {{-- Mobile Money Phone --}}
-                        <div x-show="method === 'mobile_money'" x-transition class="pl-4">
+                        {{-- Numéro Mobile Money --}}
+                        <div class="pl-4">
                             <label class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Numéro Mobile Money <span class="text-red-500">*</span></label>
                             <input type="tel" name="payment_phone" placeholder="+243 9xx xxx xxx" value="{{ old('payment_phone') }}"
                                    class="mt-2 w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 outline-none">
                             @if(config('app.env') === 'local')
                                 <p class="text-[10px] font-bold text-amber-500 mt-1"><i class="fas fa-flask"></i> Mode Test : Utilisez le numéro K-Pay <b>243813456789</b> pour simuler un succès (RDC).</p>
                             @endif
-                        </div>
-
-                        {{-- Visa/Mastercard --}}
-                        <div @click="method = 'visa_mastercard'"
-                             :class="method === 'visa_mastercard' ? 'border-rdc-blue bg-blue-50 shadow-md' : 'border-slate-200 hover:border-slate-300'"
-                             class="border-2 rounded-2xl p-5 cursor-pointer transition-all flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
-                                <i class="fab fa-cc-visa text-blue-700"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-black text-slate-900">Visa / Mastercard</p>
-                                <p class="text-xs font-bold text-slate-400">Carte de crédit ou débit internationale</p>
-                            </div>
-                            <div :class="method === 'visa_mastercard' ? 'bg-rdc-blue border-rdc-blue' : 'bg-white border-slate-300'"
-                                 class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all">
-                                <div x-show="method === 'visa_mastercard'" class="w-3 h-3 bg-white rounded-full"></div>
-                            </div>
-                            <input type="radio" name="payment_method" value="visa_mastercard" x-bind:checked="method === 'visa_mastercard'" class="sr-only">
-                        </div>
-
-                        {{-- Card Fields --}}
-                        <div x-show="method === 'visa_mastercard'" x-transition class="pl-4 space-y-4">
-                            <div>
-                                <label class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Numéro de carte <span class="text-red-500">*</span></label>
-                                <input type="text" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19"
-                                       oninput="this.value = this.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim()"
-                                       class="mt-2 w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 tracking-widest focus:ring-4 focus:ring-rdc-blue/10 outline-none">
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-[10px] font-black text-slate-700 uppercase tracking-widest">Expiration</label>
-                                    <input type="text" placeholder="MM/YY" maxlength="5"
-                                           class="mt-2 w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 outline-none">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-black text-slate-700 uppercase tracking-widest">CVV</label>
-                                    <input type="text" placeholder="***" maxlength="3"
-                                           class="mt-2 w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-4 focus:ring-rdc-blue/10 outline-none">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Cash / Virement --}}
-                        <div @click="method = 'cash'"
-                             :class="method === 'cash' ? 'border-rdc-blue bg-blue-50 shadow-md' : 'border-slate-200 hover:border-slate-300'"
-                             class="border-2 rounded-2xl p-5 cursor-pointer transition-all flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 text-2xl flex-shrink-0">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-black text-slate-900">Espèces / Virement bancaire</p>
-                                <p class="text-xs font-bold text-slate-400">Paiement en agence ou virement manuel</p>
-                            </div>
-                            <div :class="method === 'cash' ? 'bg-rdc-blue border-rdc-blue' : 'bg-white border-slate-300'"
-                                 class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all">
-                                <div x-show="method === 'cash'" class="w-3 h-3 bg-white rounded-full"></div>
-                            </div>
-                            <input type="radio" name="payment_method" value="cash" x-bind:checked="method === 'cash'" class="sr-only">
-                        </div>
-
-                        {{-- Cash Instructions --}}
-                        <div x-show="method === 'cash'" x-transition class="pl-4">
-                            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm font-medium text-amber-800 space-y-2">
-                                <p><i class="fas fa-info-circle mr-2 text-amber-500"></i> <strong>Instructions de paiement :</strong></p>
-                                <p>Virement bancaire vers : <strong>RAWBANK – Compte N° 004-12345678-90</strong></p>
-                                <p>Référence : <strong>PROCONNECT-{{ Auth::user()->id }}</strong></p>
-                                <p>Votre compte sera activé sous 24h après réception du virement.</p>
-                            </div>
                         </div>
                     </div>
 

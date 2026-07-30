@@ -93,6 +93,21 @@ class ServiceController extends Controller
             abort(403, 'Unauthorized');
         }
 
+        $user = Auth::user();
+        
+        $activeSubscription = $user->activeSubscription;
+        $maxServices = $activeSubscription && $activeSubscription->subscriptionPlan
+            ? $activeSubscription->subscriptionPlan->max_services
+            : 1;
+
+        $currentServicesCount = $user->services()->active()->count();
+
+        if ($currentServicesCount >= $maxServices) {
+            return back()->with('error', "Vous avez atteint la limite de {$maxServices} service(s) actif(s) pour votre abonnement actuel.")
+                         ->with('upgrade_url', route('user.subscription.index'))
+                         ->withInput();
+        }
+
         $validated = $request->validate([
             'title'       => ['required', 'string', 'max:255'],
             'category_id' => ['nullable', 'exists:categories,id'],
@@ -176,6 +191,24 @@ class ServiceController extends Controller
             'service_image' => ['nullable', 'image'],
             'images.*'      => ['nullable', 'image'],
         ]);
+
+        $user = Auth::user();
+
+        // Si le service passe de inactif à actif, on vérifie la limite
+        if ($validated['status'] === 'active' && $service->status !== 'active') {
+            $activeSubscription = $user->activeSubscription;
+            $maxServices = $activeSubscription && $activeSubscription->subscriptionPlan
+                ? $activeSubscription->subscriptionPlan->max_services
+                : 1;
+
+            $currentServicesCount = $user->services()->active()->count();
+
+            if ($currentServicesCount >= $maxServices) {
+                return back()->with('error', "Vous avez atteint la limite de {$maxServices} service(s) actif(s) pour votre abonnement actuel. Désactivez un autre service ou passez à un plan supérieur.")
+                             ->with('upgrade_url', route('user.subscription.index'))
+                             ->withInput();
+            }
+        }
 
         $service->update(array_diff_key($validated, ['images' => 1, 'service_image' => 1]));
 

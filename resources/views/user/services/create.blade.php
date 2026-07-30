@@ -13,7 +13,22 @@
             
             <form action="{{ route('user.services.store') }}" method="POST" enctype="multipart/form-data" class="mt-10 space-y-8">
                 @csrf
-                
+
+                {{-- Message d'erreur de limite d'abonnement --}}
+                @if(session('error'))
+                    <div class="mb-2 px-5 py-4 bg-red-50 border border-red-100 rounded-xl text-red-700 font-medium text-sm flex items-center justify-between gap-3 flex-wrap">
+                        <span class="flex items-center gap-3">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                            {{ session('error') }}
+                        </span>
+                        @if(session('upgrade_url'))
+                            <a href="{{ session('upgrade_url') }}" class="text-red-700 underline font-semibold whitespace-nowrap">
+                                Voir les abonnements →
+                            </a>
+                        @endif
+                    </div>
+                @endif
+
                 <!-- Titre -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Titre du service <span class="text-red-500">*</span></label>

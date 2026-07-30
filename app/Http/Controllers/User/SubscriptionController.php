@@ -19,9 +19,17 @@ class SubscriptionController extends Controller
      */
     public function index(): View
     {
-        $plans = SubscriptionPlan::where('is_active', true)
-                                 ->orderBy('sort_order')
-                                 ->get();
+        $user = Auth::user();
+
+        $plansQuery = SubscriptionPlan::where('is_active', true)
+                                     ->orderBy('sort_order');
+
+        // Les artisans et clients ne doivent pas voir le plan Recruteur Premium
+        if (!$user->isRecruiter()) {
+            $plansQuery->where('slug', '!=', 'recruiter-premium');
+        }
+
+        $plans = $plansQuery->get();
 
         $activeSubscription = Subscription::where('user_id', Auth::id())
                                           ->where('status', 'active')
@@ -55,12 +63,12 @@ class SubscriptionController extends Controller
         $request->validate([
             'plan_id'        => ['required', 'exists:subscription_plans,id'],
             'billing_cycle'  => ['required', 'in:monthly,yearly'],
-            'payment_method' => ['required', 'in:mobile_money,visa_mastercard,cash'],
-            'payment_phone'  => ['required_if:payment_method,mobile_money', 'nullable', 'string', 'max:20'],
+            'payment_method' => ['required', 'in:mobile_money'],
+            'payment_phone'  => ['required', 'string', 'max:20'],
         ], [
-            'plan_id.required'          => 'Veuillez choisir un plan.',
-            'payment_method.required'   => 'Veuillez choisir un mode de paiement.',
-            'payment_phone.required_if' => 'Le numéro Mobile Money est requis.',
+            'plan_id.required'        => 'Veuillez choisir un plan.',
+            'payment_method.required' => 'Veuillez choisir un mode de paiement.',
+            'payment_phone.required'  => 'Le numéro Mobile Money est requis.',
         ]);
 
         $plan   = SubscriptionPlan::findOrFail($request->plan_id);

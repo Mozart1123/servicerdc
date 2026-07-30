@@ -17,6 +17,21 @@
     <form action="{{ route('user.jobs.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         
+        {{-- Message d'erreur de limite d'abonnement --}}
+        @if(session('error'))
+            <div class="px-5 py-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 font-medium text-sm flex items-center justify-between gap-3 flex-wrap">
+                <span class="flex items-center gap-3">
+                    <i class="fas fa-exclamation-circle text-red-500"></i>
+                    {{ session('error') }}
+                </span>
+                @if(session('upgrade_url'))
+                    <a href="{{ session('upgrade_url') }}" class="text-red-700 underline font-semibold whitespace-nowrap">
+                        Voir les abonnements →
+                    </a>
+                @endif
+            </div>
+        @endif
+
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8 space-y-6">
             {{-- Section 1: Informations de base --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

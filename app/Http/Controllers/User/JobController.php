@@ -192,7 +192,9 @@ class JobController extends Controller
         $user = Auth::user();
 
         if (!$user->isPremiumRecruiter() && JobOffer::where('employer_id', $user->id)->active()->count() >= 3) {
-            return back()->with('error', 'Vous avez atteint la limite de 3 offres actives. Passez au plan Premium pour publier des offres illimitées.')->withInput();
+            return back()->with('error', 'Vous avez atteint la limite de 3 offres actives. Passez au plan Premium pour publier des offres illimitées.')
+                         ->with('upgrade_url', route('user.subscription.index'))
+                         ->withInput();
         }
 
         $validated['user_id']     = $user->id;
