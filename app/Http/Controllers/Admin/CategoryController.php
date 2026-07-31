@@ -81,8 +81,10 @@ class CategoryController extends Controller
      */
     private function storeBatchArray(Request $request)
     {
+        @set_time_limit(300);
+
         $request->validate([
-            'categories'               => 'required|array|min:1|max:20',
+            'categories'               => 'required|array|min:1|max:50',
             'categories.*.name'        => 'required|string|max:255',
             'categories.*.description' => 'nullable|string',
             'categories.*.services'    => 'nullable|string',
@@ -91,7 +93,8 @@ class CategoryController extends Controller
 
         $createdCount = DB::transaction(function () use ($request) {
             $count = 0;
-            $items = $request->input('categories');
+            $items = array_values($request->input('categories'));
+            $fileCategories = $request->file('categories');
 
             foreach ($items as $index => $catData) {
                 if (empty(trim($catData['name'] ?? ''))) {
@@ -103,6 +106,11 @@ class CategoryController extends Controller
 
                 if ($request->hasFile("categories.{$index}.image")) {
                     $imagePath = $request->file("categories.{$index}.image")->store('categories', 'public');
+                } elseif (is_array($fileCategories) && isset($fileCategories[$index]['image'])) {
+                    $file = $fileCategories[$index]['image'];
+                    if ($file && $file->isValid()) {
+                        $imagePath = $file->store('categories', 'public');
+                    }
                 }
 
                 $category = Category::create([
@@ -131,6 +139,8 @@ class CategoryController extends Controller
      */
     private function storeTextImport(Request $request)
     {
+        @set_time_limit(300);
+
         $request->validate([
             'import_text' => 'required|string',
         ]);
@@ -145,6 +155,8 @@ class CategoryController extends Controller
 
         $createdCount = DB::transaction(function () use ($parsed) {
             $count = 0;
+            $now   = now();
+
             foreach ($parsed as $item) {
                 $slug = $this->uniqueSlug($item['name']);
 
@@ -154,11 +166,18 @@ class CategoryController extends Controller
                     'description' => $item['description'] ?: null,
                 ]);
 
+                $serviceRecords = [];
                 foreach ($item['services'] as $serviceTitle) {
-                    ServiceType::create([
+                    $serviceRecords[] = [
                         'category_id' => $category->id,
                         'title'       => $serviceTitle,
-                    ]);
+                        'created_at'  => $now,
+                        'updated_at'  => $now,
+                    ];
+                }
+
+                if (!empty($serviceRecords)) {
+                    ServiceType::insert($serviceRecords);
                 }
 
                 $count++;
@@ -198,7 +217,7 @@ class CategoryController extends Controller
 
         if ($request->has('services')) {
             $existingIds = [];
-            foreach (explode("\n", $request->input('services')) as $title) {
+            foreach (explode("\n", str_replace("\r\n", "\n", $request->input('services'))) as $title) {
                 $title = trim($title);
                 if ($title !== '') {
                     $st = ServiceType::updateOrCreate(
@@ -238,14 +257,23 @@ class CategoryController extends Controller
             return;
         }
 
-        foreach (explode("\n", $rawServices) as $title) {
+        $now     = now();
+        $records = [];
+
+        foreach (explode("\n", str_replace("\r\n", "\n", $rawServices)) as $title) {
             $title = trim($title);
             if ($title !== '') {
-                ServiceType::create([
+                $records[] = [
                     'category_id' => $categoryId,
                     'title'       => $title,
-                ]);
+                    'created_at'  => $now,
+                    'updated_at'  => $now,
+                ];
             }
+        }
+
+        if (!empty($records)) {
+            ServiceType::insert($records);
         }
     }
 
