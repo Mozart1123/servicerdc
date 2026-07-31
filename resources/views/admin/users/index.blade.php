@@ -79,7 +79,9 @@
                     <option value="">Tous</option>
                     <option value="user">Utilisateurs</option>
                     <option value="admin">Admins</option>
-                    <option value="super_admin">Super Admins</option>
+                    @if(auth()->user()->isSuperAdmin())
+                        <option value="super_admin">Super Admins</option>
+                    @endif
                 </select>
             </div>
 
@@ -155,13 +157,19 @@
                             </td>
                             <td class="pr-4 pl-1 sm:px-8 py-4 sm:py-6 text-right">
                                 <div class="flex items-center justify-end gap-1 sm:gap-2">
+                                    <!-- Promote to Admin button (for clients, artisans, recruiters) -->
+                                    <template x-if="user.role !== 'admin' && user.role !== 'super_admin' && user.id != {{ auth()->id() }}">
+                                        <button @click="promoteToAdmin(user)" class="w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl bg-blue-50 text-rdc-blue hover:bg-rdc-blue hover:text-white transition-all" title="Promouvoir en Admin">
+                                            <i class="fas fa-user-shield text-[10px] sm:text-sm"></i>
+                                        </button>
+                                    </template>
+
                                     <!-- Always show Edit Option -->
                                     <a :href="`/admin/users/${user.id}/edit`" class="w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-rdc-blue transition-all" title="Modifier">
                                         <i class="fas fa-edit text-[10px] sm:text-sm"></i>
                                     </a>
                                     
-                                    <!-- Standardized Deletion Logic: 
-                                         Show disabled button for Super Admins and Self to maintain UI consistency. -->
+                                    <!-- Standardized Deletion Logic -->
                                     <template x-if="user.role !== 'super_admin' && user.id != {{ auth()->id() }}">
                                         <button @click="confirmDelete(user.id)" class="w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl bg-slate-50 text-rdc-red hover:bg-red-50 transition-all" title="Supprimer">
                                             <i class="fas fa-trash-alt text-[10px] sm:text-sm"></i>
@@ -289,6 +297,27 @@ function userManager() {
                     alert(res.error || 'Erreur lors du changement de statut');
                 }
             });
+        },
+
+        promoteToAdmin(user) {
+            if (confirm(`Êtes-vous sûr de vouloir promouvoir ${user.name} en Administrateur ?`)) {
+                fetch(`/admin/users/${user.id}/promote-api`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        user.role = res.role;
+                        alert(res.message);
+                    } else {
+                        alert(res.error || 'Erreur lors de la promotion');
+                    }
+                });
+            }
         },
 
         confirmDelete(id) {

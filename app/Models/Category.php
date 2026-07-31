@@ -3,10 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'slug', 'icon', 'description'];
+    protected $fillable = ['name', 'slug', 'icon', 'image', 'description'];
+
+    protected $appends = ['image_url'];
+
+    // ==========================================
+    // Accessors
+    // ==========================================
+
+    /**
+     * Get the public URL of the category image (or null if none).
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if ($this->image) {
+            return Storage::disk('public')->url($this->image);
+        }
+        return null;
+    }
 
     // ==========================================
     // Relationships
@@ -18,6 +36,14 @@ class Category extends Model
     public function services()
     {
         return $this->hasMany(Service::class);
+    }
+
+    /**
+     * Get all service types in this category.
+     */
+    public function serviceTypes()
+    {
+        return $this->hasMany(ServiceType::class);
     }
 
     // ==========================================

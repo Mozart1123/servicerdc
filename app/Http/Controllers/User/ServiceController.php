@@ -85,7 +85,7 @@ class ServiceController extends Controller
     }
 
     /**
-     * Store a new service.
+     * Store a new service (supports multiple sub-service types at once).
      */
     public function store(Request $request): RedirectResponse
     {
@@ -94,30 +94,41 @@ class ServiceController extends Controller
         }
 
         $user = Auth::user();
-        
+
         $activeSubscription = $user->activeSubscription;
         $maxServices = $activeSubscription && $activeSubscription->subscriptionPlan
             ? $activeSubscription->subscriptionPlan->max_services
             : 1;
 
         $currentServicesCount = $user->services()->active()->count();
-
-        if ($currentServicesCount >= $maxServices) {
-            return back()->with('error', "Vous avez atteint la limite de {$maxServices} service(s) actif(s) pour votre abonnement actuel.")
-                         ->with('upgrade_url', route('user.subscription.index'))
-                         ->withInput();
-        }
+        $slotsRemaining = $maxServices - $currentServicesCount;
 
         $validated = $request->validate([
-            'title'       => ['required', 'string', 'max:255'],
-            'category_id' => ['nullable', 'exists:categories,id'],
-            'description' => ['nullable', 'string'],
-            'price'       => ['required', 'numeric', 'min:0'],
-            'location'    => ['required', 'string', 'max:255'],
-            'images.*'    => ['nullable', 'image'],
+            'title'                => ['required', 'string', 'max:255'],
+            'category_id'          => ['required', 'exists:categories,id'],
+            'service_type_ids'     => ['nullable', 'array'],
+            'service_type_ids.*'   => ['nullable', 'exists:service_types,id'],
+            'description'          => ['nullable', 'string'],
+            'price'                => ['required', 'numeric', 'min:0'],
+            'location'             => ['required', 'string', 'max:255'],
+            'images.*'             => ['nullable', 'image'],
         ]);
 
-        $user = Auth::user();
+        $serviceTypeIds = $validated['service_type_ids'] ?? [];
+        // Normalize: if none checked, treat as single offer with no type
+        $offersToCreate = empty($serviceTypeIds) ? [null] : $serviceTypeIds;
+        $offersCount    = count($offersToCreate);
+
+        // Check subscription limit for all planned offers at once
+        if ($currentServicesCount + $offersCount > $maxServices) {
+            $allowed = max(0, $slotsRemaining);
+            return back()
+                ->with('error', "Votre abonnement permet {$maxServices} service(s) actif(s). Il vous reste {$allowed} slot(s) disponible(s), mais vous tentez d'en créer {$offersCount}. Réduisez votre sélection ou passez à un abonnement supérieur.")
+                ->with('upgrade_url', route('user.subscription.index'))
+                ->withInput();
+        }
+
+        // Upload images once (shared across all created services)
         $gallery = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
@@ -125,23 +136,38 @@ class ServiceController extends Controller
             }
         }
 
-        $service = Service::create([
-            'artisan_id'     => $user->id,
-            'category_id'    => $validated['category_id'] ?? null,
-            'provider_name'  => $user->name,
-            'profession'     => $user->profession ?? 'Artisan',
-            'city'           => $validated['location'],
-            'phone_number'   => $user->phone ?? '—',
-            'title'          => $validated['title'],
-            'description'    => $validated['description'] ?? null,
-            'price'          => $validated['price'],
-            'location'       => $validated['location'],
-            'service_image'  => $gallery[0] ?? null,
-            'gallery_images' => $gallery,
-            'images'         => $gallery,
-            'status'         => 'active',
-            'is_verified'    => true,
-        ]);
+        $createdServices = [];
+        foreach ($offersToCreate as $serviceTypeId) {
+            // If a service type is provided, use its title as the service title
+            $serviceTitle = $validated['title'];
+            if ($serviceTypeId) {
+                $st = \App\Models\ServiceType::find($serviceTypeId);
+                if ($st && empty(trim($validated['title']))) {
+                    $serviceTitle = $st->title;
+                }
+            }
+
+            $service = Service::create([
+                'artisan_id'      => $user->id,
+                'category_id'     => $validated['category_id'],
+                'service_type_id' => $serviceTypeId,
+                'provider_name'   => $user->name,
+                'profession'      => $user->profession ?? 'Artisan',
+                'city'            => $validated['location'],
+                'phone_number'    => $user->phone ?? '—',
+                'title'           => $serviceTitle,
+                'description'     => $validated['description'] ?? null,
+                'price'           => $validated['price'],
+                'location'        => $validated['location'],
+                'service_image'   => $gallery[0] ?? null,
+                'gallery_images'  => $gallery,
+                'images'          => $gallery,
+                'status'          => 'active',
+                'is_verified'     => true,
+            ]);
+
+            $createdServices[] = $service;
+        }
 
         // Notify Admins
         $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
@@ -150,15 +176,19 @@ class ServiceController extends Controller
                 'user_id'      => $admin->id,
                 'type'         => 'service_created',
                 'related_type' => 'service',
-                'related_id'   => $service->id,
-                'title'        => 'Nouveau service publié',
-                'message'      => "{$user->name} a publié : {$service->title}",
+                'related_id'   => $createdServices[0]->id,
+                'title'        => 'Nouveau(x) service(s) publié(s)',
+                'message'      => "{$user->name} a publié " . count($createdServices) . " service(s).",
                 'action_url'   => route('admin.services.index'),
                 'is_read'      => false,
             ]);
         }
 
-        return redirect()->route('user.services.my')->with('success', 'Votre service a été publié avec succès.');
+        $msg = count($createdServices) > 1
+            ? count($createdServices) . ' services publiés avec succès.'
+            : 'Votre service a été publié avec succès.';
+
+        return redirect()->route('user.services.my')->with('success', $msg);
     }
 
     /**
@@ -182,14 +212,15 @@ class ServiceController extends Controller
         if (Auth::id() !== $service->artisan_id) { abort(403); }
 
         $validated = $request->validate([
-            'title'         => ['required', 'string', 'max:255'],
-            'category_id'   => ['nullable', 'exists:categories,id'],
-            'description'   => ['nullable', 'string'],
-            'price'         => ['required', 'numeric', 'min:0'],
-            'location'      => ['required', 'string', 'max:255'],
-            'status'        => ['required', 'in:active,inactive'],
-            'service_image' => ['nullable', 'image'],
-            'images.*'      => ['nullable', 'image'],
+            'title'           => ['required', 'string', 'max:255'],
+            'category_id'     => ['required', 'exists:categories,id'],
+            'service_type_id' => ['nullable', 'exists:service_types,id'],
+            'description'     => ['nullable', 'string'],
+            'price'           => ['required', 'numeric', 'min:0'],
+            'location'        => ['required', 'string', 'max:255'],
+            'status'          => ['required', 'in:active,inactive'],
+            'service_image'   => ['nullable', 'image'],
+            'images.*'        => ['nullable', 'image'],
         ]);
 
         $user = Auth::user();

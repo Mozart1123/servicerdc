@@ -40,7 +40,7 @@
     </div>
 
     {{-- Live Timer / Elapsed Time Card --}}
-    @if(in_array($serviceRequest->status, ['in_progress', 'completed']) && $serviceRequest->accepted_at)
+    @if($serviceRequest->status === 'in_progress' && $serviceRequest->accepted_at)
     <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl shadow-xl shadow-emerald-200 p-6 text-white" data-aos="fade-up" id="timer-card">
         <div class="flex items-center justify-between">
             <div>

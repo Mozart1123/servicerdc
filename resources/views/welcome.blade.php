@@ -898,9 +898,37 @@
                 </div>
 
                 <!-- Catégories Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 
-                            gap-6 mb-12" id="categories-container">
-                    <!-- Catégories chargées par JavaScript -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-12">
+                    @foreach($categories as $index => $category)
+                        <div class="group relative overflow-hidden bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer will-change-transform hover:-translate-y-1"
+                             data-aos="fade-up" data-aos-delay="{{ ($index % 6) * 100 }}">
+                            <div class="relative h-44 overflow-hidden">
+                                {{-- Photo ou fallback gradient --}}
+                                @if($category->image)
+                                    <img src="{{ Storage::url($category->image) }}"
+                                         alt="{{ $category->name }}"
+                                         class="w-full h-full object-cover absolute inset-0">
+                                @else
+                                    <div class="w-full h-full bg-gradient-to-br from-[#1E9CB5] to-[#090D16] flex flex-col items-center justify-center absolute inset-0">
+                                        <i class="{{ $category->icon ?? 'fas fa-tools' }} text-white text-4xl opacity-80 mb-2"></i>
+                                        <span class="text-white text-xs font-black opacity-30 uppercase tracking-widest text-center px-2">{{ $category->name }}</span>
+                                    </div>
+                                @endif
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-4">
+                                    <h4 class="text-white font-bold text-base leading-tight drop-shadow">{{ $category->name }}</h4>
+                                    <p class="text-white/80 text-xs font-medium mt-0.5">{{ Str::limit($category->description, 50) }}</p>
+                                </div>
+                            </div>
+                            <div class="px-4 py-3 flex items-center justify-between">
+                                <a href="{{ route('public.categories.service-types', $category->id) }}" class="text-rdc-blue text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    Voir les services
+                                    <i class="fas fa-arrow-right text-[10px]"></i>
+                                </a>
+                                <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">{{ $category->services_count }} offres</span>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
 
                 <!-- CTA Services -->
@@ -1511,121 +1539,7 @@
                 });
             }
 
-            // Données des catégories avec images Unsplash
-            const categories = [
-                {
-                    name: "Électriciens",
-                    desc: "Installation & dépannage",
-                    img: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop&auto=format",
-                    color: "from-blue-500 to-blue-600"
-                },
-                {
-                    name: "Plombiers",
-                    desc: "Installation & réparation",
-                    img: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400&h=300&fit=crop&auto=format",
-                    color: "from-yellow-500 to-yellow-600"
-                },
-                {
-                    name: "Couturiers",
-                    desc: "Sur mesure & réparation",
-                    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop&auto=format",
-                    color: "from-red-500 to-red-600"
-                },
-                {
-                    name: "Maçons",
-                    desc: "Construction & rénovation",
-                    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=300&fit=crop&auto=format",
-                    color: "from-green-500 to-green-600"
-                },
-                {
-                    name: "Cordonniers",
-                    desc: "Réparation de chaussures",
-                    img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop&auto=format",
-                    color: "from-purple-500 to-purple-600"
-                },
-                {
-                    name: "Coiffeurs",
-                    desc: "Coiffure homme & femme",
-                    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop&auto=format",
-                    color: "from-pink-500 to-pink-600"
-                },
-                {
-                    name: "Mécaniciens",
-                    desc: "Réparation automobile",
-                    img: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop&auto=format",
-                    color: "from-indigo-500 to-indigo-600"
-                },
-                {
-                    name: "Menuisiers",
-                    desc: "Menuiserie & ébénisterie",
-                    img: "https://images.unsplash.com/photo-1588854337236-6889d631faa8?w=400&h=300&fit=crop&auto=format",
-                    color: "from-yellow-700 to-yellow-800"
-                },
-                {
-                    name: "Jardiniers",
-                    desc: "Entretien & aménagement",
-                    img: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop&auto=format",
-                    color: "from-green-400 to-green-500"
-                },
-                {
-                    name: "Peintres",
-                    desc: "Peinture intérieur/extérieur",
-                    img: "https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=400&h=300&fit=crop&auto=format",
-                    color: "from-cyan-500 to-cyan-600"
-                },
-                {
-                    name: "Soudeurs",
-                    desc: "Soudure & métallerie",
-                    img: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop&auto=format",
-                    color: "from-orange-500 to-orange-600"
-                },
-                {
-                    name: "Informaticiens",
-                    desc: "Maintenance & support IT",
-                    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop&auto=format",
-                    color: "from-blue-400 to-blue-500"
-                }
-            ];
 
-            // Remplir les catégories avec images
-            const categoriesContainer = document.getElementById('categories-container');
-            if (categoriesContainer) {
-                categories.forEach((category, index) => {
-                    const categoryElement = document.createElement('div');
-                    categoryElement.className = 'group relative overflow-hidden bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer will-change-transform hover:-translate-y-1';
-                    categoryElement.setAttribute('data-aos', 'fade-up');
-                    categoryElement.setAttribute('data-aos-delay', (index % 6) * 100);
-
-                    categoryElement.innerHTML = `
-                        <div class="relative h-44 overflow-hidden">
-                            <img
-                                src="${category.img}"
-                                alt="${category.name}"
-                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                loading="lazy"
-                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                            >
-                            <div class="hidden w-full h-full bg-gradient-to-br ${category.color} items-center justify-center absolute inset-0">
-                                <span class="text-white text-4xl font-black opacity-30">${category.name[0]}</span>
-                            </div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-                            <div class="absolute bottom-0 left-0 right-0 p-4">
-                                <h4 class="text-white font-bold text-base leading-tight drop-shadow">${category.name}</h4>
-                                <p class="text-white/80 text-xs font-medium mt-0.5">${category.desc}</p>
-                            </div>
-                        </div>
-                        <div class="px-4 py-3 flex items-center justify-between">
-                            <a href="{{ route('public.artisans.index') }}" class="text-rdc-blue text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
-                                Voir les artisans
-                                <i class="fas fa-arrow-right text-[10px]"></i>
-                            </a>
-                            <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">RDC</span>
-                        </div>
-                    `;
-
-                    categoriesContainer.appendChild(categoryElement);
-                });
-            }
 
 
             // Données des emplois avec images Unsplash

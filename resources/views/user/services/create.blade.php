@@ -11,7 +11,8 @@
             <h2 class="text-3xl font-heading font-black text-slate-900 uppercase">Proposer un service</h2>
             <p class="text-sm font-bold text-slate-400 mt-2 uppercase tracking-widest">Remplissez les détails pour publier votre offre sur la plateforme</p>
             
-            <form action="{{ route('user.services.store') }}" method="POST" enctype="multipart/form-data" class="mt-10 space-y-8">
+            <form action="{{ route('user.services.store') }}" method="POST" enctype="multipart/form-data" class="mt-10 space-y-8"
+                  x-data="serviceForm()" x-init="init()">
                 @csrf
 
                 {{-- Message d'erreur de limite d'abonnement --}}
@@ -29,10 +30,66 @@
                     </div>
                 @endif
 
+                <!-- Catégorie (Métier) -->
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Catégorie de métier <span class="text-red-500">*</span></label>
+                    <select name="category_id" required x-model="categoryId" @change="loadServiceTypes()"
+                            class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                        <option value="">Sélectionnez un domaine d'activité</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('category_id')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                </div>
+
+                <!-- Types de services (Sous-services — Sélection multiple) -->
+                <div class="space-y-3" x-show="serviceTypes.length > 0" x-transition>
+                    <div class="flex items-center justify-between pl-4">
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest">
+                            Types de services <span class="text-red-500">*</span>
+                            <span class="text-slate-400 font-medium normal-case tracking-normal ml-1">(cochez un ou plusieurs)</span>
+                        </label>
+                        <div class="flex gap-3">
+                            <button type="button" @click="selectAllServiceTypes()"
+                                    class="text-[10px] font-black text-rdc-blue hover:underline uppercase tracking-wider">Tout sélectionner</button>
+                            <button type="button" @click="clearServiceTypes()"
+                                    class="text-[10px] font-black text-slate-400 hover:text-slate-600 hover:underline uppercase tracking-wider">Tout vider</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <template x-for="st in serviceTypes" :key="st.id">
+                            <label :for="'st-' + st.id"
+                                   :class="selectedTypeIds.includes(st.id) ? 'border-rdc-blue bg-rdc-blue/5 ring-2 ring-rdc-blue/20' : 'border-slate-200 bg-slate-50 hover:border-slate-300'"
+                                   class="flex items-center gap-3 px-5 py-4 rounded-2xl cursor-pointer transition-all border group">
+                                <input type="checkbox"
+                                       :id="'st-' + st.id"
+                                       name="service_type_ids[]"
+                                       :value="st.id"
+                                       @change="onCheckboxChange(st.id, $event)"
+                                       :checked="selectedTypeIds.includes(st.id)"
+                                       class="w-4 h-4 accent-rdc-blue rounded shrink-0">
+                                <span class="text-xs font-bold text-slate-800 leading-tight" x-text="st.title"></span>
+                            </label>
+                        </template>
+                    </div>
+
+                    <!-- Compteur de sélection -->
+                    <p x-show="selectedTypeIds.length > 0"
+                       class="text-[10px] font-black text-rdc-blue pl-4 uppercase tracking-widest">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        <span x-text="selectedTypeIds.length + ' sous-service(s) sélectionné(s) — ' + selectedTypeIds.length + ' offre(s) sera/seront créée(s)'"></span>
+                    </p>
+
+                    @error('service_type_ids')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                    @error('service_type_ids.*')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                </div>
+
                 <!-- Titre -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Titre du service <span class="text-red-500">*</span></label>
-                    <input type="text" name="title" required placeholder="Ex: Réparation plomberie générale" value="{{ old('title') }}"
+                    <input type="text" name="title" required placeholder="Ex: Réparation plomberie générale" x-model="title"
                            class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
                     @error('title')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
                 </div>
@@ -88,7 +145,12 @@
                 <div class="pt-6 flex gap-4 border-t border-slate-100">
                     <a href="{{ route('user.services.my') }}" class="px-8 py-5 bg-slate-100 text-slate-600 font-black rounded-3xl text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">Annuler</a>
                     <button type="submit" class="flex-1 px-8 py-5 bg-rdc-blue text-white font-black rounded-3xl text-[10px] uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-105 transition-all">
-                        Publier mon service
+                        <span x-show="selectedTypeIds.length <= 1">
+                            <i class="fas fa-paper-plane mr-1"></i> Publier mon service
+                        </span>
+                        <span x-show="selectedTypeIds.length > 1">
+                            <i class="fas fa-paper-plane mr-1"></i> Publier <span x-text="selectedTypeIds.length"></span> services
+                        </span>
                     </button>
                 </div>
             </form>
@@ -171,5 +233,56 @@
             updatePreviews();
         }
     });
+</script>
+
+<script>
+function serviceForm() {
+    return {
+        categoryId: '{{ old('category_id') }}',
+        title: '{{ old('title') }}',
+        serviceTypes: [],
+        selectedTypeIds: @json(old('service_type_ids', [])),
+
+        init() {
+            if (this.categoryId) {
+                this.loadServiceTypes();
+            }
+        },
+
+        loadServiceTypes() {
+            if (!this.categoryId) {
+                this.serviceTypes = [];
+                this.selectedTypeIds = [];
+                return;
+            }
+            fetch(`/api/categories/${this.categoryId}/service-types`)
+                .then(r => r.json())
+                .then(data => {
+                    this.serviceTypes = data;
+                    // Restore old checked state on validation error
+                    this.selectedTypeIds = this.selectedTypeIds.map(id => parseInt(id));
+                });
+        },
+
+        onCheckboxChange(id, event) {
+            id = parseInt(id);
+            if (event.target.checked) {
+                if (!this.selectedTypeIds.includes(id)) {
+                    this.selectedTypeIds.push(id);
+                }
+            } else {
+                this.selectedTypeIds = this.selectedTypeIds.filter(x => x !== id);
+            }
+        },
+
+        selectAllServiceTypes() {
+            this.selectedTypeIds = this.serviceTypes.map(st => st.id);
+        },
+
+        clearServiceTypes() {
+            this.selectedTypeIds = [];
+        },
+    }
+}
 </script>
 @endsection

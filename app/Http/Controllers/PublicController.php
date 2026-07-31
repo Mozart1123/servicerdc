@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\JobOffer;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\ServiceType;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -163,5 +164,39 @@ class PublicController extends Controller
         $services = $artisan->services()->where('status', 'active')->latest()->get();
 
         return view('public.artisans.show', compact('artisan', 'services'));
+    }
+
+    /**
+     * Display service types (sub-services) for a specific category.
+     */
+    public function categoryServiceTypes(Category $category): View
+    {
+        $serviceTypes = $category->serviceTypes()->withCount(['services' => function ($q) {
+            $q->where('status', 'active');
+        }])->get();
+
+        return view('public.categories.service-types', compact('category', 'serviceTypes'));
+    }
+
+    /**
+     * Display artisan service offers filtered by a specific service type.
+     */
+    public function serviceTypeServices(ServiceType $serviceType): View
+    {
+        $services = $serviceType->services()
+            ->where('status', 'active')
+            ->with(['artisan', 'category'])
+            ->latest()
+            ->paginate(12);
+
+        return view('public.service-types.services', compact('serviceType', 'services'));
+    }
+
+    /**
+     * API endpoint returning service types for a category.
+     */
+    public function apiCategoryServiceTypes(Category $category): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($category->serviceTypes);
     }
 }

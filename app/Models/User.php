@@ -246,4 +246,24 @@ class User extends Authenticatable
     {
         return $this->notifications()->where('is_read', false)->count();
     }
+
+    /**
+     * User's wallet.
+     */
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    /**
+     * Get user's wallet or create one if missing.
+     */
+    public function getOrCreateWallet(): Wallet
+    {
+        return $this->wallet()->firstOrCreate([], [
+            'balance'         => 0.00,
+            'pending_balance' => 0.00,
+            'currency'        => 'USD',
+        ]);
+    }
 }

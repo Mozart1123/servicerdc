@@ -11,15 +11,42 @@
             <h2 class="text-3xl font-heading font-black text-slate-900 uppercase">Modifier: {{ $service->title }}</h2>
             <p class="text-sm font-bold text-slate-400 mt-2 uppercase tracking-widest">Mettez à jour les détails de votre offre</p>
             
-            <form action="{{ route('user.services.update', $service->id) }}" method="POST" enctype="multipart/form-data" class="mt-10 space-y-8">
+            <form action="{{ route('user.services.update', $service->id) }}" method="POST" enctype="multipart/form-data" class="mt-10 space-y-8"
+                  x-data="serviceForm()" x-init="init()">
                 @csrf
                 @method('PUT')
                 
+                <!-- Catégorie (Métier) -->
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Catégorie de métier <span class="text-red-500">*</span></label>
+                    <select name="category_id" required x-model="categoryId" @change="loadServiceTypes()"
+                            class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                        <option value="">Sélectionnez un domaine d'activité</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ old('category_id', $service->category_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('category_id')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                </div>
+
+                <!-- Type de service (Sous-service) -->
+                <div class="space-y-2" x-show="serviceTypes.length > 0" x-transition>
+                    <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Type de service (Optionnel)</label>
+                    <select name="service_type_id" x-model="serviceTypeId" @change="onServiceTypeChange()"
+                            class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                        <option value="">Sélectionnez le type de service (optionnel)</option>
+                        <template x-for="st in serviceTypes" :key="st.id">
+                            <option :value="st.id" x-text="st.title" :selected="st.id == serviceTypeId"></option>
+                        </template>
+                    </select>
+                    @error('service_type_id')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                </div>
+
                 <!-- Titre & Statut -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="space-y-2 md:col-span-2">
                         <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Titre du service <span class="text-red-500">*</span></label>
-                        <input type="text" name="title" required value="{{ old('title', $service->title) }}"
+                        <input type="text" name="title" required x-model="title"
                                class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
                         @error('title')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
                     </div>
@@ -144,4 +171,37 @@
     @endforeach
 @endif
 
+<script>
+function serviceForm() {
+    return {
+        categoryId: '{{ old('category_id', $service->category_id) }}',
+        serviceTypeId: '{{ old('service_type_id', $service->service_type_id) }}',
+        title: '{{ old('title', addslashes($service->title)) }}',
+        serviceTypes: [],
+        init() {
+            if (this.categoryId) {
+                this.loadServiceTypes();
+            }
+        },
+        loadServiceTypes() {
+            if (!this.categoryId) {
+                this.serviceTypes = [];
+                this.serviceTypeId = '';
+                return;
+            }
+            fetch(`/api/categories/${this.categoryId}/service-types`)
+                .then(response => response.json())
+                .then(data => {
+                    this.serviceTypes = data;
+                });
+        },
+        onServiceTypeChange() {
+            const selected = this.serviceTypes.find(st => st.id == this.serviceTypeId);
+            if (selected) {
+                this.title = selected.title;
+            }
+        }
+    }
+}
+</script>
 @endsection

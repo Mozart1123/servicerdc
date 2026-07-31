@@ -25,16 +25,29 @@ class PayoutController extends Controller
     public function index(): View
     {
         $user = Auth::user();
+        $wallet = $user->getOrCreateWallet();
 
-        // ─── Calcul du solde disponible (montant net dû à l'artisan) ──────────
+        // ─── Synchronisation / Calcul du solde disponible ────────────────────
         $pendingMissions = Mission::where('artisan_id', $user->id)
             ->where('payout_status', 'pending_payout')
             ->get();
 
-        // Net = montant mission - commission ProConnect
-        $availableBalance = $pendingMissions->sum(
+        $missionsSum = $pendingMissions->sum(
             fn (Mission $m) => (float) $m->amount - (float) $m->commission_amount
         );
+
+        // Intégration transparente avec le Wallet
+        if ($wallet->balance == 0 && $missionsSum > 0) {
+            $wallet->update(['balance' => $missionsSum]);
+        }
+
+        $availableBalance = max((float) $wallet->balance, (float) $missionsSum);
+
+        // ─── Historique des paiements reçus (Wallet Transactions) ────────────
+        $walletTransactions = $wallet->transactions()
+            ->with(['fromUser', 'mission'])
+            ->latest()
+            ->get();
 
         // ─── Statistiques complémentaires ─────────────────────────────────────
         $totalEarned = Mission::where('artisan_id', $user->id)
@@ -55,12 +68,14 @@ class PayoutController extends Controller
             ->first();
 
         return view('user.gains.index', compact(
+            'wallet',
             'availableBalance',
             'totalEarned',
             'missionsPendingCount',
             'payoutRequests',
             'pendingRequest',
-            'pendingMissions'
+            'pendingMissions',
+            'walletTransactions'
         ));
     }
 

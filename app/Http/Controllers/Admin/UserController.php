@@ -17,7 +17,11 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $users = User::latest()->paginate(20, ['*'], 'users_page');
+        $query = User::latest();
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->where('role', '!=', User::ROLE_SUPER_ADMIN);
+        }
+        $users = $query->paginate(20, ['*'], 'users_page');
         
         if ($request->wantsJson()) {
             return response()->json($users);
@@ -47,6 +51,11 @@ class UserController extends Controller
     {
         $query = User::query();
 
+        // Hide Super-Admin from standard Admin view
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->where('role', '!=', User::ROLE_SUPER_ADMIN);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -65,12 +74,17 @@ class UserController extends Controller
 
         $users = $query->latest()->paginate(20);
 
-        // Add stats to response
+        // Stats calculation respecting visibility rules
+        $statsQuery = User::query();
+        if (!Auth::user()->isSuperAdmin()) {
+            $statsQuery->where('role', '!=', User::ROLE_SUPER_ADMIN);
+        }
+
         $stats = [
-            'total' => User::count(),
-            'active' => User::where('status', User::STATUS_ACTIVE)->count(),
-            'suspended' => User::where('status', User::STATUS_SUSPENDED)->count(),
-            'verified' => User::whereHas('documents', function($q) {
+            'total' => (clone $statsQuery)->count(),
+            'active' => (clone $statsQuery)->where('status', User::STATUS_ACTIVE)->count(),
+            'suspended' => (clone $statsQuery)->where('status', User::STATUS_SUSPENDED)->count(),
+            'verified' => (clone $statsQuery)->whereHas('documents', function($q) {
                 $q->where('status', 'verified');
             })->count(),
         ];
@@ -107,6 +121,31 @@ class UserController extends Controller
     }
 
     /**
+     * Promote a regular user to admin role via AJAX.
+     */
+    public function promoteToAdminApi(int $id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->isSuperAdmin()) {
+            return response()->json(['error' => 'Impossible de modifier un Super Administrateur.'], 403);
+        }
+
+        if ($user->id === Auth::id()) {
+            return response()->json(['error' => 'Vous ne pouvez pas modifier votre propre rôle.'], 403);
+        }
+
+        // Promote to admin keeping all existing data intact
+        $user->update(['role' => User::ROLE_ADMIN]);
+
+        return response()->json([
+            'success' => true,
+            'role' => User::ROLE_ADMIN,
+            'message' => "{$user->name} est désormais Administrateur."
+        ]);
+    }
+
+    /**
      * Promote a regular user to admin role.
      */
     public function promoteToAdmin(int $id)
@@ -115,6 +154,10 @@ class UserController extends Controller
 
         if ($user->isSuperAdmin()) {
             return back()->with('error', 'Impossible de modifier un Super Administrateur.');
+        }
+
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'Vous ne pouvez pas modifier votre propre rôle.');
         }
 
         $user->update(['role' => User::ROLE_ADMIN]);

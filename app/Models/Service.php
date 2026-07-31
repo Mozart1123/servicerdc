@@ -12,6 +12,7 @@ class Service extends Model
     protected $fillable = [
         'artisan_id',
         'category_id',
+        'service_type_id',
         'provider_name',
         'profession',
         'city',
@@ -52,6 +53,14 @@ class Service extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the service type of this service.
+     */
+    public function serviceType()
+    {
+        return $this->belongsTo(ServiceType::class, 'service_type_id');
     }
 
     /**

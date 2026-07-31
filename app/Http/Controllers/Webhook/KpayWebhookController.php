@@ -283,6 +283,22 @@ class KpayWebhookController extends Controller
         $mission->contact_unlocked_at = now();
         $mission->save();
 
+        // ── CREDIT ARTISAN WALLET ──
+        if ($mission->artisan_id) {
+            $artisan = User::find($mission->artisan_id);
+            if ($artisan) {
+                $wallet = $artisan->getOrCreateWallet();
+                $wallet->credit(
+                    amount: (float) ($mission->amount ?? $transaction->amount),
+                    commissionAmount: (float) ($transaction->amount ?? 0),
+                    fromUserId: $mission->client_id,
+                    missionId: $mission->id,
+                    description: "Paiement reçu pour la mission \"{$mission->title}\"",
+                    referenceId: $kpayRef ?? $transaction->reference_id
+                );
+            }
+        }
+
         // ── SYNC WITH SERVICEREQUEST ──
         $serviceRequest = $mission->serviceRequest;
         if ($serviceRequest) {
@@ -316,7 +332,7 @@ class KpayWebhookController extends Controller
             $mission->save();
         }
 
-        Log::info("K-PAY Webhook: mission #{$mission->id} commission paid. Payout pending for artisan #{$mission->artisan_id}.");
+        Log::info("K-PAY Webhook: mission #{$mission->id} commission paid. Wallet credited & payout pending for artisan #{$mission->artisan_id}.");
 
         // Notify client
         if ($mission->client_id) {

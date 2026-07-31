@@ -66,6 +66,13 @@ Route::get('/public/jobs/{id}/apply', [PublicController::class, 'jobApplyRedirec
 Route::get('/public/artisans', [PublicController::class, 'artisans'])->name('public.artisans.index');
 Route::get('/public/artisans/{id}', [PublicController::class, 'artisanShow'])->name('public.artisans.show');
 
+// Parcours en 3 étapes pour les catégories
+Route::get('/public/categories/{category}/service-types', [PublicController::class, 'categoryServiceTypes'])->name('public.categories.service-types');
+Route::get('/public/service-types/{serviceType}/services', [PublicController::class, 'serviceTypeServices'])->name('public.service-types.services');
+
+// API publique pour les types de services d'une catégorie (utilisée par les formulaires artisans)
+Route::get('/api/categories/{category}/service-types', [PublicController::class, 'apiCategoryServiceTypes'])->name('api.categories.service-types');
+
 // Newsletter subscription from the landing page
 Route::post('/newsletter/subscribe', [HomeController::class, 'subscribeNewsletter'])->name('newsletter.subscribe');
 
@@ -262,6 +269,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::get('/', [AdminUserController::class, 'index'])->name('index');
             Route::get('/api', [AdminUserController::class, 'apiIndex'])->name('api.index');
             Route::post('/{id}/promote', [AdminUserController::class, 'promoteToAdmin'])->name('promote');
+            Route::post('/{id}/promote-api', [AdminUserController::class, 'promoteToAdminApi'])->name('promote-api');
             Route::post('/{id}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('toggle-status');
             Route::post('/{id}/toggle-status-api', [AdminUserController::class, 'toggleStatusApi'])->name('toggle-status-api');
             Route::delete('/{id}', [AdminUserController::class, 'destroy'])->name('destroy');

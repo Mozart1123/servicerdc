@@ -206,6 +206,81 @@
     @endif
 
     {{-- ══════════════════════════════════════════════════════════ --}}
+    {{-- HISTORIQUE DES PAIEMENTS REÇUS (PORTEFEUILLE)              --}}
+    {{-- ══════════════════════════════════════════════════════════ --}}
+    <div class="bg-white border border-slate-100 p-6 rounded-[2rem] shadow-sm">
+        <h3 class="text-base font-black text-slate-900 uppercase tracking-wide mb-5 flex items-center justify-between">
+            <span><i class="fas fa-wallet text-emerald-500 mr-2"></i>Historique des paiements reçus (Portefeuille)</span>
+            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">{{ $walletTransactions->count() }} transaction(s)</span>
+        </h3>
+
+        @if($walletTransactions->isEmpty())
+            <div class="text-center py-12 bg-slate-50/50 rounded-2xl border border-dashed border-slate-100">
+                <div class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-300 text-2xl mx-auto mb-3">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <p class="text-slate-500 font-bold text-sm">Aucun paiement reçu dans le portefeuille pour le moment.</p>
+                <p class="text-slate-400 text-xs mt-1">Dès qu'un client paie une mission, l'argent apparaît directement ici avec l'identité du client.</p>
+            </div>
+        @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left border-b border-slate-100">
+                            <th class="text-[10px] font-black text-slate-400 uppercase tracking-widest pb-3 pl-2">Client (Payeur)</th>
+                            <th class="text-[10px] font-black text-slate-400 uppercase tracking-widest pb-3">Détail / Mission</th>
+                            <th class="text-[10px] font-black text-slate-400 uppercase tracking-widest pb-3">Montant Reçu</th>
+                            <th class="text-[10px] font-black text-slate-400 uppercase tracking-widest pb-3">Date & Heure</th>
+                            <th class="text-[10px] font-black text-slate-400 uppercase tracking-widest pb-3 pr-2 text-right">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        @foreach($walletTransactions as $tx)
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="py-4 pl-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-rdc-blue/10 flex items-center justify-center text-rdc-blue font-bold shrink-0 overflow-hidden">
+                                        @if($tx->fromUser?->profile_photo)
+                                            <img src="{{ Storage::url($tx->fromUser->profile_photo) }}" class="w-full h-full object-cover">
+                                        @else
+                                            <i class="fas fa-user text-xs"></i>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-900 leading-tight">{{ $tx->fromUser?->name ?? 'Client Inconnu' }}</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">{{ $tx->fromUser?->email ?? 'Paiement direct' }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4">
+                                <p class="font-bold text-slate-800 text-xs">{{ $tx->description ?? ($tx->mission?->title ?? 'Paiement de prestation') }}</p>
+                                @if($tx->reference_id)
+                                    <p class="text-[9px] text-slate-400 font-mono">Ref: {{ $tx->reference_id }}</p>
+                                @endif
+                            </td>
+                            <td class="py-4">
+                                <p class="font-black text-emerald-600 text-sm">+ {{ number_format((float)$tx->net_amount, 2) }} $</p>
+                                @if($tx->commission_amount > 0)
+                                    <p class="text-[9px] text-slate-400">Brut: {{ number_format((float)$tx->amount, 2) }} $ (Comm. -{{ number_format((float)$tx->commission_amount, 2) }} $)</p>
+                                @endif
+                            </td>
+                            <td class="py-4 text-xs text-slate-500 font-medium">
+                                {{ $tx->created_at->format('d/m/Y H:i') }}
+                            </td>
+                            <td class="py-4 pr-2 text-right">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                    <i class="fas fa-check-circle"></i> Encaissé
+                                </span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+
+    {{-- ══════════════════════════════════════════════════════════ --}}
     {{-- HISTORIQUE DES DEMANDES                                    --}}
     {{-- ══════════════════════════════════════════════════════════ --}}
     <div class="bg-white border border-slate-100 p-6 rounded-[2rem] shadow-sm">
