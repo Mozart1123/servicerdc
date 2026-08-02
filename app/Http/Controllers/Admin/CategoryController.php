@@ -78,10 +78,13 @@ class CategoryController extends Controller
 
     /**
      * Store batch categories array.
+     * Each category is processed independently — no global transaction.
+     * If one fails the others are still saved.
      */
     private function storeBatchArray(Request $request)
     {
-        @set_time_limit(300);
+        @set_time_limit(0); // attempt unlimited; ignored on locked hosts but harmless
+        ini_set('max_execution_time', 0);
 
         $request->validate([
             'categories'               => 'required|array|min:1|max:50',
@@ -91,19 +94,28 @@ class CategoryController extends Controller
             'categories.*.image'       => 'nullable|image',
         ]);
 
-        $createdCount = DB::transaction(function () use ($request) {
-            $count = 0;
-            $items = array_values($request->input('categories'));
-            $fileCategories = $request->file('categories');
+        $items          = array_values($request->input('categories', []));
+        $fileCategories = $request->file('categories', []);
+        $createdCount   = 0;
+        $errors         = [];
 
-            foreach ($items as $index => $catData) {
-                if (empty(trim($catData['name'] ?? ''))) {
-                    continue;
-                }
+        // Pre-load all existing slugs once to avoid repeated SELECT queries
+        $existingSlugs = Category::pluck('slug')->flip()->toArray();
 
-                $slug      = $this->uniqueSlug($catData['name']);
+        foreach ($items as $index => $catData) {
+            $name = trim($catData['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            try {
+                // Generate unique slug without DB loop
+                $slug = $this->uniqueSlugFromCache($name, $existingSlugs);
+                $existingSlugs[$slug] = true; // mark as used for next iteration
+
                 $imagePath = null;
 
+                // Try both key formats for uploaded files
                 if ($request->hasFile("categories.{$index}.image")) {
                     $imagePath = $request->file("categories.{$index}.image")->store('categories', 'public');
                 } elseif (is_array($fileCategories) && isset($fileCategories[$index]['image'])) {
@@ -114,7 +126,7 @@ class CategoryController extends Controller
                 }
 
                 $category = Category::create([
-                    'name'        => trim($catData['name']),
+                    'name'        => $name,
                     'slug'        => $slug,
                     'image'       => $imagePath,
                     'description' => isset($catData['description']) ? trim($catData['description']) : null,
@@ -124,22 +136,36 @@ class CategoryController extends Controller
                     $this->createServiceTypes($category->id, $catData['services']);
                 }
 
-                $count++;
+                $createdCount++;
+
+            } catch (\Throwable $e) {
+                $errors[] = "« {$name} » : " . $e->getMessage();
+                \Log::error('Batch category creation failed for: ' . $name, ['error' => $e->getMessage()]);
             }
+        }
 
-            return $count;
-        });
+        if ($createdCount === 0 && !empty($errors)) {
+            return redirect()->back()
+                             ->withErrors(['batch' => 'Aucune catégorie n\'a pu être créée. Erreurs : ' . implode(' | ', $errors)])
+                             ->withInput();
+        }
 
-        return redirect()->route('admin.categories.index')
-                         ->with('success', "{$createdCount} catégorie(s) créée(s) avec succès.");
+        $msg = "{$createdCount} catégorie(s) créée(s) avec succès.";
+        if (!empty($errors)) {
+            $msg .= ' Attention : ' . count($errors) . ' catégorie(s) ignorée(s) (voir les logs).'; 
+        }
+
+        return redirect()->route('admin.categories.index')->with('success', $msg);
     }
 
     /**
      * Store bulk text import.
+     * Each category is inserted independently — no global rollback risk.
      */
     private function storeTextImport(Request $request)
     {
-        @set_time_limit(300);
+        @set_time_limit(0);
+        ini_set('max_execution_time', 0);
 
         $request->validate([
             'import_text' => 'required|string',
@@ -153,12 +179,15 @@ class CategoryController extends Controller
                              ->withInput();
         }
 
-        $createdCount = DB::transaction(function () use ($parsed) {
-            $count = 0;
-            $now   = now();
+        $existingSlugs = Category::pluck('slug')->flip()->toArray();
+        $createdCount  = 0;
+        $errors        = [];
+        $now           = now();
 
-            foreach ($parsed as $item) {
-                $slug = $this->uniqueSlug($item['name']);
+        foreach ($parsed as $item) {
+            try {
+                $slug = $this->uniqueSlugFromCache($item['name'], $existingSlugs);
+                $existingSlugs[$slug] = true;
 
                 $category = Category::create([
                     'name'        => $item['name'],
@@ -166,27 +195,33 @@ class CategoryController extends Controller
                     'description' => $item['description'] ?: null,
                 ]);
 
-                $serviceRecords = [];
-                foreach ($item['services'] as $serviceTitle) {
-                    $serviceRecords[] = [
-                        'category_id' => $category->id,
-                        'title'       => $serviceTitle,
-                        'created_at'  => $now,
-                        'updated_at'  => $now,
-                    ];
-                }
-
-                if (!empty($serviceRecords)) {
+                if (!empty($item['services'])) {
+                    $serviceRecords = [];
+                    foreach ($item['services'] as $serviceTitle) {
+                        $serviceRecords[] = [
+                            'category_id' => $category->id,
+                            'title'       => $serviceTitle,
+                            'created_at'  => $now,
+                            'updated_at'  => $now,
+                        ];
+                    }
                     ServiceType::insert($serviceRecords);
                 }
 
-                $count++;
-            }
-            return $count;
-        });
+                $createdCount++;
 
-        return redirect()->route('admin.categories.index')
-                         ->with('success', "Importation réussie : {$createdCount} catégorie(s) et leurs sous-services ont été créés.");
+            } catch (\Throwable $e) {
+                $errors[] = "« {$item['name']} »";
+                \Log::error('Text import category failed: ' . $item['name'], ['error' => $e->getMessage()]);
+            }
+        }
+
+        $msg = "Importation réussie : {$createdCount} catégorie(s) et leurs sous-services ont été créés.";
+        if (!empty($errors)) {
+            $msg .= ' Ignorées : ' . implode(', ', $errors);
+        }
+
+        return redirect()->route('admin.categories.index')->with('success', $msg);
     }
 
     /**
@@ -277,12 +312,31 @@ class CategoryController extends Controller
         }
     }
 
+    /**
+     * Legacy slug generator (1 DB query per slug — used when cache unavailable).
+     */
     private function uniqueSlug(string $name): string
     {
         $slug = Str::slug($name);
         $base = $slug;
         $i    = 1;
         while (Category::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $i++;
+        }
+        return $slug;
+    }
+
+    /**
+     * Slug generator using pre-loaded cache — zero extra DB queries per item.
+     *
+     * @param array<string, mixed> $existingSlugs  Pass by reference to accumulate within a loop.
+     */
+    private function uniqueSlugFromCache(string $name, array &$existingSlugs): string
+    {
+        $slug = Str::slug($name);
+        $base = $slug;
+        $i    = 1;
+        while (array_key_exists($slug, $existingSlugs)) {
             $slug = $base . '-' . $i++;
         }
         return $slug;
