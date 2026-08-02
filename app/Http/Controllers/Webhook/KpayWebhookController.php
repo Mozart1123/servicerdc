@@ -10,6 +10,7 @@ use App\Models\KpayTransaction;
 use App\Models\Withdrawal;
 use App\Models\Payout;
 use App\Models\Mission;
+use App\Models\ServiceRequest;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -189,6 +190,8 @@ class KpayWebhookController extends Controller
                         $this->fulfillSubscription($transaction, $kpayRef);
                     } elseif ($transaction->type === 'mission') {
                         $this->fulfillMissionPayment($transaction, $kpayRef);
+                    } elseif ($transaction->type === 'service_request') {
+                        $this->fulfillServiceRequestPayment($transaction, $kpayRef);
                     }
 
                 } elseif ($newStatus === 'failed') {
@@ -417,5 +420,86 @@ class KpayWebhookController extends Controller
             'is_read'    => false,
             'action_url' => '/user/missions/' . $mission->id,
         ]);
+    }
+
+    /**
+     * Fulfill a Service Request payment from Client → Artisan.
+     */
+    protected function fulfillServiceRequestPayment(Transaction $transaction, ?string $kpayRef): void
+    {
+        $serviceRequest = ServiceRequest::find($transaction->item_id);
+
+        if (!$serviceRequest) {
+            Log::warning('K-PAY Webhook: fulfillServiceRequestPayment – serviceRequest not found', [
+                'item_id' => $transaction->item_id,
+            ]);
+            return;
+        }
+
+        if ($serviceRequest->payment_status === 'paid') {
+            Log::info("K-PAY Webhook: serviceRequest #{$serviceRequest->id} already marked as paid.");
+            return;
+        }
+
+        // 1. Mark Service Request as PAID and COMPLETED
+        $serviceRequest->update([
+            'payment_status' => 'paid',
+            'paid_at'        => now(),
+            'status'         => 'completed',
+            'completed_at'   => $serviceRequest->completed_at ?? now(),
+        ]);
+
+        // 2. Sync mission status if exists
+        $mission = $serviceRequest->mission;
+        if ($mission) {
+            $mission->update([
+                'status'            => 'completed',
+                'commission_status' => 'paid',
+                'payout_status'     => 'pending_payout',
+                'end_date'          => now(),
+            ]);
+        }
+
+        // 3. CREDIT ARTISAN WALLET
+        $artisanId = $serviceRequest->artisan_id ?? $mission?->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if ($artisanId) {
+            $artisan = User::find($artisanId);
+            if ($artisan) {
+                $wallet = $artisan->getOrCreateWallet();
+                $wallet->credit(
+                    amount: (float) $transaction->amount,
+                    commissionAmount: (float) ($transaction->amount * 0.10), // 10% platform commission
+                    fromUserId: $serviceRequest->user_id,
+                    missionId: $mission?->id,
+                    description: "Paiement reçu pour la prestation \"{$serviceRequest->requested_service_name}\"",
+                    referenceId: $kpayRef ?? $transaction->reference_id
+                );
+            }
+        }
+
+        // 4. Send Notifications (Client & Artisan)
+        Notification::create([
+            'user_id'      => $serviceRequest->user_id,
+            'type'         => 'service_request_paid',
+            'related_type' => 'service_request',
+            'related_id'   => $serviceRequest->id,
+            'title'        => 'Paiement confirmé !',
+            'message'      => "Votre paiement pour la prestation \"{$serviceRequest->requested_service_name}\" a été reçu avec succès. La prestation est désormais clôturée.",
+            'is_read'      => false,
+        ]);
+
+        if ($artisanId) {
+            Notification::create([
+                'user_id'      => $artisanId,
+                'type'         => 'payment_received',
+                'related_type' => 'service_request',
+                'related_id'   => $serviceRequest->id,
+                'title'        => 'Paiement reçu sur votre portefeuille !',
+                'message'      => "Le client a réglé la prestation \"{$serviceRequest->requested_service_name}\". Le solde a été crédité sur votre portefeuille.",
+                'is_read'      => false,
+            ]);
+        }
+
+        Log::info("K-PAY Webhook: ServiceRequest #{$serviceRequest->id} paid & completed. Artisan #{$artisanId} wallet credited.");
     }
 }

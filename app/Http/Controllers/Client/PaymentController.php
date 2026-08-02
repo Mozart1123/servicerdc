@@ -38,18 +38,44 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'provider'     => 'required|string',
             'phone_number' => 'required|string',
-            'payment_type' => 'required|string|in:mission,service,subscription',
+            'payment_type' => 'required|string|in:mission,service,subscription,service_request',
             'reference_id' => 'required|integer',
             'description'  => 'nullable|string',
         ]);
 
         $user = $request->user();
 
-        // ── 1. AMOUNT CALCULATION ──────────────────────────────────────────────
+        // ── 1. AMOUNT CALCULATION & ANTI DOUBLE PAYMENT SECURITY ─────────────────
         $amountUsd = 0;
         $missionId = null;
 
         switch ($validated['payment_type']) {
+            case 'service_request':
+                $serviceRequest = \App\Models\ServiceRequest::where('user_id', $user->id)
+                    ->findOrFail($validated['reference_id']);
+
+                // ── ANTI DOUBLE PAYMENT CHECK ──
+                if ($serviceRequest->payment_status === 'paid') {
+                    return response()->json([
+                        'error' => 'Cette demande de service a déjà été réglée et clôturée.',
+                    ], 400);
+                }
+
+                // ── SERVER-SIDE AMOUNT RECALCULATION (IMMUTABLE BY FRONTEND) ──
+                if ($serviceRequest->mission && (float) $serviceRequest->mission->amount > 0) {
+                    $amountUsd = (float) $serviceRequest->mission->amount;
+                    $missionId = $serviceRequest->mission->id;
+                } elseif ($serviceRequest->service && (float) $serviceRequest->service->price > 0) {
+                    $amountUsd = (float) $serviceRequest->service->price;
+                } elseif ((float) $serviceRequest->budget_max > 0) {
+                    $amountUsd = (float) $serviceRequest->budget_max;
+                } else {
+                    $amountUsd = 10.0; // fallback minimal
+                }
+
+                $serviceRequest->update(['payment_status' => 'pending']);
+                break;
+
             case 'mission':
                 $mission   = Mission::findOrFail($validated['reference_id']);
                 $amountUsd = $mission->amount;

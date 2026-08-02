@@ -24,6 +24,8 @@ class ServiceRequest extends Model
         'budget_max',
         'urgency',
         'status',
+        'payment_status',
+        'paid_at',
         'accepted_at',
         'completed_at',
         'notes',
@@ -37,9 +39,20 @@ class ServiceRequest extends Model
         'responded_at'  => 'datetime',
         'accepted_at'   => 'datetime',
         'completed_at'  => 'datetime',
+        'paid_at'       => 'datetime',
         'created_at'    => 'datetime',
         'updated_at'    => 'datetime',
     ];
+
+    public function isPaid(): bool
+    {
+        return $this->payment_status === 'paid';
+    }
+
+    public function isUnpaid(): bool
+    {
+        return $this->payment_status !== 'paid';
+    }
 
     // Status constants
     const STATUS_PENDING     = 'pending';

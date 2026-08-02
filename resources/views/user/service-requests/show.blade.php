@@ -96,8 +96,127 @@
     </div>
     @endif
 
+    {{-- Paid Status Banner --}}
+    @if($serviceRequest->payment_status === 'paid')
+    <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex items-center justify-between gap-4" data-aos="fade-up">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-emerald-500/20">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h4 class="font-bold text-slate-900">Prestation réglée et clôturée</h4>
+                    <span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 font-bold text-[10px] uppercase rounded-full">Payé</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    Le montant de <b>{{ number_format($amountToPay, 2) }} $</b> a été crédité sur le portefeuille de l'artisan.
+                    @if($serviceRequest->paid_at)
+                    <span class="text-slate-400"> (le {{ $serviceRequest->paid_at->format('d/m/Y à H:i') }})</span>
+                    @endif
+                </p>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Details --}}
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5" data-aos="fade-up">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5" data-aos="fade-up"
+         x-data="{
+            payModalOpen: false,
+            phone: '{{ auth()->user()->phone ?? '' }}',
+            provider: 'VODACOM_MPESA_COD',
+            loading: false,
+            detecting: false,
+            state: 'idle',
+            ref: null,
+            pollInterval: null,
+            toast: { show: false, message: '', type: 'success' },
+            showToast(msg, type = 'success') {
+                this.toast = { show: true, message: msg, type };
+                setTimeout(() => this.toast.show = false, 5000);
+            },
+            async detectProvider() {
+                if (this.phone.replace(/\D/g,'').length < 9) return;
+                this.detecting = true;
+                try {
+                    const r = await fetch('/api/payments/predict-provider', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ phone_number: this.phone })
+                    });
+                    const d = await r.json();
+                    if (d.provider) this.provider = d.provider;
+                } catch(e) {}
+                this.detecting = false;
+            },
+            async payClient() {
+                if (!this.phone) { this.showToast('Veuillez saisir un numéro de téléphone.', 'error'); return; }
+                this.loading = true;
+                try {
+                    const r = await fetch('/api/client/payments/initiate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            provider: this.provider || 'VODACOM_MPESA_COD',
+                            phone_number: this.phone,
+                            payment_type: 'service_request',
+                            reference_id: {{ $serviceRequest->id }}
+                        })
+                    });
+                    const d = await r.json();
+                    if (!r.ok) {
+                        this.showToast(d.error ?? 'Erreur lors de l\'initiation du paiement.', 'error');
+                        this.loading = false;
+                        return;
+                    }
+                    this.ref = d.reference;
+                    this.state = 'pending';
+                    this.showToast('Confirmez la demande USSD envoyée sur votre téléphone.', 'success');
+                    this.startPolling();
+                } catch(e) {
+                    this.showToast('Erreur réseau. Veuillez réessayer.', 'error');
+                }
+                this.loading = false;
+            },
+            startPolling() {
+                if (this.pollInterval) clearInterval(this.pollInterval);
+                let attempts = 0;
+                this.pollInterval = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 30) {
+                        clearInterval(this.pollInterval);
+                        this.state = 'expired';
+                        return;
+                    }
+                    try {
+                        const r = await fetch('/api/client/payments/status/' + this.ref, { headers: { 'Accept': 'application/json' } });
+                        const d = await r.json();
+                        if (d.status === 'success') {
+                            this.state = 'success';
+                            clearInterval(this.pollInterval);
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else if (d.status === 'failed') {
+                            this.state = 'failed';
+                            clearInterval(this.pollInterval);
+                            this.showToast('Le paiement a échoué.', 'error');
+                        }
+                    } catch(e) {}
+                }, 4000);
+            }
+         }">
+
+        {{-- Toast Notification --}}
+        <div x-show="toast.show" x-transition
+             :class="toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'"
+             class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3"
+             style="display:none">
+            <i class="fas" :class="toast.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+            <span x-text="toast.message"></span>
+        </div>
         @foreach([
             ['label' => 'Service lié', 'value' => $serviceRequest->service?->title, 'icon' => 'fa-tools'],
             ['label' => 'Artisan', 'value' => $serviceRequest->artisan?->name ?? $serviceRequest->service?->artisan?->name, 'icon' => 'fa-user-hard-hat'],
@@ -132,8 +251,15 @@
         @endif
     </div>
 
-    {{-- Action Buttons --}}
-    <div class="flex flex-wrap gap-3" data-aos="fade-up">
+        {{-- Bouton Payer l'artisan (Seulement si Client, status in_progress/completed et NON payé) --}}
+        @if(in_array($serviceRequest->status, ['in_progress', 'completed']) && $serviceRequest->user_id === auth()->id() && $serviceRequest->payment_status !== 'paid')
+        <button type="button" @click="payModalOpen = true"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-[#16a3b0] hover:bg-[#138e9b] text-white font-bold rounded-xl transition shadow-lg shadow-teal-500/20 transform hover:-translate-y-0.5 cursor-pointer">
+            <i class="fas fa-wallet text-lg"></i>
+            <span>Payer l'artisan ({{ number_format($amountToPay, 2) }} $)</span>
+        </button>
+        @endif
+
         @if(in_array($serviceRequest->status, ['accepted', 'in_progress', 'completed']) && isset($conversation))
         <a href="{{ route('user.messages.index', ['id' => $conversation->id]) }}"
            class="inline-flex items-center gap-2 px-6 py-3 bg-rdc-blue text-white font-bold rounded-xl hover:bg-rdc-blue-dark transition shadow-lg shadow-blue-200">
@@ -145,7 +271,7 @@
         <form action="{{ route('user.service-requests.complete', $serviceRequest->id) }}" method="POST">
             @csrf
             <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-200">
-                <i class="fas fa-check-circle"></i> Marquer comme termine
+                <i class="fas fa-check-circle"></i> Marquer comme terminé
             </button>
         </form>
         @endif
@@ -164,6 +290,98 @@
            class="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition">
             <i class="fas fa-arrow-left"></i> Retour
         </a>
+    </div>
+
+    {{-- Modal de Règlement Mobile Money (Client → Artisan via K-PAY) --}}
+    <div x-show="payModalOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+         style="display: none;"
+         @keydown.escape.window="if(state !== 'pending') payModalOpen = false">
+        
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative"
+             @click.away="if(state !== 'pending') payModalOpen = false">
+            
+            {{-- Close Button --}}
+            <button @click="payModalOpen = false" x-show="state !== 'pending'" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            {{-- Header --}}
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-[#16a3b0]/10 text-[#16a3b0] flex items-center justify-center text-xl shrink-0">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Règlement du service</h3>
+                    <p class="text-xs text-slate-400">Paiement Mobile Money direct à l'artisan</p>
+                </div>
+            </div>
+
+            {{-- Summary Box --}}
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-6 space-y-2">
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                    <span>Prestation :</span>
+                    <span class="font-bold text-slate-800">{{ $serviceRequest->requested_service_name }}</span>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                    <span>Artisan :</span>
+                    <span class="font-bold text-slate-800">{{ $serviceRequest->artisan?->name ?? $serviceRequest->service?->artisan?->name ?? 'Artisan ProConnect' }}</span>
+                </div>
+                <div class="pt-2 border-t border-slate-200 flex justify-between items-center">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Montant total</span>
+                    <span class="text-2xl font-black text-slate-900">{{ number_format($amountToPay, 2) }} $</span>
+                </div>
+            </div>
+
+            {{-- Idle Form State --}}
+            <div x-show="state === 'idle' || state === 'failed'" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Numéro Mobile Money</label>
+                    <div class="relative">
+                        <input type="tel" x-model="phone" @input.debounce.500ms="detectProvider()"
+                               placeholder="+243 81 234 5678"
+                               class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none">
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#16a3b0] uppercase" x-show="provider && !detecting" x-text="provider.split('_')[0]"></div>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2" x-show="detecting"><i class="fas fa-circle-notch animate-spin text-[#16a3b0]"></i></div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Opérateurs supportés : M-Pesa, Orange Money, Airtel Money, Afrimoney</p>
+                </div>
+
+                <button @click="payClient()" :disabled="loading || !phone"
+                        class="w-full py-3.5 px-6 bg-[#16a3b0] hover:bg-[#138e9b] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer">
+                    <span x-show="!loading"><i class="fas fa-lock mr-1"></i> Confirmer & Payer ({{ number_format($amountToPay, 2) }} $)</span>
+                    <span x-show="loading" class="flex items-center gap-2" style="display:none;"><i class="fas fa-circle-notch animate-spin"></i> Traitement en cours...</span>
+                </button>
+            </div>
+
+            {{-- Pending State --}}
+            <div x-show="state === 'pending'" style="display:none" class="py-8 text-center space-y-3">
+                <div class="w-16 h-16 bg-teal-50 text-[#16a3b0] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">
+                    <i class="fas fa-mobile-screen"></i>
+                </div>
+                <h4 class="text-base font-bold text-slate-900">Paiement en cours de confirmation...</h4>
+                <p class="text-xs text-slate-500 max-w-xs mx-auto">Veuillez valider le sous-menu USSD envoyé sur votre téléphone <b x-text="phone"></b>.</p>
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 text-xs rounded-full border border-amber-200">
+                    <i class="fas fa-circle-notch animate-spin"></i> Attente de validation réseau...
+                </div>
+            </div>
+
+            {{-- Success State --}}
+            <div x-show="state === 'success'" style="display:none" class="py-8 text-center space-y-3">
+                <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h4 class="text-lg font-bold text-slate-900">Paiement confirmé !</h4>
+                <p class="text-xs text-slate-500">Le solde a été crédité sur le portefeuille de l'artisan. Redirection en cours...</p>
+            </div>
+
+        </div>
     </div>
 
     {{-- Payment Choice (Client Only, when accepted and waiting for payment) --}}

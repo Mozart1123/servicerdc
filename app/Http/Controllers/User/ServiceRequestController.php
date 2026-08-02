@@ -279,7 +279,18 @@ class ServiceRequestController extends Controller
             })->first();
         }
 
-        return view('user.service-requests.show', compact('serviceRequest', 'conversation'));
+        $amountToPay = 0;
+        if ($serviceRequest->mission && (float) $serviceRequest->mission->amount > 0) {
+            $amountToPay = (float) $serviceRequest->mission->amount;
+        } elseif ($serviceRequest->service && (float) $serviceRequest->service->price > 0) {
+            $amountToPay = (float) $serviceRequest->service->price;
+        } elseif ((float) $serviceRequest->budget_max > 0) {
+            $amountToPay = (float) $serviceRequest->budget_max;
+        } else {
+            $amountToPay = 10.0;
+        }
+
+        return view('user.service-requests.show', compact('serviceRequest', 'conversation', 'amountToPay'));
     }
 
     /**
