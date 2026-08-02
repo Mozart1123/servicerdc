@@ -6,6 +6,13 @@
 @section($contentSection)
 <div class="max-w-3xl mx-auto space-y-6 pb-10">
 
+    {{-- Toast Notification (vanilla JS) --}}
+    <div id="pay-toast" style="display:none"
+         class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3">
+        <i id="pay-toast-icon" class="fas fa-check-circle"></i>
+        <span id="pay-toast-msg"></span>
+    </div>
+
     {{-- Flash Messages --}}
     @foreach(['success' => 'emerald', 'error' => 'red', 'info' => 'blue'] as $type => $color)
     @if(session($type))
@@ -120,103 +127,7 @@
     @endif
 
     {{-- Details --}}
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5" data-aos="fade-up"
-         x-data="{
-            payModalOpen: false,
-            phone: '{{ auth()->user()->phone ?? '' }}',
-            provider: 'VODACOM_MPESA_COD',
-            loading: false,
-            detecting: false,
-            state: 'idle',
-            ref: null,
-            pollInterval: null,
-            toast: { show: false, message: '', type: 'success' },
-            showToast(msg, type = 'success') {
-                this.toast = { show: true, message: msg, type };
-                setTimeout(() => this.toast.show = false, 5000);
-            },
-            async detectProvider() {
-                if (this.phone.replace(/\D/g,'').length < 9) return;
-                this.detecting = true;
-                try {
-                    const r = await fetch('/api/payments/predict-provider', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                        body: JSON.stringify({ phone_number: this.phone })
-                    });
-                    const d = await r.json();
-                    if (d.provider) this.provider = d.provider;
-                } catch(e) {}
-                this.detecting = false;
-            },
-            async payClient() {
-                if (!this.phone) { this.showToast('Veuillez saisir un numéro de téléphone.', 'error'); return; }
-                this.loading = true;
-                try {
-                    const r = await fetch('/api/client/payments/initiate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            provider: this.provider || 'VODACOM_MPESA_COD',
-                            phone_number: this.phone,
-                            payment_type: 'service_request',
-                            reference_id: {{ $serviceRequest->id }}
-                        })
-                    });
-                    const d = await r.json();
-                    if (!r.ok) {
-                        this.showToast(d.error ?? 'Erreur lors de l\'initiation du paiement.', 'error');
-                        this.loading = false;
-                        return;
-                    }
-                    this.ref = d.reference;
-                    this.state = 'pending';
-                    this.showToast('Confirmez la demande USSD envoyée sur votre téléphone.', 'success');
-                    this.startPolling();
-                } catch(e) {
-                    this.showToast('Erreur réseau. Veuillez réessayer.', 'error');
-                }
-                this.loading = false;
-            },
-            startPolling() {
-                if (this.pollInterval) clearInterval(this.pollInterval);
-                let attempts = 0;
-                this.pollInterval = setInterval(async () => {
-                    attempts++;
-                    if (attempts > 30) {
-                        clearInterval(this.pollInterval);
-                        this.state = 'expired';
-                        return;
-                    }
-                    try {
-                        const r = await fetch('/api/client/payments/status/' + this.ref, { headers: { 'Accept': 'application/json' } });
-                        const d = await r.json();
-                        if (d.status === 'success') {
-                            this.state = 'success';
-                            clearInterval(this.pollInterval);
-                            setTimeout(() => window.location.reload(), 2000);
-                        } else if (d.status === 'failed') {
-                            this.state = 'failed';
-                            clearInterval(this.pollInterval);
-                            this.showToast('Le paiement a échoué.', 'error');
-                        }
-                    } catch(e) {}
-                }, 4000);
-            }
-         }">
-
-        {{-- Toast Notification --}}
-        <div x-show="toast.show" x-transition
-             :class="toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'"
-             class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3"
-             style="display:none">
-            <i class="fas" :class="toast.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
-            <span x-text="toast.message"></span>
-        </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5" data-aos="fade-up">
         @foreach([
             ['label' => 'Service lié', 'value' => $serviceRequest->service?->title, 'icon' => 'fa-tools'],
             ['label' => 'Artisan', 'value' => $serviceRequest->artisan?->name ?? $serviceRequest->service?->artisan?->name, 'icon' => 'fa-user-hard-hat'],
@@ -253,7 +164,8 @@
 
         {{-- Bouton Payer l'artisan (Seulement si Client, status in_progress/completed et NON payé) --}}
         @if(in_array($serviceRequest->status, ['in_progress', 'completed']) && $serviceRequest->user_id === auth()->id() && $serviceRequest->payment_status !== 'paid')
-        <button type="button" @click="payModalOpen = true"
+        <button type="button" id="btn-open-pay-modal"
+                onclick="openPayModal()"
                 class="inline-flex items-center gap-2 px-6 py-3 bg-[#16a3b0] hover:bg-[#138e9b] text-white font-bold rounded-xl transition shadow-lg shadow-teal-500/20 transform hover:-translate-y-0.5 cursor-pointer">
             <i class="fas fa-wallet text-lg"></i>
             <span>Payer l'artisan ({{ number_format($amountToPay, 2) }} $)</span>
@@ -292,23 +204,17 @@
         </a>
     </div>
 
-    {{-- Modal de Règlement Mobile Money (Client → Artisan via K-PAY) --}}
-    <div x-show="payModalOpen" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95"
-         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-         style="display: none;"
-         @keydown.escape.window="if(state !== 'pending') payModalOpen = false">
-        
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative"
-             @click.away="if(state !== 'pending') payModalOpen = false">
-            
+    {{-- ===== MODAL PAIEMENT ARTISAN (Vanilla JS — pas d'Alpine) ===== --}}
+    <div id="pay-modal"
+         style="display:none"
+         class="fixed inset-0 z-[9990] overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+         onclick="handleModalBackdropClick(event)">
+
+        <div id="pay-modal-box" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+
             {{-- Close Button --}}
-            <button @click="payModalOpen = false" x-show="state !== 'pending'" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition cursor-pointer">
+            <button id="btn-close-modal" type="button" onclick="closePayModal()"
+                    class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition cursor-pointer">
                 <i class="fas fa-times text-xl"></i>
             </button>
 
@@ -339,41 +245,50 @@
                 </div>
             </div>
 
-            {{-- Idle Form State --}}
-            <div x-show="state === 'idle' || state === 'failed'" class="space-y-4">
+            {{-- STATE: Idle / Failed --}}
+            <div id="modal-state-idle" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Numéro Mobile Money</label>
                     <div class="relative">
-                        <input type="tel" x-model="phone" @input.debounce.500ms="detectProvider()"
+                        <input type="tel" id="pay-phone"
                                placeholder="+243 81 234 5678"
-                               class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none">
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#16a3b0] uppercase" x-show="provider && !detecting" x-text="provider.split('_')[0]"></div>
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2" x-show="detecting"><i class="fas fa-circle-notch animate-spin text-[#16a3b0]"></i></div>
+                               oninput="debounceDetect(this.value)"
+                               class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:border-[#16a3b0] outline-none">
+                        <div id="pay-provider-badge" style="display:none"
+                             class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#16a3b0] uppercase"></div>
+                        <div id="pay-detecting" style="display:none"
+                             class="absolute right-4 top-1/2 -translate-y-1/2">
+                            <i class="fas fa-circle-notch animate-spin text-[#16a3b0]"></i>
+                        </div>
                     </div>
                     <p class="text-[11px] text-slate-400 mt-1">Opérateurs supportés : M-Pesa, Orange Money, Airtel Money, Afrimoney</p>
                 </div>
 
-                <button @click="payClient()" :disabled="loading || !phone"
-                        class="w-full py-3.5 px-6 bg-[#16a3b0] hover:bg-[#138e9b] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer">
-                    <span x-show="!loading"><i class="fas fa-lock mr-1"></i> Confirmer & Payer ({{ number_format($amountToPay, 2) }} $)</span>
-                    <span x-show="loading" class="flex items-center gap-2" style="display:none;"><i class="fas fa-circle-notch animate-spin"></i> Traitement en cours...</span>
+                <button id="btn-confirm-pay" type="button" onclick="submitPayment()"
+                        class="w-full py-3.5 px-6 bg-[#16a3b0] hover:bg-[#138e9b] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
+                    <span id="btn-pay-text"><i class="fas fa-lock mr-1"></i> Confirmer &amp; Payer ({{ number_format($amountToPay, 2) }} $)</span>
+                    <span id="btn-pay-loading" style="display:none" class="flex items-center gap-2">
+                        <i class="fas fa-circle-notch animate-spin"></i> Traitement...
+                    </span>
                 </button>
             </div>
 
-            {{-- Pending State --}}
-            <div x-show="state === 'pending'" style="display:none" class="py-8 text-center space-y-3">
+            {{-- STATE: Pending (USSD sent) --}}
+            <div id="modal-state-pending" style="display:none" class="py-8 text-center space-y-3">
                 <div class="w-16 h-16 bg-teal-50 text-[#16a3b0] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">
                     <i class="fas fa-mobile-screen"></i>
                 </div>
                 <h4 class="text-base font-bold text-slate-900">Paiement en cours de confirmation...</h4>
-                <p class="text-xs text-slate-500 max-w-xs mx-auto">Veuillez valider le sous-menu USSD envoyé sur votre téléphone <b x-text="phone"></b>.</p>
+                <p class="text-xs text-slate-500 max-w-xs mx-auto">
+                    Validez le prompt USSD sur votre téléphone <strong id="pay-phone-display"></strong>.
+                </p>
                 <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 text-xs rounded-full border border-amber-200">
                     <i class="fas fa-circle-notch animate-spin"></i> Attente de validation réseau...
                 </div>
             </div>
 
-            {{-- Success State --}}
-            <div x-show="state === 'success'" style="display:none" class="py-8 text-center space-y-3">
+            {{-- STATE: Success --}}
+            <div id="modal-state-success" style="display:none" class="py-8 text-center space-y-3">
                 <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl">
                     <i class="fas fa-check-circle"></i>
                 </div>
@@ -387,75 +302,7 @@
     {{-- Payment Choice (Client Only, when accepted and waiting for payment) --}}
     @if($serviceRequest->status === 'accepted' && $serviceRequest->user_id === auth()->id() && $serviceRequest->mission)
     @php $mission = $serviceRequest->mission; @endphp
-    <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm mt-6" data-aos="fade-up"
-         x-data="{
-            phone: '',
-            provider: '',
-            loading: false,
-            detecting: false,
-            pollInterval: null,
-            ref: null,
-            state: 'idle',
-            toast: { show: false, message: '', type: 'success' },
-            showToast(msg, type = 'success') {
-                this.toast = { show: true, message: msg, type };
-                setTimeout(() => this.toast.show = false, 5000);
-            },
-            async detectProvider() {
-                if (this.phone.replace(/\D/g,'').length < 9) return;
-                this.detecting = true;
-                try {
-                    const r = await fetch('/api/payments/predict-provider', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                        body: JSON.stringify({ phone_number: this.phone })
-                    });
-                    const d = await r.json();
-                    if (d.provider) this.provider = d.provider;
-                } catch(e) {}
-                this.detecting = false;
-            },
-            async pay() {
-                if (!this.phone) { this.showToast('Veuillez saisir un numero de telephone.', 'error'); return; }
-                this.loading = true;
-                try {
-                    const r = await fetch('/api/client/payments/initiate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Authorization': 'Bearer {{ session("api_token", "") }}' },
-                        body: JSON.stringify({ provider: this.provider || 'VODACOM_MPESA_COD', phone_number: this.phone, payment_type: 'mission', reference_id: {{ $mission->id }} })
-                    });
-                    const d = await r.json();
-                    if (!r.ok) { this.showToast(d.error ?? 'Erreur paiement.', 'error'); this.loading = false; return; }
-                    this.ref = d.reference; this.state = 'pending';
-                    this.showToast('Confirmez le prompt USSD sur votre telephone.', 'success');
-                    this.startPolling();
-                } catch(e) { this.showToast('Erreur reseau.', 'error'); }
-                this.loading = false;
-            },
-            startPolling() {
-                if (this.pollInterval) clearInterval(this.pollInterval);
-                let attempts = 0;
-                this.pollInterval = setInterval(async () => {
-                    attempts++;
-                    if (attempts > 24) { clearInterval(this.pollInterval); this.state = 'expired'; return; }
-                    try {
-                        const r = await fetch('/api/client/payments/status/' + this.ref, { headers: { 'Accept': 'application/json' } });
-                        const d = await r.json();
-                        if (d.status === 'success') { this.state = 'success'; clearInterval(this.pollInterval); setTimeout(() => window.location.reload(), 2500); }
-                        else if (d.status === 'failed') { this.state = 'failed'; clearInterval(this.pollInterval); this.showToast('Paiement echoue.', 'error'); }
-                    } catch(e) {}
-                }, 5000);
-            }
-         }">
-
-        {{-- Toast --}}
-        <div x-show="toast.show" x-transition
-             :class="toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'"
-             class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3"
-             style="display:none">
-            <i class="fas" :class="toast.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
-            <span x-text="toast.message"></span>
-        </div>
+    <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm mt-6" data-aos="fade-up" x-data="missionPayment">
 
         <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-xl bg-blue-50 text-rdc-blue flex items-center justify-center">
@@ -579,4 +426,273 @@
     </div>
     @endif
 </div>
+
+{{-- =================== SCRIPTS =================== --}}
+<script>
+// ── Configuration (depuis PHP via Blade) ──────────────────────────
+const PAY_CFG = {
+    serviceRequestId: @json($serviceRequest->id),
+    csrf: @json(csrf_token()),
+    phone: @json(auth()->user()->phone ?? '')
+};
+
+// ── État du modal ─────────────────────────────────────────────────
+let payModalState  = 'idle';   // idle | pending | success | expired
+let payModalRef    = null;
+let payModalTimer  = null;
+let detectTimer    = null;
+let payProvider    = 'VODACOM_MPESA_COD';
+
+// ── Helpers DOM ───────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function show(id) { var el = $(id); if (el) el.style.display = ''; }
+function hide(id) { var el = $(id); if (el) el.style.display = 'none'; }
+function showFlex(id) { var el = $(id); if (el) el.style.display = 'flex'; }
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showPayToast(msg, type) {
+    type = type || 'success';
+    var t = $('pay-toast');
+    var i = $('pay-toast-icon');
+    var m = $('pay-toast-msg');
+    if (!t) return;
+    m.textContent = msg;
+    i.className = 'fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle');
+    t.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3 '
+                + (type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white');
+    showFlex('pay-toast');
+    setTimeout(function() { hide('pay-toast'); }, 5000);
+}
+
+// ── Ouvrir / Fermer modal ─────────────────────────────────────────
+function openPayModal() {
+    payModalState = 'idle';
+    payModalRef   = null;
+    showFlex('pay-modal');
+    setModalState('idle');
+    var phoneEl = $('pay-phone');
+    if (phoneEl) phoneEl.value = PAY_CFG.phone || '';
+    document.addEventListener('keydown', escCloseModal);
+}
+
+function closePayModal() {
+    if (payModalState === 'pending') return; // empêche fermeture pendant USSD
+    hide('pay-modal');
+    document.removeEventListener('keydown', escCloseModal);
+    if (payModalTimer) { clearInterval(payModalTimer); payModalTimer = null; }
+}
+
+function escCloseModal(e) {
+    if (e.key === 'Escape') closePayModal();
+}
+
+function handleModalBackdropClick(e) {
+    if (e.target.id === 'pay-modal') closePayModal();
+}
+
+// ── États du modal ────────────────────────────────────────────────
+function setModalState(state) {
+    payModalState = state;
+    var states = ['idle', 'pending', 'success'];
+    states.forEach(function(s) {
+        var el = $('modal-state-' + s);
+        if (el) el.style.display = (s === state) ? '' : 'none';
+    });
+    // Bouton fermer : caché pendant pending
+    var closeBtn = $('btn-close-modal');
+    if (closeBtn) closeBtn.style.display = (state === 'pending') ? 'none' : '';
+}
+
+// ── Détection opérateur (debounce) ───────────────────────────────
+function debounceDetect(val) {
+    clearTimeout(detectTimer);
+    detectTimer = setTimeout(function() { detectProvider(val); }, 600);
+}
+
+async function detectProvider(phone) {
+    var digits = phone.replace(/\D/g, '');
+    if (digits.length < 9) {
+        hide('pay-provider-badge');
+        return;
+    }
+    show('pay-detecting');
+    hide('pay-provider-badge');
+    try {
+        var r = await fetch('/api/payments/predict-provider', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': PAY_CFG.csrf },
+            body: JSON.stringify({ phone_number: phone })
+        });
+        var d = await r.json();
+        if (d.provider) {
+            payProvider = d.provider;
+            var badge = $('pay-provider-badge');
+            badge.textContent = d.provider.split('_')[0];
+            show('pay-provider-badge');
+        }
+    } catch(e) {}
+    hide('pay-detecting');
+}
+
+// ── Soumettre le paiement ─────────────────────────────────────────
+async function submitPayment() {
+    var phoneEl = $('pay-phone');
+    if (!phoneEl || !phoneEl.value.trim()) {
+        showPayToast('Veuillez saisir un numéro de téléphone.', 'error');
+        return;
+    }
+    var phone = phoneEl.value.trim();
+
+    // UI loading
+    hide('btn-pay-text');
+    show('btn-pay-loading');
+    $('btn-confirm-pay').disabled = true;
+
+    try {
+        var r = await fetch('/api/client/payments/initiate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': PAY_CFG.csrf
+            },
+            body: JSON.stringify({
+                provider: payProvider || 'VODACOM_MPESA_COD',
+                phone_number: phone,
+                payment_type: 'service_request',
+                reference_id: PAY_CFG.serviceRequestId
+            })
+        });
+        var d = await r.json();
+        if (!r.ok) {
+            showPayToast(d.error || 'Erreur lors du paiement.', 'error');
+            show('btn-pay-text'); hide('btn-pay-loading');
+            $('btn-confirm-pay').disabled = false;
+            return;
+        }
+        payModalRef = d.reference;
+        var phoneDisplay = $('pay-phone-display');
+        if (phoneDisplay) phoneDisplay.textContent = phone;
+        setModalState('pending');
+        showPayToast('Confirmez le prompt USSD sur votre téléphone.', 'success');
+        startPolling();
+    } catch(e) {
+        showPayToast('Erreur réseau. Veuillez réessayer.', 'error');
+        show('btn-pay-text'); hide('btn-pay-loading');
+        $('btn-confirm-pay').disabled = false;
+    }
+}
+
+// ── Polling du statut ─────────────────────────────────────────────
+function startPolling() {
+    if (payModalTimer) clearInterval(payModalTimer);
+    var attempts = 0;
+    payModalTimer = setInterval(async function() {
+        attempts++;
+        if (attempts > 30) {
+            clearInterval(payModalTimer);
+            setModalState('idle');
+            showPayToast('Délai expiré. Réessayez.', 'error');
+            show('btn-pay-text'); hide('btn-pay-loading');
+            $('btn-confirm-pay').disabled = false;
+            return;
+        }
+        try {
+            var r = await fetch('/api/client/payments/status/' + payModalRef, {
+                headers: { 'Accept': 'application/json' }
+            });
+            var d = await r.json();
+            if (d.status === 'success') {
+                clearInterval(payModalTimer);
+                setModalState('success');
+                setTimeout(function() { window.location.reload(); }, 2000);
+            } else if (d.status === 'failed') {
+                clearInterval(payModalTimer);
+                setModalState('idle');
+                show('btn-pay-text'); hide('btn-pay-loading');
+                $('btn-confirm-pay').disabled = false;
+                showPayToast('Paiement échoué. Réessayez.', 'error');
+            }
+        } catch(e) {}
+    }, 4000);
+}
+
+// ── Alpine.data pour la section "Démarrer le service" (status=accepted) ──
+document.addEventListener('alpine:init', function() {
+    Alpine.data('missionPayment', function() {
+        return {
+            phone: '',
+            provider: '',
+            loading: false,
+            detecting: false,
+            pollInterval: null,
+            ref: null,
+            state: 'idle',
+            toast: { show: false, message: '', type: 'success' },
+            showToast: function(msg, type) {
+                type = type || 'success';
+                this.toast = { show: true, message: msg, type: type };
+                var self = this;
+                setTimeout(function() { self.toast.show = false; }, 5000);
+            },
+            detectProvider: async function() {
+                if (this.phone.replace(/\D/g, '').length < 9) return;
+                this.detecting = true;
+                try {
+                    var r = await fetch('/api/payments/predict-provider', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': PAY_CFG.csrf },
+                        body: JSON.stringify({ phone_number: this.phone })
+                    });
+                    var d = await r.json();
+                    if (d.provider) this.provider = d.provider;
+                } catch(e) {}
+                this.detecting = false;
+            },
+            pay: async function() {
+                if (!this.phone) { this.showToast('Veuillez saisir un numéro.', 'error'); return; }
+                this.loading = true;
+                try {
+                    var r = await fetch('/api/client/payments/initiate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': PAY_CFG.csrf
+                        },
+                        body: JSON.stringify({
+                            provider: this.provider || 'VODACOM_MPESA_COD',
+                            phone_number: this.phone,
+                            payment_type: 'mission',
+                            reference_id: @json($serviceRequest->mission?->id ?? 0)
+                        })
+                    });
+                    var d = await r.json();
+                    if (!r.ok) { this.showToast(d.error || 'Erreur paiement.', 'error'); this.loading = false; return; }
+                    this.ref = d.reference;
+                    this.state = 'pending';
+                    this.showToast('Confirmez le prompt USSD sur votre téléphone.', 'success');
+                    this.startPolling();
+                } catch(e) { this.showToast('Erreur réseau.', 'error'); }
+                this.loading = false;
+            },
+            startPolling: function() {
+                if (this.pollInterval) clearInterval(this.pollInterval);
+                var attempts = 0;
+                var self = this;
+                this.pollInterval = setInterval(async function() {
+                    attempts++;
+                    if (attempts > 24) { clearInterval(self.pollInterval); self.state = 'expired'; return; }
+                    try {
+                        var r = await fetch('/api/client/payments/status/' + self.ref, { headers: { 'Accept': 'application/json' } });
+                        var d = await r.json();
+                        if (d.status === 'success') { self.state = 'success'; clearInterval(self.pollInterval); setTimeout(function() { window.location.reload(); }, 2500); }
+                        else if (d.status === 'failed') { self.state = 'failed'; clearInterval(self.pollInterval); self.showToast('Paiement échoué.', 'error'); }
+                    } catch(e) {}
+                }, 5000);
+            }
+        };
+    });
+});
+</script>
 @endsection

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ─── Artisan Routes ────────────────────────────────────────────────────────
-Route::middleware(['auth:sanctum', 'api.role:artisan'])
+Route::middleware(['auth:sanctum,web', 'api.role:artisan'])
     ->prefix('artisan')
     ->name('api.artisan.')
     ->group(function () {
@@ -30,7 +30,7 @@ Route::middleware(['auth:sanctum', 'api.role:artisan'])
     });
 
 // ─── Client Routes ─────────────────────────────────────────────────────────
-Route::middleware(['auth:sanctum', 'api.role:client'])
+Route::middleware(['auth:sanctum,web', 'api.role:client'])
     ->prefix('client')
     ->name('api.client.')
     ->group(function () {
@@ -56,7 +56,7 @@ Route::middleware(['auth:sanctum', 'api.role:client'])
     });
 
 // ─── Recruiter Routes ──────────────────────────────────────────────────────
-Route::middleware(['auth:sanctum', 'api.role:recruiter'])
+Route::middleware(['auth:sanctum,web', 'api.role:recruiter'])
     ->prefix('recruiter')
     ->name('api.recruiter.')
     ->group(function () {
@@ -73,7 +73,7 @@ Route::middleware(['auth:sanctum', 'api.role:recruiter'])
     });
 
 // ─── Notifications (all authenticated users) ───────────────────────────────
-Route::middleware(['auth:sanctum'])
+Route::middleware(['auth:sanctum,web'])
     ->prefix('notifications')
     ->name('api.notifications.')
     ->group(function () {
@@ -83,7 +83,7 @@ Route::middleware(['auth:sanctum'])
     });
 
 // ─── Authenticated user info ────────────────────────────────────────────────
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth:sanctum,web')->get('/user', function (Request $request) {
     return response()->json([
         'data' => array_merge($request->user()->toArray(), [
             'has_cv'      => (bool) $request->user()->cv,

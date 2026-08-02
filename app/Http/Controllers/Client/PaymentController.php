@@ -106,7 +106,7 @@ class PaymentController extends Controller
         // ── 3. GENERATE IDEMPOTENCY KEY ────────────────────────────────────────
         $externalId  = 'PAY-' . now()->format('Ymd') . '-' . Str::upper(Str::random(8));
         $description = "Paiement {$validated['payment_type']} #{$validated['reference_id']}"
-            . ($validated['description'] ? ' — ' . $validated['description'] : '');
+            . (!empty($validated['description']) ? ' — ' . $validated['description'] : '');
 
         // ── 4. PERSIST RECORDS IN DB (atomic) ─────────────────────────────────
         try {
