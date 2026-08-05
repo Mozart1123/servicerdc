@@ -4,6 +4,8 @@
 
 @section('content')
 <div class="space-y-12 pb-20">
+
+    @include('partials.verification-dashboard-banner')
     <!-- Welcome Header -->
     <div class="relative" data-aos="fade-down">
         <div class="absolute inset-0 bg-blue-500/5 rounded-[3rem] blur-3xl opacity-50"></div>

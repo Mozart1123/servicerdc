@@ -5,6 +5,25 @@
 @section('content')
 <div class="space-y-8 pb-20 max-w-4xl mx-auto">
 
+    <!-- Welcome Verification Banner (Post-registration) -->
+    @if(session('welcome_verification'))
+        <div class="p-6 bg-[#e6f7f8] border border-[#29B6D1]/30 rounded-3xl text-[#0f7a86] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm mb-6">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-sparkles text-2xl text-[#29B6D1]"></i>
+                <div class="font-bold text-sm leading-relaxed">{{ session('welcome_verification') }}</div>
+            </div>
+            <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-white text-[#0f7a86] font-bold rounded-2xl text-xs uppercase tracking-wider hover:bg-slate-50 transition border border-[#29B6D1]/20 shrink-0 shadow-sm">
+                Plus tard → Accéder au dashboard
+            </a>
+        </div>
+    @else
+        <div class="flex justify-end">
+            <a href="{{ route('user.dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition">
+                <i class="fas fa-arrow-left"></i> Plus tard — Accéder au dashboard
+            </a>
+        </div>
+    @endif
+
     <!-- Flash Messages -->
     @if(session('success'))
         <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-sm font-medium flex items-center gap-3">
@@ -145,21 +164,47 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <!-- Type of Document -->
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Type de pièce d'identité</label>
                         <select name="identity_document_type" required class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-medium focus:ring-4 focus:ring-rdc-blue/10 focus:border-rdc-blue transition-all">
                             <option value="" disabled selected>Sélectionnez un document</option>
-                            <option value="national_id" {{ old('identity_document_type') == 'national_id' ? 'selected' : '' }}>Carte Nationale d'Identité</option>
+                            <option value="voter_card" {{ old('identity_document_type') == 'voter_card' ? 'selected' : '' }}>Carte d'électeur RDC</option>
                             <option value="passport" {{ old('identity_document_type') == 'passport' ? 'selected' : '' }}>Passeport</option>
-                            <option value="driving_license" {{ old('identity_document_type') == 'driving_license' ? 'selected' : '' }}>Permis de conduire</option>
+                            <option value="national_id" {{ old('identity_document_type') == 'national_id' ? 'selected' : '' }}>Carte Nationale d'Identité</option>
                         </select>
                     </div>
 
-                    <!-- File Upload -->
+                    <!-- File Upload — Document -->
                     <div>
-                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Fichier (Photo/Scan)</label>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">1. Pièce d'identité (Scan / Photo)</label>
                         <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png" required class="w-full bg-white border border-slate-200 rounded-2xl p-3 text-xs font-medium text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rdc-blue/10 file:text-rdc-blue hover:file:bg-rdc-blue/20 transition-all">
-                        <span class="text-[10px] text-slate-400 mt-1 block">Formats acceptés : PDF, JPG, PNG (Max 5 Mo). Stockage privé et sécurisé.</span>
+                        <span class="text-[10px] text-slate-400 mt-1 block">Formats : PDF, JPG, PNG (Max 5 Mo).</span>
+                    </div>
+
+                    <!-- File Upload — Selfie -->
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">2. Photo Selfie (Visage + Document)</label>
+                        <input type="file" name="selfie" accept=".jpg,.jpeg,.png" required class="w-full bg-white border border-slate-200 rounded-2xl p-3 text-xs font-medium text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rdc-blue/10 file:text-rdc-blue hover:file:bg-rdc-blue/20 transition-all">
+                        <span class="text-[10px] text-slate-400 mt-1 block">Formats : JPG, PNG (Max 5 Mo). Non publique.</span>
+                    </div>
+                </div>
+
+                <!-- Explicatif exact du cahier des charges -->
+                <div class="bg-slate-50 border border-slate-200/60 p-6 rounded-3xl space-y-3 text-left">
+                    <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                        <i class="fas fa-shield-halved text-[#0f7a86] text-base"></i>
+                        <span>Vérification de sécurité</span>
+                    </h4>
+                    <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                        Pour protéger notre communauté contre les faux profils et garantir la confiance entre utilisateurs, nous vous demandons une photo de vous tenant votre pièce d'identité à côté de votre visage. Pourquoi cette étape ? Elle nous permet de confirmer que le document appartient bien à la personne qui l'utilise — une pratique standard sur les plateformes sérieuses (banques, services de paiement, applications de transport). Vos données sont protégées. Cette photo est utilisée uniquement pour la vérification par notre équipe et n'est jamais partagée publiquement, ni visible par les autres utilisateurs.
+                    </p>
+                    <div class="pt-2 border-t border-slate-200/50">
+                        <p class="text-[11px] font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Conseils pratiques :</p>
+                        <ul class="text-xs text-slate-600 space-y-1 font-medium list-disc list-inside">
+                            <li>Assurez-vous que votre visage et le document soient bien visibles et lisibles</li>
+                            <li>Prenez la photo dans un endroit bien éclairé</li>
+                            <li>Évitez les reflets ou l'écran de votre téléphone si vous photographiez un document numérique</li>
+                        </ul>
                     </div>
                 </div>
 

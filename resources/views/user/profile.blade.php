@@ -37,7 +37,10 @@
                            onchange="previewPhoto(this)">
                 </div>
                 <div>
-                    <h3 class="font-bold text-slate-900">{{ auth()->user()->name ?? 'Utilisateur' }}</h3>
+                    <h3 class="font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+                        {{ auth()->user()->name ?? 'Utilisateur' }}
+                        @include('partials.verified-badge', ['user' => auth()->user(), 'showClientPrivate' => true])
+                    </h3>
                     <p class="text-sm text-slate-500">{{ ucfirst(auth()->user()->user_type) }}</p>
                     <p class="text-xs text-slate-400 mt-2">Cliquez sur la photo pour la changer (max 2Mo).</p>
                     @error('profile_photo') <p class="text-xs text-red-500 font-medium mt-1">{{ $message }}</p> @enderror

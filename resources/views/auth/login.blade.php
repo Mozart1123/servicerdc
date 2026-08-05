@@ -67,10 +67,10 @@
         <!-- Remember & Forgot Password -->
         <div class="flex items-center justify-between text-sm">
             <label class="flex items-center gap-2 cursor-pointer group select-none">
-                <div class="relative">
+                <div class="relative w-5 h-5">
                     <input type="checkbox" name="remember" class="peer sr-only">
                     <div class="w-5 h-5 border-2 border-slate-300 rounded bg-white peer-checked:bg-rdc-blue peer-checked:border-rdc-blue transition-all shadow-sm"></div>
-                    <i class="fas fa-check absolute top-0.5 left-0.5 text-white text-[10px] opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                    <i class="fas fa-check absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-[10px] opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></i>
                 </div>
                 <span class="text-slate-500 group-hover:text-slate-700 transition-colors font-medium">Se souvenir de moi</span>
             </label>

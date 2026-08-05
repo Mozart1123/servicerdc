@@ -66,6 +66,16 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        if ($user->isArtisan()) {
+            return redirect()->route('user.artisan.level')
+                ->with('welcome_verification', 'Bienvenue ! Complétez votre vérification d\'identité pour gagner la confiance des clients.');
+        }
+
+        if ($user->isRecruiter()) {
+            return redirect()->route('user.identity-verification.show')
+                ->with('welcome_verification', 'Bienvenue ! Complétez votre vérification d\'identité pour gagner la confiance des candidats et clients.');
+        }
+
         return redirect()->route('user.dashboard')
             ->with('success', 'Bienvenue sur ProConnect ! Votre compte a été créé avec succès.');
     }

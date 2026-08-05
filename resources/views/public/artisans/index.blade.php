@@ -61,8 +61,9 @@
                     </div>
 
                     {{-- Info --}}
-                    <div class="flex items-center justify-center gap-2">
+                    <div class="flex items-center justify-center gap-2 flex-wrap">
                         <h3 class="font-bold text-slate-900 text-sm group-hover:text-[#29B6D1] transition-colors">{{ $artisan->name }}</h3>
+                        @include('partials.verified-badge', ['user' => $artisan])
                         @if($artisan->artisanLevel && $artisan->artisanLevel->level !== 'nouveau')
                             @php
                                 $level = $artisan->artisanLevel;

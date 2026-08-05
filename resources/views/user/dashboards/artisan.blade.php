@@ -4,6 +4,8 @@
 
 @section('content')
 <div class="space-y-12 pb-20">
+
+    @include('partials.verification-dashboard-banner')
     <!-- Welcome Artisan -->
     <div class="relative">
         <div class="absolute inset-0 bg-amber-500/5 rounded-[3rem] blur-3xl opacity-50"></div>

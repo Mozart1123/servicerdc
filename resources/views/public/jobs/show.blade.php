@@ -61,6 +61,9 @@
                         <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
                             <i class="fas fa-building text-[#16a3b0] opacity-70"></i>
                             <span class="break-words">{{ $job->company_name }}</span>
+                            @if(isset($job->user))
+                                @include('partials.verified-badge', ['user' => $job->user])
+                            @endif
                         </div>
                         <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
                             <i class="fas fa-map-marker-alt text-[#16a3b0] opacity-70"></i>

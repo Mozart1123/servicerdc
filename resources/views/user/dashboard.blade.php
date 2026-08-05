@@ -5,6 +5,8 @@
 @section('content')
 <div class="space-y-8 pb-20">
 
+  @include('partials.verification-dashboard-banner')
+
   <!-- WELCOME -->
   <section class="bg-gradient-to-r from-rdc-blue to-rdc-dark-blue rounded-[2.5rem] overflow-hidden shadow-sm" data-aos="fade-down">
     <div class="max-w-7xl mx-auto px-6 sm:px-10 py-12 text-white">

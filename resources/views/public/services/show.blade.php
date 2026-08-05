@@ -98,7 +98,10 @@
                         <img src="https://ui-avatars.com/api/?name={{ urlencode($service->artisan->name) }}&background=29B6D1&color=fff&size=100" class="w-14 h-14 rounded-2xl object-cover" alt="">
                     @endif
                     <div>
-                        <div class="font-bold text-slate-900 text-sm">{{ $service->artisan->name }}</div>
+                        <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5 flex-wrap">
+                            <span>{{ $service->artisan->name }}</span>
+                            @include('partials.verified-badge', ['user' => $service->artisan])
+                        </div>
                         <div class="text-xs text-slate-400 font-medium">{{ $service->artisan->profession ?? 'Artisan' }}</div>
                         <div class="text-xs text-slate-400 font-medium"><i class="fas fa-map-marker-alt mr-1"></i>{{ $service->artisan->city ?? 'RDC' }}</div>
                     </div>

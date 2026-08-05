@@ -125,6 +125,7 @@
                     <x-admin-dropdown-item route="admin.users-mgmt.flagged" label="Signalés/Suspendus" ::badge="flaggedCount > 0 ? flaggedCount : null" badgeColor="bg-rdc-red" />
                     <x-admin-dropdown-item route="admin.users-mgmt.docs" label="Vérification KYC" />
                     <x-admin-dropdown-item route="admin.verifications.index" label="Identité Artisans" />
+                    <x-admin-dropdown-item route="admin.verifications-general.index" label="Identité Recruteurs & Clients" />
                 </x-admin-dropdown-nav>
                 
                 <!-- [MODÉRATION & RESSOURCES] -->

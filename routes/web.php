@@ -246,9 +246,13 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/gains', [\App\Http\Controllers\User\PayoutController::class, 'index'])->name('gains.index');
         Route::post('/gains/request', [\App\Http\Controllers\User\PayoutController::class, 'store'])->name('gains.request');
 
-        // Artisan — Identity Verification
+        // Identity Verification
         Route::post('/identity-verification', [\App\Http\Controllers\User\ArtisanIdentityVerificationController::class, 'store'])->name('identity-verification.store');
         Route::get('/identity-verification/download', [\App\Http\Controllers\User\ArtisanIdentityVerificationController::class, 'download'])->name('identity-verification.download');
+
+        Route::get('/identity-verification-general', [\App\Http\Controllers\User\IdentityVerificationController::class, 'show'])->name('identity-verification.show');
+        Route::post('/identity-verification-general', [\App\Http\Controllers\User\IdentityVerificationController::class, 'store'])->name('identity-verification.general.store');
+        Route::get('/identity-verification-general/download', [\App\Http\Controllers\User\IdentityVerificationController::class, 'download'])->name('identity-verification.general.download');
 
         // Placeholder Routes for Premium UX
         Route::get('/favorites', [UserDashboardController::class, 'favorites'])->name('favorites');
@@ -327,12 +331,19 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::post('/documents/{id}/reject', [AdminUserController::class, 'rejectDocument'])->name('docs.reject');
         });
 
-        // Admin — Artisan Identity Verifications
+        // Admin — Identity Verifications
         Route::prefix('verifications')->name('verifications.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'index'])->name('index');
             Route::get('/{id}/download', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'download'])->name('download');
             Route::post('/{id}/approve', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'approve'])->name('approve');
             Route::post('/{id}/reject', [\App\Http\Controllers\Admin\ArtisanVerificationController::class, 'reject'])->name('reject');
+        });
+
+        Route::prefix('verifications-general')->name('verifications-general.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\IdentityVerificationController::class, 'index'])->name('index');
+            Route::get('/{id}/download', [\App\Http\Controllers\Admin\IdentityVerificationController::class, 'download'])->name('download');
+            Route::post('/{id}/approve', [\App\Http\Controllers\Admin\IdentityVerificationController::class, 'approve'])->name('approve');
+            Route::post('/{id}/reject', [\App\Http\Controllers\Admin\IdentityVerificationController::class, 'reject'])->name('reject');
         });
 
         Route::prefix('moderation')->name('moderation.')->group(function () {

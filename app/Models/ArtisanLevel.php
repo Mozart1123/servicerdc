@@ -17,9 +17,11 @@ class ArtisanLevel extends Model
         'visibility_penalty_until',
         'level_updated_at',
         'identity_document_path',
+        'selfie_path',
         'identity_document_type',
         'verification_status',
         'verification_rejection_reason',
+        'verification_rejection_comment',
         'verified_at',
         'verified_by',
         'grace_period_ends_at',
@@ -43,9 +45,20 @@ class ArtisanLevel extends Model
     const STATUS_APPROVED      = 'approved';
     const STATUS_REJECTED       = 'rejected';
 
-    const DOC_NATIONAL_ID     = 'national_id';
-    const DOC_PASSPORT        = 'passport';
-    const DOC_DRIVING_LICENSE = 'driving_license';
+    const DOC_VOTER_CARD  = 'voter_card';
+    const DOC_NATIONAL_ID = 'national_id';
+    const DOC_PASSPORT    = 'passport';
+
+    public static function rejectionReasons(): array
+    {
+        return [
+            'Document illisible ou flou'           => 'Document illisible ou flou',
+            'Le visage ne correspond pas au document' => 'Le visage ne correspond pas au document',
+            'Document expiré'                      => 'Document expiré',
+            'Document incomplet'                   => 'Document incomplet',
+            'Photo de mauvaise qualité'             => 'Photo de mauvaise qualité',
+        ];
+    }
 
     const LEVELS = [
         self::LEVEL_NOUVEAU  => ['label' => 'Nouveau',  'color' => 'slate',   'icon' => 'fa-seedling'],

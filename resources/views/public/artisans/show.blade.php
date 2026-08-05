@@ -32,8 +32,9 @@
                                  class="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-lg" alt="{{ $artisan->name }}">
                         @endif
                         <div class="mb-1 flex-1">
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 flex-wrap">
                                 <h1 class="text-xl font-bold text-slate-900">{{ $artisan->name }}</h1>
+                                @include('partials.verified-badge', ['user' => $artisan])
                                 @if($artisan->artisanLevel && $artisan->artisanLevel->level !== 'nouveau')
                                     @php
                                         $level = $artisan->artisanLevel;

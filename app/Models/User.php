@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -165,6 +166,35 @@ class User extends Authenticatable
     public function artisanLevel()
     {
         return $this->hasOne(ArtisanLevel::class);
+    }
+
+    public function identityVerification()
+    {
+        return $this->hasOne(IdentityVerification::class);
+    }
+
+    /**
+     * Check if user has an approved identity verification.
+     */
+    public function isVerified(): bool
+    {
+        if ($this->isArtisan()) {
+            return $this->artisanLevel && $this->artisanLevel->isIdentityApproved();
+        }
+
+        return $this->identityVerification && $this->identityVerification->isApproved();
+    }
+
+    /**
+     * Get user role-specific verified badge label.
+     */
+    public function getVerifiedBadgeLabelAttribute(): string
+    {
+        return match ($this->user_type) {
+            self::TYPE_ARTISAN   => 'Artisan vérifié',
+            self::TYPE_RECRUITER => 'Recruteur vérifié',
+            default              => 'Compte vérifié',
+        };
     }
 
 

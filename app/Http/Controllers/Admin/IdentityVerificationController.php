@@ -3,23 +3,22 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ArtisanLevel;
+use App\Models\IdentityVerification;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-class ArtisanVerificationController extends Controller
+class IdentityVerificationController extends Controller
 {
     /**
-     * Display a list of artisan identity verifications.
+     * Display general verifications (Recruiters & Clients).
      */
     public function index(Request $request)
     {
         $statusFilter = $request->get('status', 'pending');
 
-        $query = ArtisanLevel::with('user')
-            ->whereNotNull('identity_document_path');
+        $query = IdentityVerification::with('user');
 
         if ($statusFilter && in_array($statusFilter, ['pending', 'approved', 'rejected', 'not_submitted'])) {
             $query->where('verification_status', $statusFilter);
@@ -28,25 +27,25 @@ class ArtisanVerificationController extends Controller
         $verifications = $query->latest('updated_at')->paginate(20);
 
         $stats = [
-            'pending'   => ArtisanLevel::where('verification_status', 'pending')->count(),
-            'approved'  => ArtisanLevel::where('verification_status', 'approved')->count(),
-            'rejected'  => ArtisanLevel::where('verification_status', 'rejected')->count(),
+            'pending'  => IdentityVerification::where('verification_status', 'pending')->count(),
+            'approved' => IdentityVerification::where('verification_status', 'approved')->count(),
+            'rejected' => IdentityVerification::where('verification_status', 'rejected')->count(),
         ];
 
-        $rejectionReasons = ArtisanLevel::rejectionReasons();
+        $rejectionReasons = IdentityVerification::rejectionReasons();
 
-        return view('admin.users.identity-verifications', compact('verifications', 'stats', 'statusFilter', 'rejectionReasons'));
+        return view('admin.users.identity-verifications-general', compact('verifications', 'stats', 'statusFilter', 'rejectionReasons'));
     }
 
     /**
-     * Download the identity document or selfie securely for admin review.
+     * Download files securely.
      */
     public function download(Request $request, int $id)
     {
-        $artisanLevel = ArtisanLevel::findOrFail($id);
+        $verification = IdentityVerification::findOrFail($id);
 
         $fileType = $request->query('file', 'document');
-        $filePath = ($fileType === 'selfie') ? $artisanLevel->selfie_path : $artisanLevel->identity_document_path;
+        $filePath = ($fileType === 'selfie') ? $verification->selfie_path : $verification->identity_document_path;
 
         if (!$filePath || !Storage::disk('local')->exists($filePath)) {
             abort(404, 'Fichier d\'identité introuvable.');
@@ -56,28 +55,26 @@ class ArtisanVerificationController extends Controller
     }
 
     /**
-     * Approve the artisan's identity verification.
+     * Approve verification.
      */
     public function approve(int $id)
     {
-        $artisanLevel = ArtisanLevel::findOrFail($id);
+        $verification = IdentityVerification::findOrFail($id);
 
-        $artisanLevel->update([
-            'verification_status'           => ArtisanLevel::STATUS_APPROVED,
+        $verification->update([
+            'verification_status'           => IdentityVerification::STATUS_APPROVED,
             'verified_at'                   => now(),
             'verified_by'                   => Auth::id(),
             'verification_rejection_reason' => null,
             'verification_rejection_comment' => null,
-            'grace_period_ends_at'          => null,
         ]);
 
-        // Send in-app notification text per spec
         Notification::create([
-            'user_id'    => $artisanLevel->user_id,
+            'user_id'    => $verification->user_id,
             'type'       => 'identity_verified',
             'title'      => 'Identité vérifiée',
             'message'    => 'Votre identité a été vérifiée ! Vous disposez maintenant du badge "Vérifié" sur votre profil.',
-            'action_url' => route('user.artisan.level'),
+            'action_url' => route('user.identity-verification.show'),
             'is_read'    => false,
         ]);
 
@@ -85,7 +82,7 @@ class ArtisanVerificationController extends Controller
     }
 
     /**
-     * Reject the artisan's identity verification with predefined reason and optional comment.
+     * Reject verification.
      */
     public function reject(Request $request, int $id)
     {
@@ -96,10 +93,10 @@ class ArtisanVerificationController extends Controller
             'reason.required' => 'Le motif du rejet est obligatoire.',
         ]);
 
-        $artisanLevel = ArtisanLevel::findOrFail($id);
+        $verification = IdentityVerification::findOrFail($id);
 
-        $artisanLevel->update([
-            'verification_status'           => ArtisanLevel::STATUS_REJECTED,
+        $verification->update([
+            'verification_status'           => IdentityVerification::STATUS_REJECTED,
             'verification_rejection_reason' => $request->reason,
             'verification_rejection_comment' => $request->comment,
             'verified_at'                   => null,
@@ -108,13 +105,12 @@ class ArtisanVerificationController extends Controller
 
         $fullReason = $request->reason . ($request->comment ? ' (' . $request->comment . ')' : '');
 
-        // Send in-app notification text per spec
         Notification::create([
-            'user_id'    => $artisanLevel->user_id,
+            'user_id'    => $verification->user_id,
             'type'       => 'identity_rejected',
             'title'      => 'Identité non validée',
             'message'    => "Votre demande de vérification d'identité n'a pas pu être validée. Motif : {$fullReason}. Vous pouvez soumettre une nouvelle demande.",
-            'action_url' => route('user.artisan.level'),
+            'action_url' => route('user.identity-verification.show'),
             'is_read'    => false,
         ]);
 

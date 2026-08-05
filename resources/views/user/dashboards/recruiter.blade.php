@@ -121,6 +121,8 @@
 @section('content')
 <div class="space-y-6">
 
+    @include('partials.verification-dashboard-banner')
+
     {{-- ============================================================ --}}
     {{-- HERO BANNER                                                   --}}
     {{-- ============================================================ --}}

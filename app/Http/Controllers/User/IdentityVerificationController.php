@@ -3,22 +3,41 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\ArtisanLevel;
+use App\Models\IdentityVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-class ArtisanIdentityVerificationController extends Controller
+class IdentityVerificationController extends Controller
 {
     /**
-     * Store artisan identity verification document and selfie.
+     * Show general identity verification page for Recruiter / Client.
+     */
+    public function show()
+    {
+        $user = Auth::user();
+
+        if ($user->isArtisan()) {
+            return redirect()->route('user.artisan.level');
+        }
+
+        $verification = IdentityVerification::firstOrCreate(
+            ['user_id' => $user->id],
+            ['verification_status' => IdentityVerification::STATUS_NOT_SUBMITTED]
+        );
+
+        return view('user.identity-verification', compact('user', 'verification'));
+    }
+
+    /**
+     * Store identity verification document and selfie.
      */
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        if (!$user->isArtisan()) {
-            abort(403, 'Seuls les artisans peuvent soumettre une vérification d\'identité sur cette page.');
+        if ($user->isArtisan()) {
+            return redirect()->route('user.artisan.level');
         }
 
         $request->validate([
@@ -36,46 +55,42 @@ class ArtisanIdentityVerificationController extends Controller
             'identity_document_type.in'       => 'Type de pièce d\'identité invalide.',
         ]);
 
-        $artisanLevel = ArtisanLevel::firstOrCreate(
-            ['user_id' => $user->id],
-            ['level' => ArtisanLevel::LEVEL_NOUVEAU]
-        );
+        $verification = IdentityVerification::firstOrCreate(['user_id' => $user->id]);
 
-        // Delete old document & selfie if existing
-        if ($artisanLevel->identity_document_path && Storage::disk('local')->exists($artisanLevel->identity_document_path)) {
-            Storage::disk('local')->delete($artisanLevel->identity_document_path);
+        // Clean up previous files if exists
+        if ($verification->identity_document_path && Storage::disk('local')->exists($verification->identity_document_path)) {
+            Storage::disk('local')->delete($verification->identity_document_path);
         }
-        if ($artisanLevel->selfie_path && Storage::disk('local')->exists($artisanLevel->selfie_path)) {
-            Storage::disk('local')->delete($artisanLevel->selfie_path);
+        if ($verification->selfie_path && Storage::disk('local')->exists($verification->selfie_path)) {
+            Storage::disk('local')->delete($verification->selfie_path);
         }
 
-        // Store files on private disk ('local')
         $docPath    = $request->file('document')->store('identity_documents', 'local');
         $selfiePath = $request->file('selfie')->store('identity_selfies', 'local');
 
-        $artisanLevel->update([
+        $verification->update([
             'identity_document_path'        => $docPath,
             'selfie_path'                   => $selfiePath,
             'identity_document_type'        => $request->identity_document_type,
-            'verification_status'           => ArtisanLevel::STATUS_PENDING,
+            'verification_status'           => IdentityVerification::STATUS_PENDING,
             'verification_rejection_reason' => null,
             'verification_rejection_comment' => null,
         ]);
 
-        return back()->with('success', 'Votre dossier de vérification d\'identité a été soumis avec succès. Il est en cours d\'examen par notre équipe.');
+        return back()->with('success', 'Votre demande de vérification d\'identité a été soumise avec succès. Elle est en cours d\'examen.');
     }
 
     /**
-     * Download the artisan's own document or selfie.
+     * Download own identity files.
      */
     public function download(Request $request)
     {
         $user = Auth::user();
 
-        $artisanLevel = ArtisanLevel::where('user_id', $user->id)->firstOrFail();
+        $verification = IdentityVerification::where('user_id', $user->id)->firstOrFail();
 
         $fileType = $request->query('file', 'document');
-        $filePath = ($fileType === 'selfie') ? $artisanLevel->selfie_path : $artisanLevel->identity_document_path;
+        $filePath = ($fileType === 'selfie') ? $verification->selfie_path : $verification->identity_document_path;
 
         if (!$filePath || !Storage::disk('local')->exists($filePath)) {
             abort(404, 'Fichier introuvable.');

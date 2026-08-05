@@ -1,9 +1,9 @@
 @extends('layouts.admin')
 
-@section('title', 'Vérification d\'Identité')
-@section('header_title', 'Vérification des Artisans')
-@section('page_title', 'Identités des Artisans')
-@section('page_subtitle', 'Examinez et validez les pièces d\'identité soumises par les artisans.')
+@section('title', 'Vérification d\'Identité — Recruteurs & Clients')
+@section('header_title', 'Vérification d\'Identité')
+@section('page_title', 'Identités des Recruteurs & Clients')
+@section('page_subtitle', 'Examinez et validez les pièces d\'identité soumises par les recruteurs et clients.')
 
 @section('content')
 <div class="space-y-8 pb-20">
@@ -18,7 +18,7 @@
 
     <!-- Stats Bar -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <a href="{{ route('admin.verifications.index', ['status' => 'pending']) }}" class="bg-white border p-6 rounded-[2rem] shadow-sm flex items-center justify-between group transition {{ $statusFilter === 'pending' ? 'border-rdc-blue ring-2 ring-rdc-blue/10' : 'border-slate-100' }}">
+        <a href="{{ route('admin.verifications-general.index', ['status' => 'pending']) }}" class="bg-white border p-6 rounded-[2rem] shadow-sm flex items-center justify-between group transition {{ $statusFilter === 'pending' ? 'border-rdc-blue ring-2 ring-rdc-blue/10' : 'border-slate-100' }}">
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">En Attente</p>
                 <p class="text-3xl font-black text-slate-900 mt-1">{{ $stats['pending'] }}</p>
@@ -28,7 +28,7 @@
             </div>
         </a>
 
-        <a href="{{ route('admin.verifications.index', ['status' => 'approved']) }}" class="bg-white border p-6 rounded-[2rem] shadow-sm flex items-center justify-between group transition {{ $statusFilter === 'approved' ? 'border-rdc-blue ring-2 ring-rdc-blue/10' : 'border-slate-100' }}">
+        <a href="{{ route('admin.verifications-general.index', ['status' => 'approved']) }}" class="bg-white border p-6 rounded-[2rem] shadow-sm flex items-center justify-between group transition {{ $statusFilter === 'approved' ? 'border-rdc-blue ring-2 ring-rdc-blue/10' : 'border-slate-100' }}">
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Approuvées</p>
                 <p class="text-3xl font-black text-emerald-600 mt-1">{{ $stats['approved'] }}</p>
@@ -38,7 +38,7 @@
             </div>
         </a>
 
-        <a href="{{ route('admin.verifications.index', ['status' => 'rejected']) }}" class="bg-white border p-6 rounded-[2rem] shadow-sm flex items-center justify-between group transition {{ $statusFilter === 'rejected' ? 'border-rdc-blue ring-2 ring-rdc-blue/10' : 'border-slate-100' }}">
+        <a href="{{ route('admin.verifications-general.index', ['status' => 'rejected']) }}" class="bg-white border p-6 rounded-[2rem] shadow-sm flex items-center justify-between group transition {{ $statusFilter === 'rejected' ? 'border-rdc-blue ring-2 ring-rdc-blue/10' : 'border-slate-100' }}">
             <div>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rejetées</p>
                 <p class="text-3xl font-black text-red-600 mt-1">{{ $stats['rejected'] }}</p>
@@ -55,7 +55,8 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Artisan</th>
+                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
+                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rôle</th>
                         <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type de pièce</th>
                         <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut & Date</th>
                         <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
@@ -75,11 +76,17 @@
                             </td>
 
                             <td class="px-8 py-6">
+                                <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl uppercase tracking-wider">
+                                    {{ $v->user->user_type_label }}
+                                </span>
+                            </td>
+
+                            <td class="px-8 py-6">
                                 @php
                                     $docTypeLabel = match($v->identity_document_type) {
+                                        'voter_card' => 'Carte d\'électeur RDC',
                                         'national_id' => 'Carte Nationale d\'Identité',
                                         'passport' => 'Passeport',
-                                        'driving_license' => 'Permis de conduire',
                                         default => 'Document'
                                     };
                                 @endphp
@@ -107,20 +114,20 @@
                                 <div class="flex items-center justify-end gap-3" x-data="{ showRejectModal: false }">
                                     
                                     <!-- View Document Button -->
-                                    <a href="{{ route('admin.verifications.download', ['id' => $v->id, 'file' => 'document']) }}" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5" title="Voir le document">
+                                    <a href="{{ route('admin.verifications-general.download', ['id' => $v->id, 'file' => 'document']) }}" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5" title="Voir le document">
                                         <i class="fas fa-file-alt"></i> Document
                                     </a>
 
                                     @if($v->selfie_path)
                                         <!-- View Selfie Button -->
-                                        <a href="{{ route('admin.verifications.download', ['id' => $v->id, 'file' => 'selfie']) }}" target="_blank" class="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5" title="Voir le selfie">
+                                        <a href="{{ route('admin.verifications-general.download', ['id' => $v->id, 'file' => 'selfie']) }}" target="_blank" class="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5" title="Voir le selfie">
                                             <i class="fas fa-user-circle"></i> Selfie
                                         </a>
                                     @endif
 
                                     @if($v->verification_status === 'pending' || $v->verification_status === 'rejected')
                                         <!-- Approve Form -->
-                                        <form method="POST" action="{{ route('admin.verifications.approve', $v->id) }}">
+                                        <form method="POST" action="{{ route('admin.verifications-general.approve', $v->id) }}">
                                             @csrf
                                             <button type="submit" onclick="return confirm('Confirmer l\'approbation de l\'identité de {{ addslashes($v->user->name) }} ?')" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow-sm">
                                                 Approuver
@@ -140,7 +147,7 @@
                                                 <h3 class="text-lg font-black text-slate-900 mb-2">Rejeter l'identité</h3>
                                                 <p class="text-xs text-slate-500 mb-4">Sélectionnez le motif du refus transmis à {{ $v->user->name }}.</p>
                                                 
-                                                <form method="POST" action="{{ route('admin.verifications.reject', $v->id) }}" class="space-y-4">
+                                                <form method="POST" action="{{ route('admin.verifications-general.reject', $v->id) }}" class="space-y-4">
                                                     @csrf
                                                     <div>
                                                         <label class="block text-xs font-bold text-slate-700 mb-1">Motif principal (requis)</label>
@@ -171,7 +178,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-8 py-12 text-center text-slate-400 text-sm font-medium">
+                            <td colspan="5" class="px-8 py-12 text-center text-slate-400 text-sm font-medium">
                                 Aucun document de vérification trouvé pour ce filtre.
                             </td>
                         </tr>

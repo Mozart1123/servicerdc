@@ -116,10 +116,16 @@
                     <h2 class="font-heading font-black text-slate-900 text-base truncate">
                         {{ auth()->user()->name ?? 'Utilisateur' }}</h2>
                     <div class="flex items-center gap-2 mt-1">
-                        <span
-                            class="px-2 py-0.5 bg-blue-50 text-rdc-blue text-[9px] font-black uppercase tracking-widest rounded-md border border-blue-100">
-                            Citoyen Vérifié
-                        </span>
+                        @if(auth()->user()->isVerified())
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-[#e6f7f8] text-[#0f7a86] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#29B6D1]/20">
+                                <i class="fas fa-shield-check text-[9px]"></i>
+                                {{ auth()->user()->verified_badge_label }}
+                            </span>
+                        @else
+                            <span class="px-2 py-0.5 bg-blue-50 text-rdc-blue text-[9px] font-black uppercase tracking-widest rounded-md border border-blue-100">
+                                {{ auth()->user()->user_type_label }}
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -190,6 +196,12 @@
                             Abonnement
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('user.identity-verification.show') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.identity-verification.show') ? 'bg-[#e6f7f8] text-[#0f7a86] shadow-md shadow-[#29B6D1]/10' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-shield-check text-lg {{ request()->routeIs('user.identity-verification.show') ? 'text-[#0f7a86]' : 'text-slate-400 group-hover:text-[#29B6D1]' }}"></i>
+                            Vérification Identité
+                        </a>
+                    </li>
                 </ul>
 
             @elseif($userType === 'artisan')
@@ -244,9 +256,9 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('user.artisan.level') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.level') ? 'bg-amber-50 text-amber-600 shadow-md shadow-amber-500/10' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-trophy text-lg {{ request()->routeIs('user.artisan.level') ? 'text-amber-500' : 'text-slate-400 group-hover:text-amber-500' }}"></i>
-                            Mon Niveau
+                        <a href="{{ route('user.artisan.level') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.level') ? 'bg-[#e6f7f8] text-[#0f7a86] shadow-md shadow-[#29B6D1]/10' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-shield-check text-lg {{ request()->routeIs('user.artisan.level') ? 'text-[#0f7a86]' : 'text-slate-400 group-hover:text-[#29B6D1]' }}"></i>
+                            Vérification & Niveau
                         </a>
                     </li>
                 </ul>
@@ -294,6 +306,12 @@
                         <a href="{{ route('user.subscription.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.subscription.*') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-crown text-lg {{ request()->routeIs('user.subscription.*') ? 'text-white' : 'text-slate-400 group-hover:text-amber-500' }}"></i>
                             Abonnement Pro
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('user.identity-verification.show') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.identity-verification.show') ? 'bg-[#e6f7f8] text-[#0f7a86] shadow-md shadow-[#29B6D1]/10' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-shield-check text-lg {{ request()->routeIs('user.identity-verification.show') ? 'text-[#0f7a86]' : 'text-slate-400 group-hover:text-[#29B6D1]' }}"></i>
+                            Vérification Identité
                         </a>
                     </li>
                 </ul>

@@ -27,7 +27,10 @@
                 </div>
                 
                 <div class="flex-1 min-w-0">
-                    <h1 class="text-3xl font-heading font-black text-slate-900 tracking-tight mb-2">{{ $recruiter->name }}</h1>
+                    <div class="flex items-center gap-3 flex-wrap mb-2">
+                        <h1 class="text-3xl font-heading font-black text-slate-900 tracking-tight">{{ $recruiter->name }}</h1>
+                        @include('partials.verified-badge', ['user' => $recruiter])
+                    </div>
                     <div class="flex flex-wrap items-center gap-6 mt-4">
                         <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
                             <i class="fas fa-map-marker-alt text-[#16a3b0] opacity-70"></i>
