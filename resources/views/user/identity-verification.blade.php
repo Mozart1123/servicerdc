@@ -7,12 +7,12 @@
 
     <!-- Welcome Verification Banner (Post-registration) -->
     @if(session('welcome_verification'))
-        <div class="p-6 bg-[#e6f7f8] border border-[#29B6D1]/30 rounded-3xl text-[#0f7a86] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm mb-6">
+        <div class="p-6 bg-[#e6f7f8] border border-[#29B6D1]/30 rounded-2xl text-[#0f7a86] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm mb-6">
             <div class="flex items-center gap-3">
                 <i class="fas fa-sparkles text-2xl text-[#29B6D1]"></i>
                 <div class="font-bold text-sm leading-relaxed">{{ session('welcome_verification') }}</div>
             </div>
-            <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-white text-[#0f7a86] font-bold rounded-2xl text-xs uppercase tracking-wider hover:bg-slate-50 transition border border-[#29B6D1]/20 shrink-0 shadow-sm">
+            <a href="{{ route('user.dashboard') }}" class="px-5 py-2.5 bg-white text-[#0f7a86] font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-slate-50 transition border border-[#29B6D1]/20 shrink-0 shadow-sm">
                 Plus tard → Accéder au dashboard
             </a>
         </div>
@@ -44,7 +44,7 @@
     @endif
 
     <!-- Identity Verification Card -->
-    <div class="bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm space-y-6">
+    <div class="bg-white border border-slate-100 p-8 rounded-2xl shadow-sm space-y-6">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-rdc-blue/10 flex items-center justify-center text-rdc-blue text-xl">
                 <i class="fas fa-id-card"></i>
@@ -59,9 +59,9 @@
 
         @if($verification->verification_status === 'approved')
             <!-- Approved State -->
-            <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/30">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/30">
                         <i class="fas fa-check"></i>
                     </div>
                     <div>
@@ -85,9 +85,9 @@
 
         @elseif($verification->verification_status === 'pending')
             <!-- Pending State -->
-            <div class="bg-blue-50 border border-blue-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-500/30 animate-pulse">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-500/30 animate-pulse">
                         <i class="fas fa-hourglass-half"></i>
                     </div>
                     <div>
@@ -112,8 +112,8 @@
         @else
             <!-- Not Submitted or Rejected State -->
             @if($verification->verification_status === 'rejected')
-                <div class="bg-red-50 border border-red-100 rounded-3xl p-6 mb-4 flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-red-500 text-white flex items-center justify-center text-lg shadow-md flex-none mt-0.5">
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-6 mb-4 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-2xl bg-red-500 text-white flex items-center justify-center text-lg shadow-md flex-none mt-0.5">
                         <i class="fas fa-times"></i>
                     </div>
                     <div>
@@ -130,7 +130,7 @@
             @endif
 
             <!-- Explicatif exact du cahier des charges -->
-            <div class="bg-slate-50 border border-slate-200/60 p-6 rounded-3xl space-y-3">
+            <div class="bg-slate-50 border border-slate-200/60 p-6 rounded-2xl space-y-3">
                 <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
                     <i class="fas fa-shield-halved text-[#0f7a86] text-base"></i>
                     <span>Vérification de sécurité</span>
@@ -148,7 +148,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('identity-verification.general.store') }}" enctype="multipart/form-data" class="space-y-5 bg-white border border-slate-100 p-6 rounded-3xl">
+            <form method="POST" action="{{ route('identity-verification.general.store') }}" enctype="multipart/form-data" class="space-y-5 bg-white border border-slate-100 p-6 rounded-2xl">
                 @csrf
 
                 <div>

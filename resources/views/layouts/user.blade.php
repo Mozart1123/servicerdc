@@ -92,10 +92,9 @@
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
         class="fixed inset-y-0 left-0 w-80 glass-sidebar z-40 transform lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl lg:shadow-none bg-white">
 
-        <!-- [PROFIL] Section -->
-        <div class="px-8 py-10 border-b border-slate-100 bg-slate-50/30">
-            <!-- Logo Branding Integration -->
-            <div class="flex items-center gap-3 mb-8 px-1">
+        <!-- [BRANDING] Section -->
+        <div class="px-8 py-10 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
+            <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex items-center justify-center p-1.5 bg-white border border-slate-100">
                     <img src="/assets/img/logo.png?v=1.2" alt="Logo" class="w-full h-full object-contain">
                 </div>
@@ -104,31 +103,9 @@
                     <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Dashboard Professionnel</p>
                 </div>
             </div>
-
-            <div class="flex items-center gap-4">
-                <div class="relative flex-shrink-0 group">
-                    <div class="absolute -inset-1 bg-gradient-to-r from-rdc-blue to-blue-400 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-500"></div>
-                    <img src="{{ auth()->user()->photo_url }}"
-                         class="relative w-14 h-14 rounded-2xl border-2 border-white shadow-sm object-cover" alt="Profile">
-                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h2 class="font-heading font-black text-slate-900 text-base truncate">
-                        {{ auth()->user()->name ?? 'Utilisateur' }}</h2>
-                    <div class="flex items-center gap-2 mt-1">
-                        @if(auth()->user()->isVerified())
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-[#e6f7f8] text-[#0f7a86] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#29B6D1]/20">
-                                <i class="fas fa-shield-check text-[9px]"></i>
-                                {{ auth()->user()->verified_badge_label }}
-                            </span>
-                        @else
-                            <span class="px-2 py-0.5 bg-blue-50 text-rdc-blue text-[9px] font-black uppercase tracking-widest rounded-md border border-blue-100">
-                                {{ auth()->user()->user_type_label }}
-                            </span>
-                        @endif
-                    </div>
-                </div>
-            </div>
+            <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-slate-600 p-1">
+                <i class="fas fa-times text-xl"></i>
+            </button>
         </div>
 
         <!-- Navigation Menu -->
@@ -388,6 +365,30 @@
                             {{ $unreadCount > 9 ? '9+' : $unreadCount }}
                         </span>
                     @endif
+                </a>
+
+                <!-- User Profile Header Integration -->
+                <a href="{{ route('user.profile') }}" class="flex items-center gap-3 pl-3 border-l border-slate-200 hover:opacity-90 transition-opacity">
+                    <div class="relative flex-shrink-0 group">
+                        <img src="{{ auth()->user()->photo_url }}"
+                             class="w-10 h-10 rounded-xl border border-slate-200 shadow-sm object-cover" alt="Profile">
+                        <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                    </div>
+                    <div class="hidden sm:block text-left">
+                        <p class="text-xs font-black text-slate-900 leading-tight">{{ auth()->user()->name ?? 'Utilisateur' }}</p>
+                        <div class="flex items-center gap-1 mt-0.5">
+                            @if(auth()->user()->isVerified())
+                                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 bg-[#e6f7f8] text-[#0f7a86] text-[8px] font-black uppercase tracking-widest rounded border border-[#29B6D1]/20">
+                                    <i class="fas fa-shield-check text-[8px]"></i>
+                                    Vérifié
+                                </span>
+                            @else
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                    {{ auth()->user()->user_type_label }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
                 </a>
             </div>
         </header>

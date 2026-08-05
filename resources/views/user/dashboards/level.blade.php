@@ -45,7 +45,7 @@
 
     <!-- Grace Period Banner (if applicable) -->
     @if($level->isInGracePeriod())
-        <div class="bg-amber-50 border border-amber-200 p-6 rounded-[2.5rem] shadow-sm flex items-start gap-4">
+        <div class="bg-amber-50 border border-amber-200 p-6 rounded-2xl shadow-sm flex items-start gap-4">
             <div class="w-12 h-12 rounded-2xl bg-amber-100 flex-none flex items-center justify-center text-amber-600 text-xl">
                 <i class="fas fa-clock"></i>
             </div>
@@ -60,7 +60,7 @@
     @endif
 
     <!-- Current Level Card -->
-    <div class="relative bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm text-center">
+    <div class="relative bg-white border border-slate-100 p-8 rounded-2xl shadow-sm text-center">
         <h2 class="text-3xl font-black text-slate-900 mb-2">Niveau Actuel</h2>
         
         <div class="flex flex-col items-center justify-center py-6">
@@ -78,7 +78,7 @@
             
             <h3 class="text-2xl font-black {{ str_replace('bg-', 'text-', explode(' ', $badgeClass)[0]) }} uppercase tracking-widest">{{ $level->level_label }}</h3>
             
-            <div class="mt-6 bg-slate-50 border border-slate-100 rounded-3xl p-6 px-10 flex gap-10">
+            <div class="mt-6 bg-slate-50 border border-slate-100 rounded-2xl p-6 px-10 flex gap-10">
                 <div class="text-center">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Note moyenne</p>
                     <p class="text-2xl font-black text-slate-900">{{ number_format($level->average_rating, 1) }} <span class="text-yellow-400 text-lg">★</span></p>
@@ -93,7 +93,7 @@
     </div>
 
     <!-- Identity Verification Section -->
-    <div class="bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm space-y-6">
+    <div class="bg-white border border-slate-100 p-8 rounded-2xl shadow-sm space-y-6">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-rdc-blue/10 flex items-center justify-center text-rdc-blue text-xl">
                 <i class="fas fa-id-card"></i>
@@ -106,7 +106,7 @@
 
         @if($level->verification_status === 'approved')
             <!-- Approved State -->
-            <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/30">
                         <i class="fas fa-check"></i>
@@ -117,7 +117,7 @@
                     </div>
                 </div>
                 @if($level->identity_document_path)
-                    <a href="{{ route('user.identity-verification.download') }}" target="_blank" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-sm">
+                    <a href="{{ route('user.identity-verification.download') }}" target="_blank" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition shadow-sm">
                         <i class="fas fa-eye mr-2"></i> Voir mon document
                     </a>
                 @endif
@@ -125,7 +125,7 @@
 
         @elseif($level->verification_status === 'pending')
             <!-- Pending State -->
-            <div class="bg-blue-50 border border-blue-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-500/30 animate-pulse">
                         <i class="fas fa-hourglass-half"></i>
@@ -136,7 +136,7 @@
                     </div>
                 </div>
                 @if($level->identity_document_path)
-                    <a href="{{ route('user.identity-verification.download') }}" target="_blank" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-sm">
+                    <a href="{{ route('user.identity-verification.download') }}" target="_blank" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition shadow-sm">
                         <i class="fas fa-file-alt mr-2"></i> Voir le fichier transmis
                     </a>
                 @endif
@@ -145,8 +145,8 @@
         @else
             <!-- Not Submitted or Rejected State -->
             @if($level->verification_status === 'rejected')
-                <div class="bg-red-50 border border-red-100 rounded-3xl p-6 mb-4 flex items-start gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-red-500 text-white flex items-center justify-center text-lg shadow-md flex-none mt-0.5">
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-6 mb-4 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-2xl bg-red-500 text-white flex items-center justify-center text-lg shadow-md flex-none mt-0.5">
                         <i class="fas fa-times"></i>
                     </div>
                     <div>
@@ -159,7 +159,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('user.identity-verification.store') }}" enctype="multipart/form-data" class="space-y-5 bg-slate-50 border border-slate-100 p-6 rounded-3xl">
+            <form method="POST" action="{{ route('user.identity-verification.store') }}" enctype="multipart/form-data" class="space-y-5 bg-slate-50 border border-slate-100 p-6 rounded-2xl">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -190,7 +190,7 @@
                 </div>
 
                 <!-- Explicatif exact du cahier des charges -->
-                <div class="bg-slate-50 border border-slate-200/60 p-6 rounded-3xl space-y-3 text-left">
+                <div class="bg-slate-50 border border-slate-200/60 p-6 rounded-2xl space-y-3 text-left">
                     <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
                         <i class="fas fa-shield-halved text-[#0f7a86] text-base"></i>
                         <span>Vérification de sécurité</span>
@@ -218,7 +218,7 @@
 
     <!-- Next Level Progress Card -->
     @if($nextLevel)
-    <div class="relative bg-white border border-slate-100 p-8 rounded-[3rem] shadow-sm">
+    <div class="relative bg-white border border-slate-100 p-8 rounded-2xl shadow-sm">
         <div class="flex items-center gap-4 mb-8">
             <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xl">
                 <i class="fas fa-arrow-up"></i>
@@ -250,7 +250,7 @@
         @endif
     </div>
     @else
-    <div class="relative bg-amber-50 border border-amber-100 p-8 rounded-[3rem] shadow-sm text-center">
+    <div class="relative bg-amber-50 border border-amber-100 p-8 rounded-2xl shadow-sm text-center">
         <div class="w-16 h-16 rounded-full bg-amber-200 flex items-center justify-center text-amber-600 text-3xl mx-auto mb-4">
             <i class="fas fa-trophy"></i>
         </div>

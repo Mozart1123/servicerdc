@@ -8,7 +8,7 @@
   @include('partials.verification-dashboard-banner')
 
   <!-- WELCOME -->
-  <section class="bg-gradient-to-r from-rdc-blue to-rdc-dark-blue rounded-[2.5rem] overflow-hidden shadow-sm" data-aos="fade-down">
+  <section class="bg-gradient-to-r from-rdc-blue to-rdc-dark-blue rounded-2xl overflow-hidden shadow-sm" data-aos="fade-down">
     <div class="max-w-7xl mx-auto px-6 sm:px-10 py-12 text-white">
       <h2 class="text-3xl md:text-4xl font-bold mb-4">Bienvenue, {{ auth()->user()->name ?? 'Client' }} 👋</h2>
       <p class="text-blue-100 max-w-2xl text-lg mb-8">
