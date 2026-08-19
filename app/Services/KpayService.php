@@ -161,9 +161,9 @@ class KpayService
         $map = [
             'MTN_MOMO_CMR' => 'XAF',
             'ORANGE_CMR'   => 'XAF',
-            'VODACOM_MPESA_COD' => 'USD',
-            'AIRTEL_COD'   => 'USD',
-            'ORANGE_COD'   => 'USD',
+            'VODACOM_MPESA_COD' => 'CDF',
+            'AIRTEL_COD'   => 'CDF',
+            'ORANGE_COD'   => 'CDF',
             'MTN_MOMO_CIV' => 'XOF',
             'ORANGE_CIV'   => 'XOF',
             'MTN_MOMO_BEN' => 'XOF',
