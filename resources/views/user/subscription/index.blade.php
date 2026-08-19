@@ -192,7 +192,7 @@
             <p class="text-gray-500 mt-2">Pour les clients actifs.</p>
 
             <div class="my-6">
-              <span class="text-4xl font-bold">5$</span>
+              <span class="text-4xl font-bold">3$</span>
               <span class="text-gray-500">/mois</span>
             </div>
 
