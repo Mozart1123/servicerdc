@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class JobController extends Controller
@@ -73,7 +74,7 @@ class JobController extends Controller
             'message'       => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $cvPath = $request->file('cv_attachment')->store('job_applications/cvs', 'local');
+        $cvPath = $request->file('cv_attachment')->store('job_applications/cvs', 'public');
 
         $application = JobApplication::create([
             'job_offer_id'    => $job->id,
@@ -476,18 +477,10 @@ class JobController extends Controller
         }
 
         $path = $application->cv_attachment;
-        if (!$path) {
-            abort(404, 'Aucune pièce jointe trouvée pour cette candidature.');
+        if (empty($path) || !Storage::disk('public')->exists($path)) {
+            return back()->with('error', 'Le fichier CV est introuvable sur le serveur.');
         }
 
-        if (Storage::disk('local')->exists($path)) {
-            return Storage::disk('local')->response($path);
-        }
-
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->response($path);
-        }
-
-        abort(404, 'Fichier introuvable sur le serveur.');
+        return Storage::disk('public')->download($path);
     }
 }
