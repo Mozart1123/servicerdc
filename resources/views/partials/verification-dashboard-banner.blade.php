@@ -2,12 +2,16 @@
     @php
         $u = auth()->user();
         $isArtisan = $u->isArtisan();
-        
+
         if ($isArtisan) {
-            $status = $u->artisanLevel?->verification_status ?? 'not_submitted';
+            $status = \Illuminate\Support\Facades\Schema::hasTable('artisan_levels')
+                ? ($u->artisanLevel?->verification_status ?? 'not_submitted')
+                : 'not_submitted';
             $verifyRoute = route('user.artisan.level');
         } else {
-            $status = $u->identityVerification?->verification_status ?? 'not_submitted';
+            $status = \Illuminate\Support\Facades\Schema::hasTable('identity_verifications')
+                ? ($u->identityVerification?->verification_status ?? 'not_submitted')
+                : 'not_submitted';
             $verifyRoute = route('user.identity-verification.show');
         }
     @endphp

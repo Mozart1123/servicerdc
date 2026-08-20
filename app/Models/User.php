@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -179,7 +180,15 @@ class User extends Authenticatable
     public function isVerified(): bool
     {
         if ($this->isArtisan()) {
+            if (!Schema::hasTable('artisan_levels')) {
+                return false;
+            }
+
             return $this->artisanLevel && $this->artisanLevel->isIdentityApproved();
+        }
+
+        if (!Schema::hasTable('identity_verifications')) {
+            return false;
         }
 
         return $this->identityVerification && $this->identityVerification->isApproved();

@@ -9,13 +9,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Add audit traceability column to reviews
-        Schema::table('reviews', function (Blueprint $table) {
-            $table->unsignedBigInteger('migrated_from_artisan_rating_id')
-                  ->nullable()
-                  ->after('rejection_reason')
-                  ->comment('Temporary audit column: source ArtisanRating ID from data migration');
-        });
+        if (!Schema::hasColumn('reviews', 'migrated_from_artisan_rating_id')) {
+            // 1. Add audit traceability column to reviews
+            Schema::table('reviews', function (Blueprint $table) {
+                $table->unsignedBigInteger('migrated_from_artisan_rating_id')
+                    ->nullable()
+                    ->after('rejection_reason')
+                    ->comment('Temporary audit column: source ArtisanRating ID from data migration');
+            });
+        }
 
         // 2. Migrate existing ArtisanRating data into reviews
         if (Schema::hasTable('artisan_ratings')) {
@@ -64,6 +66,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (!Schema::hasColumn('reviews', 'migrated_from_artisan_rating_id')) {
+            return;
+        }
+
         // Remove migrated records (only those with a trace ID)
         DB::table('reviews')->whereNotNull('migrated_from_artisan_rating_id')->delete();
 

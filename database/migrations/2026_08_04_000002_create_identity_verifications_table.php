@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('identity_verifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('identity_document_type', ['voter_card', 'passport', 'national_id']);
-            $table->string('identity_document_path');
-            $table->string('selfie_path');
+            $table->enum('identity_document_type', ['voter_card', 'passport', 'national_id'])->nullable();
+            $table->string('identity_document_path')->nullable();
+            $table->string('selfie_path')->nullable();
             $table->enum('verification_status', ['not_submitted', 'pending', 'approved', 'rejected'])->default('not_submitted');
             $table->string('verification_rejection_reason')->nullable();
             $table->text('verification_rejection_comment')->nullable();

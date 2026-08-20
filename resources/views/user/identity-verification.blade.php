@@ -148,7 +148,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('identity-verification.general.store') }}" enctype="multipart/form-data" class="space-y-5 bg-white border border-slate-100 p-6 rounded-2xl">
+            <form method="POST" action="{{ route('user.identity-verification.general.store') }}" enctype="multipart/form-data" class="space-y-5 bg-white border border-slate-100 p-6 rounded-2xl">
                 @csrf
 
                 <div>
