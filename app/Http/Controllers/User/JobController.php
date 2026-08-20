@@ -411,7 +411,7 @@ class JobController extends Controller
         $query = JobApplication::whereHas('jobOffer', function ($q) use ($user) {
             $q->where('employer_id', $user->id)->orWhere('user_id', $user->id);
         })->with('user', 'jobOffer', 'cv');
-        
+
         $applications = $query->latest()->paginate(15);
 
         // Apply Premium locking mask
