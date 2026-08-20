@@ -75,6 +75,11 @@ class SubscriptionController extends Controller
         $billing = $request->billing_cycle;
         $amount  = $billing === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
 
+        // Temporarily override $5 to $3 for API testing
+        if ($amount == 5) {
+            $amount = 3;
+        }
+
         // Cancel any existing active subscription
         Subscription::where('user_id', Auth::id())
                     ->where('status', 'active')
