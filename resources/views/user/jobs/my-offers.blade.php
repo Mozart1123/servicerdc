@@ -11,7 +11,7 @@
             <h2 class="text-2xl font-black text-slate-900 font-heading">Mes Offres d'Emploi</h2>
             <p class="text-sm text-slate-400 font-medium">Gérez vos publications et suivez les candidatures.</p>
         </div>
-        <a href="{{ route('user.jobs.create') }}" 
+        <a href="{{ route('user.jobs.create') }}"
            class="flex items-center justify-center gap-2 px-6 py-3 bg-rdc-blue text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all">
             <i class="fas fa-plus-circle"></i>
             <span>Publier une offre</span>
@@ -34,12 +34,48 @@
                     </thead>
                     <tbody class="divide-y divide-slate-50">
                         @foreach($jobOffers as $job)
+                        @php
+                            $offerImage = null;
+
+                            if (!empty($job->company_logo)) {
+                                $offerImage = \Illuminate\Support\Str::startsWith($job->company_logo, ['http://', 'https://'])
+                                    ? $job->company_logo
+                                    : Storage::url($job->company_logo);
+                            } elseif (!empty($job->image)) {
+                                $offerImage = \Illuminate\Support\Str::startsWith($job->image, ['http://', 'https://'])
+                                    ? $job->image
+                                    : Storage::url($job->image);
+                            } elseif (!empty($job->company?->logo)) {
+                                $offerImage = \Illuminate\Support\Str::startsWith($job->company->logo, ['http://', 'https://'])
+                                    ? $job->company->logo
+                                    : Storage::url($job->company->logo);
+                            }
+
+                            $companyLabel = $job->company_name ?? $job->company?->name ?? $job->title;
+                            $initials = collect(explode(' ', trim($companyLabel)))
+                                ->take(2)
+                                ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
+                                ->implode('');
+
+                            $badgeClasses = [
+                                'bg-sky-100 text-sky-700',
+                                'bg-amber-100 text-amber-700',
+                                'bg-emerald-100 text-emerald-700',
+                                'bg-violet-100 text-violet-700',
+                                'bg-rose-100 text-rose-700',
+                            ];
+                            $badgeClass = $badgeClasses[$job->id % count($badgeClasses)];
+                        @endphp
                         <tr class="group hover:bg-slate-50/30 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-rdc-blue">
-                                        <i class="fas fa-briefcase text-lg"></i>
-                                    </div>
+                                    @if($offerImage)
+                                        <img src="{{ $offerImage }}" alt="{{ $job->title }}" class="w-12 h-12 rounded-xl object-cover border border-gray-100 shadow-sm">
+                                    @else
+                                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-[11px] font-black tracking-wide shadow-sm border border-gray-100 {{ $badgeClass }}">
+                                            {{ $initials ?: strtoupper(substr($job->title, 0, 2)) }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <div class="font-bold text-slate-900 group-hover:text-rdc-blue transition-colors">{{ $job->title }}</div>
                                         <div class="text-[11px] text-slate-400 font-medium lowercase italic">{{ $job->contract_type }} • {{ $job->location }}</div>
@@ -84,7 +120,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             @if($jobOffers->hasPages())
                 <div class="px-6 py-4 border-t border-slate-100">
                     {{ $jobOffers->links() }}
