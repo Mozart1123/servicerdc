@@ -191,44 +191,49 @@ class JobController extends Controller
             'is_urgent'     => ['nullable', 'boolean'],
         ]);
 
-        $user = Auth::user();
+        try {
+            $user = Auth::user();
 
-        if (!$user->isPremiumRecruiter() && JobOffer::where('employer_id', $user->id)->active()->count() >= 3) {
-            return back()->with('error', 'Vous avez atteint la limite de 3 offres actives. Passez au plan Premium pour publier des offres illimitées.')
-                         ->with('upgrade_url', route('user.subscription.index'))
-                         ->withInput();
+            if (!$user->isPremiumRecruiter() && JobOffer::where('employer_id', $user->id)->active()->count() >= 3) {
+                return back()->with('error', 'Vous avez atteint la limite de 3 offres actives. Passez au plan Premium pour publier des offres illimitées.')
+                             ->with('upgrade_url', route('user.subscription.index'))
+                             ->withInput();
+            }
+
+            $validated['user_id']     = $user->id;
+            $validated['employer_id'] = $user->id;
+            $validated['status']      = 'active';
+            $validated['is_urgent']   = $request->boolean('is_urgent') && $user->isPremiumRecruiter();
+
+            if ($request->hasFile('company_logo')) {
+                $validated['company_logo'] = $request->file('company_logo')->store('job_images', 'public');
+            }
+            if ($request->hasFile('cover_image')) {
+                $validated['cover_image'] = $request->file('cover_image')->store('job_images', 'public');
+            }
+
+            $job = JobOffer::create($validated);
+
+            // Notify Admins
+            $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id'      => $admin->id,
+                    'type'         => 'job_created',
+                    'related_type' => 'job',
+                    'related_id'   => $job->id,
+                    'title'        => 'Nouvel emploi publié',
+                    'message'      => "{$user->name} a publié : {$job->title}",
+                    'action_url'   => route('admin.jobs.index'),
+                    'is_read'      => false,
+                ]);
+            }
+
+            return redirect()->route('user.jobs.my-offers')->with('success', 'Offre publiée avec succès.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur publication offre: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return back()->with('error', 'Une erreur est survenue lors de la publication de l\'offre.')->withInput();
         }
-
-        $validated['user_id']     = $user->id;
-        $validated['employer_id'] = $user->id;
-        $validated['status']      = 'active';
-        $validated['is_urgent']   = $request->boolean('is_urgent') && $user->isPremiumRecruiter();
-
-        if ($request->hasFile('company_logo')) {
-            $validated['company_logo'] = $request->file('company_logo')->store('job_images', 'public');
-        }
-        if ($request->hasFile('cover_image')) {
-            $validated['cover_image'] = $request->file('cover_image')->store('job_images', 'public');
-        }
-
-        $job = JobOffer::create($validated);
-
-        // Notify Admins
-        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
-        foreach ($admins as $admin) {
-            Notification::create([
-                'user_id'      => $admin->id,
-                'type'         => 'job_created',
-                'related_type' => 'job',
-                'related_id'   => $job->id,
-                'title'        => 'Nouvel emploi publié',
-                'message'      => "{$user->name} a publié : {$job->title}",
-                'action_url'   => route('admin.jobs.index'),
-                'is_read'      => false,
-            ]);
-        }
-
-        return redirect()->route('user.jobs.my-offers')->with('success', 'Offre publiée.');
     }
 
     /**
@@ -257,25 +262,30 @@ class JobController extends Controller
             'is_urgent'     => ['nullable', 'boolean'],
         ]);
 
-        $validated['is_urgent'] = $request->boolean('is_urgent') && Auth::user()->isPremiumRecruiter();
+        try {
+            $validated['is_urgent'] = $request->boolean('is_urgent') && Auth::user()->isPremiumRecruiter();
 
-        if ($request->hasFile('company_logo')) {
-            if ($job->company_logo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($job->company_logo);
+            if ($request->hasFile('company_logo')) {
+                if ($job->company_logo) {
+                    Storage::disk('public')->delete($job->company_logo);
+                }
+                $validated['company_logo'] = $request->file('company_logo')->store('job_images', 'public');
             }
-            $validated['company_logo'] = $request->file('company_logo')->store('job_images', 'public');
-        }
 
-        if ($request->hasFile('cover_image')) {
-            if ($job->cover_image) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($job->cover_image);
+            if ($request->hasFile('cover_image')) {
+                if ($job->cover_image) {
+                    Storage::disk('public')->delete($job->cover_image);
+                }
+                $validated['cover_image'] = $request->file('cover_image')->store('job_images', 'public');
             }
-            $validated['cover_image'] = $request->file('cover_image')->store('job_images', 'public');
+
+            $job->update($validated);
+
+            return redirect()->route('user.jobs.my-offers')->with('success', 'Offre mise à jour avec succès.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur mise à jour offre: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de la mise à jour de l\'offre.')->withInput();
         }
-
-        $job->update($validated);
-
-        return redirect()->route('user.jobs.my-offers')->with('success', 'Offre mise à jour avec succès.');
     }
 
     /**
@@ -283,156 +293,187 @@ class JobController extends Controller
      */
     public function destroyOffer(int $id): RedirectResponse
     {
-        $job = JobOffer::findOrFail($id);
-        if (Auth::id() !== $job->user_id && Auth::id() !== $job->employer_id) {
-            abort(403);
+        try {
+            $job = JobOffer::findOrFail($id);
+            if (Auth::id() !== $job->user_id && Auth::id() !== $job->employer_id) {
+                abort(403);
+            }
+
+            if ($job->company_logo) {
+                Storage::disk('public')->delete($job->company_logo);
+            }
+            if ($job->cover_image) {
+                Storage::disk('public')->delete($job->cover_image);
+            }
+
+            $job->applications()->delete();
+            $job->delete();
+
+            return redirect()->route('user.jobs.my-offers')->with('success', 'Offre supprimée avec succès.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur suppression offre: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de la suppression de l\'offre.');
         }
-
-        $job->applications()->delete();
-        $job->delete();
-
-        return redirect()->route('user.jobs.my-offers')->with('success', 'Offre supprimée avec succès.');
     }
 
     public function approveApplication(int $applicationId): RedirectResponse
     {
-        $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
-        $recruiter   = Auth::user();
+        try {
+            $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
+            $recruiter   = Auth::user();
 
-        $application->update(['status' => 'approved']);
+            $application->update(['status' => 'approved']);
 
-        Notification::create([
-            'user_id'      => $application->user_id,
-            'type'         => 'application_approved',
-            'related_type' => 'application',
-            'related_id'   => $application->id,
-            'title'        => 'Candidature acceptée 🎉',
-            'message'      => "Votre candidature pour {$application->jobOffer->title} chez {$application->jobOffer->company_name} a été acceptée !",
-            'action_url'   => route('user.applications.index'),
-            'is_read'      => false,
-        ]);
+            Notification::create([
+                'user_id'      => $application->user_id,
+                'type'         => 'application_approved',
+                'related_type' => 'application',
+                'related_id'   => $application->id,
+                'title'        => 'Candidature acceptée 🎉',
+                'message'      => "Votre candidature pour {$application->jobOffer->title} chez {$application->jobOffer->company_name} a été acceptée !",
+                'action_url'   => route('user.applications.index'),
+                'is_read'      => false,
+            ]);
 
-        // Create / retrieve conversation and send automatic system message
-        $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
+            // Create / retrieve conversation and send automatic system message
+            $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
 
-        $systemText = "Votre candidature pour \"" . ($application->jobOffer->title ?? 'ce poste') . "\" a été acceptée. " .
-                      "{$recruiter->name} vous contactera prochainement pour planifier un entretien.";
+            $systemText = "Votre candidature pour \"" . ($application->jobOffer->title ?? 'ce poste') . "\" a été acceptée. " .
+                          "{$recruiter->name} vous contactera prochainement pour planifier un entretien.";
 
-        Message::create([
-            'conversation_id' => $conversation->id,
-            'sender_id'       => $recruiter->id,
-            'receiver_id'     => $application->user_id,
-            'content'         => $systemText,
-            'message'         => $systemText,
-            'is_read'         => false,
-            'is_system'       => true,
-        ]);
+            Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id'       => $recruiter->id,
+                'receiver_id'     => $application->user_id,
+                'content'         => $systemText,
+                'message'         => $systemText,
+                'is_read'         => false,
+                'is_system'       => true,
+            ]);
 
-        return back()->with('success', 'Candidature approuvée et message envoyé au candidat.');
+            return back()->with('success', 'Candidature approuvée et message envoyé au candidat.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur approbation candidature: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de l\'approbation de la candidature.');
+        }
     }
 
     public function rejectApplication(Request $request, int $applicationId): RedirectResponse
     {
-        $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
-        $recruiter   = Auth::user();
-
         $request->validate([
             'rejection_reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        $reason = $request->input('rejection_reason');
+        try {
+            $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
+            $recruiter   = Auth::user();
+            $reason      = $request->input('rejection_reason');
 
-        $application->update([
-            'status'           => 'rejected',
-            'rejection_reason' => $reason,
-        ]);
+            $application->update([
+                'status'           => 'rejected',
+                'rejection_reason' => $reason,
+            ]);
 
-        Notification::create([
-            'user_id'      => $application->user_id,
-            'type'         => 'application_rejected',
-            'related_type' => 'application',
-            'related_id'   => $application->id,
-            'title'        => 'Candidature non retenue',
-            'message'      => "Votre candidature pour {$application->jobOffer->title} chez {$application->jobOffer->company_name} n'a pas été retenue.",
-            'action_url'   => route('user.applications.index'),
-            'is_read'      => false,
-        ]);
+            Notification::create([
+                'user_id'      => $application->user_id,
+                'type'         => 'application_rejected',
+                'related_type' => 'application',
+                'related_id'   => $application->id,
+                'title'        => 'Candidature non retenue',
+                'message'      => "Votre candidature pour {$application->jobOffer->title} chez {$application->jobOffer->company_name} n'a pas été retenue.",
+                'action_url'   => route('user.applications.index'),
+                'is_read'      => false,
+            ]);
 
-        // Create / retrieve conversation and send automatic system message
-        $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
+            // Create / retrieve conversation and send automatic system message
+            $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
 
-        $systemText = "Votre candidature pour \"" . ($application->jobOffer->title ?? 'ce poste') . "\" n'a pas été retenue. Motif : " . $reason;
+            $systemText = "Votre candidature pour \"" . ($application->jobOffer->title ?? 'ce poste') . "\" n'a pas été retenue. Motif : " . $reason;
 
-        Message::create([
-            'conversation_id' => $conversation->id,
-            'sender_id'       => $recruiter->id,
-            'receiver_id'     => $application->user_id,
-            'content'         => $systemText,
-            'message'         => $systemText,
-            'is_read'         => false,
-            'is_system'       => true,
-        ]);
+            Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id'       => $recruiter->id,
+                'receiver_id'     => $application->user_id,
+                'content'         => $systemText,
+                'message'         => $systemText,
+                'is_read'         => false,
+                'is_system'       => true,
+            ]);
 
-        return back()->with('info', 'Candidature refusée et message envoyé au candidat.');
+            return back()->with('info', 'Candidature refusée et message envoyé au candidat.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur refus candidature: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors du refus de la candidature.');
+        }
     }
 
     public function interviewApplication(int $applicationId): RedirectResponse
     {
-        $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
-        $user        = Auth::user();
+        try {
+            $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
+            $user        = Auth::user();
 
-        $application->update(['status' => 'interview']);
+            $application->update(['status' => 'interview']);
 
-        Notification::create([
-            'user_id'      => $application->user_id,
-            'type'         => 'application_interview',
-            'related_type' => 'application',
-            'related_id'   => $application->id,
-            'title'        => 'Entretien programmé',
-            'message'      => "Vous êtes invité(e) à un entretien pour \"{$application->jobOffer->title}\".",
-            'action_url'   => route('user.applications.index'),
-            'is_read'      => false,
-        ]);
+            Notification::create([
+                'user_id'      => $application->user_id,
+                'type'         => 'application_interview',
+                'related_type' => 'application',
+                'related_id'   => $application->id,
+                'title'        => 'Entretien programmé',
+                'message'      => "Vous êtes invité(e) à un entretien pour \"{$application->jobOffer->title}\".",
+                'action_url'   => route('user.applications.index'),
+                'is_read'      => false,
+            ]);
 
-        Conversation::findOrCreateBetween($application->user_id, $user->id, 'job', $application->id);
+            Conversation::findOrCreateBetween($application->user_id, $user->id, 'job', $application->id);
 
-        return back()->with('success', 'Candidature marquée pour entretien.');
+            return back()->with('success', 'Candidature marquée pour entretien.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur entretien candidature: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de la programmation de l\'entretien.');
+        }
     }
 
     public function hireApplication(int $applicationId): RedirectResponse
     {
-        $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
-        $recruiter   = Auth::user();
+        try {
+            $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
+            $recruiter   = Auth::user();
 
-        $application->update(['status' => 'hired']);
+            $application->update(['status' => 'hired']);
 
-        Notification::create([
-            'user_id'      => $application->user_id,
-            'type'         => 'application_hired',
-            'related_type' => 'application',
-            'related_id'   => $application->id,
-            'title'        => 'Félicitations, vous êtes embauché(e) ! 🎊',
-            'message'      => "Vous avez été embauché(e) pour \"{$application->jobOffer->title}\" chez {$application->jobOffer->company_name}.",
-            'action_url'   => route('user.applications.index'),
-            'is_read'      => false,
-        ]);
+            Notification::create([
+                'user_id'      => $application->user_id,
+                'type'         => 'application_hired',
+                'related_type' => 'application',
+                'related_id'   => $application->id,
+                'title'        => 'Félicitations, vous êtes embauché(e) ! 🎊',
+                'message'      => "Vous avez été embauché(e) pour \"{$application->jobOffer->title}\" chez {$application->jobOffer->company_name}.",
+                'action_url'   => route('user.applications.index'),
+                'is_read'      => false,
+            ]);
 
-        $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
+            $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
 
-        $systemText = "Félicitations ! Votre candidature pour \"{$application->jobOffer->title}\" a été retenue et vous êtes officiellement embauché(e). " .
-                      "{$recruiter->name} vous contactera prochainement pour les prochaines étapes.";
+            $systemText = "Félicitations ! Votre candidature pour \"{$application->jobOffer->title}\" a été retenue et vous êtes officiellement embauché(e). " .
+                          "{$recruiter->name} vous contactera prochainement pour les prochaines étapes.";
 
-        Message::create([
-            'conversation_id' => $conversation->id,
-            'sender_id'       => $recruiter->id,
-            'receiver_id'     => $application->user_id,
-            'content'         => $systemText,
-            'message'         => $systemText,
-            'is_read'         => false,
-            'is_system'       => true,
-        ]);
+            Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id'       => $recruiter->id,
+                'receiver_id'     => $application->user_id,
+                'content'         => $systemText,
+                'message'         => $systemText,
+                'is_read'         => false,
+                'is_system'       => true,
+            ]);
 
-        return back()->with('success', 'Candidat marqué comme embauché et notifié.');
+            return back()->with('success', 'Candidat marqué comme embauché et notifié.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur embauche candidature: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de l\'embauche du candidat.');
+        }
     }
 
     public function myJobOffers(): View

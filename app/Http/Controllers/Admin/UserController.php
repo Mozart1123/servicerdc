@@ -35,12 +35,22 @@ class UserController extends Controller
      */
     public function getCountsApi()
     {
+        $pendingCount = User::where(function($q) {
+            $q->where('status', 'pending')
+              ->orWhereHas('artisanLevel', function($aq) {
+                  $aq->where('verification_status', 'pending');
+              })
+              ->orWhereHas('identityVerification', function($iq) {
+                  $iq->where('verification_status', 'pending');
+              });
+        })->count();
+
         return response()->json([
-            'pending' => User::where('status', 'pending')->count(),
-            'flagged' => User::where('status', 'suspended')->count(),
-            'jobs' => JobOffer::where('status', 'active')->count(),
+            'pending'  => $pendingCount,
+            'flagged'  => User::where('status', 'suspended')->count(),
+            'jobs'     => JobOffer::where('status', 'active')->count(),
             'services' => Service::where('status', 'active')->count(),
-            'reviews' => \App\Models\Review::count(),
+            'reviews'  => \App\Models\Review::count(),
         ]);
     }
 
@@ -215,11 +225,19 @@ class UserController extends Controller
     }
 
     /**
-     * Display users pending validation.
+     * Display users pending validation or identity verification.
      */
     public function pending(Request $request)
     {
-        $users = User::where('status', 'pending')->latest()->paginate(20);
+        $users = User::where(function($q) {
+            $q->where('status', 'pending')
+              ->orWhereHas('artisanLevel', function($aq) {
+                  $aq->where('verification_status', 'pending');
+              })
+              ->orWhereHas('identityVerification', function($iq) {
+                  $iq->where('verification_status', 'pending');
+              });
+        })->with(['artisanLevel', 'identityVerification'])->latest()->paginate(20);
 
         if ($request->wantsJson()) {
             return response()->json($users);
@@ -317,6 +335,62 @@ class UserController extends Controller
             'success' => true,
             'message' => "Compte de {$user->name} approuvé."
         ]);
+    }
+
+    /**
+     * Display the specified user details.
+     */
+    public function show(int $id)
+    {
+        $user = User::with(['artisanLevel', 'identityVerification', 'services', 'jobOffers', 'jobApplications'])->findOrFail($id);
+
+        if (!Auth::user()->isSuperAdmin() && $user->isSuperAdmin()) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        return view('admin.users.show', compact('user'));
+    }
+
+    /**
+     * Show the form for editing the specified user.
+     */
+    public function edit(int $id)
+    {
+        $user = User::findOrFail($id);
+
+        if (!Auth::user()->isSuperAdmin() && $user->isSuperAdmin()) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        return view('admin.users.edit', compact('user'));
+    }
+
+    /**
+     * Update the specified user in storage.
+     */
+    public function update(Request $request, int $id)
+    {
+        $user = User::findOrFail($id);
+
+        if (!Auth::user()->isSuperAdmin() && $user->isSuperAdmin()) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        $validated = $request->validate([
+            'name'      => ['required', 'string', 'max:255'],
+            'email'     => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $id],
+            'phone'     => ['nullable', 'string', 'max:20'],
+            'user_type' => ['required', 'string', 'in:client,artisan,recruiter,job_seeker'],
+            'status'    => ['required', 'string', 'in:active,pending,suspended'],
+        ]);
+
+        try {
+            $user->update($validated);
+            return redirect()->route('admin.users.index')->with('success', 'Utilisateur mis à jour avec succès.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur mise à jour utilisateur admin: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de la mise à jour de l\'utilisateur.')->withInput();
+        }
     }
 
     /**

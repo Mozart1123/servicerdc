@@ -272,6 +272,9 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::prefix('users')->name('users.')->group(function (): void {
             Route::get('/', [AdminUserController::class, 'index'])->name('index');
             Route::get('/api', [AdminUserController::class, 'apiIndex'])->name('api.index');
+            Route::get('/{id}', [AdminUserController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [AdminUserController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [AdminUserController::class, 'update'])->name('update');
             Route::post('/{id}/promote', [AdminUserController::class, 'promoteToAdmin'])->name('promote');
             Route::post('/{id}/promote-api', [AdminUserController::class, 'promoteToAdminApi'])->name('promote-api');
             Route::post('/{id}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('toggle-status');

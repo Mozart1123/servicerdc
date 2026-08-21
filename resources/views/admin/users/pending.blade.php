@@ -46,8 +46,18 @@
                             </td>
                             <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
                                 <div class="flex items-center justify-end gap-1.5 sm:gap-3">
-                                    <button @click="approve(user)" class="px-2 sm:px-6 py-2 sm:py-2.5 bg-emerald-500 text-white text-[7px] sm:text-[9px] font-black uppercase tracking-tighter sm:tracking-widest rounded-lg sm:rounded-xl hover:bg-emerald-600 active:scale-95 transition-all">Accepter</button>
-                                    <button @click="reject(user)" class="px-2 sm:px-6 py-2 sm:py-2.5 bg-white border border-slate-100 text-rdc-red text-[7px] sm:text-[9px] font-black uppercase tracking-tighter sm:tracking-widest rounded-lg sm:rounded-xl hover:bg-red-50 active:scale-95 transition-all">Refuser</button>
+                                    <template x-if="user.artisan_level && user.artisan_level.verification_status === 'pending'">
+                                        <a href="{{ route('admin.verifications.index') }}" class="px-2 sm:px-4 py-2 sm:py-2.5 bg-amber-500 text-white text-[7px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-amber-600 transition-all inline-flex items-center gap-1">
+                                            <i class="fas fa-id-card"></i> Doc Artisan
+                                        </a>
+                                    </template>
+                                    <template x-if="user.identity_verification && user.identity_verification.verification_status === 'pending'">
+                                        <a href="{{ route('admin.verifications-general.index') }}" class="px-2 sm:px-4 py-2 sm:py-2.5 bg-blue-500 text-white text-[7px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-blue-600 transition-all inline-flex items-center gap-1">
+                                            <i class="fas fa-id-card"></i> Doc Recruteur
+                                        </a>
+                                    </template>
+                                    <button @click="approve(user)" class="px-2 sm:px-6 py-2 sm:py-2.5 bg-emerald-500 text-white text-[7px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-emerald-600 active:scale-95 transition-all">Activer Compte</button>
+                                    <button @click="reject(user)" class="px-2 sm:px-6 py-2 sm:py-2.5 bg-white border border-slate-100 text-rdc-red text-[7px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-red-50 active:scale-95 transition-all">Refuser</button>
                                 </div>
                             </td>
                         </tr>

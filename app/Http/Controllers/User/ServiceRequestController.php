@@ -31,94 +31,103 @@ class ServiceRequestController extends Controller
             'phone'                  => ['nullable', 'string', 'max:20'],
         ]);
 
-        $user = Auth::user();
-        $validated['user_id'] = $user->id;
-        $validated['status']  = 'pending';
+        try {
+            $user = Auth::user();
+            $validated['user_id'] = $user->id;
+            $validated['status']  = 'pending';
 
-        $artisanId = null;
-        if (!empty($validated['service_id'])) {
-            $service   = Service::find($validated['service_id']);
-            $artisanId = $service?->artisan_id;
-            $validated['artisan_id'] = $artisanId;
+            $artisanId = null;
+            if (!empty($validated['service_id'])) {
+                $service   = Service::find($validated['service_id']);
+                $artisanId = $service?->artisan_id;
+                $validated['artisan_id'] = $artisanId;
+            }
+
+            $serviceRequest = ServiceRequest::create($validated);
+
+            if ($artisanId) {
+                Notification::create([
+                    'user_id'      => $artisanId,
+                    'type'         => 'service_request',
+                    'related_type' => 'request',
+                    'related_id'   => $serviceRequest->id,
+                    'title'        => 'Nouvelle demande',
+                    'message'      => "{$user->name} vous sollicite pour : " . ($serviceRequest->requested_service_name ?? 'un service'),
+                    'action_url'   => route('user.artisan.service-requests.index'),
+                    'is_read'      => false,
+                ]);
+
+                // Create/open conversation
+                $conversation = \App\Models\Conversation::findOrCreateBetween($user->id, $artisanId);
+                
+                // Send the automated first message from the client
+                $automatedMessage = "Bonjour,\nJe souhaiterais faire appel à vos services pour : " . ($serviceRequest->requested_service_name ?? 'un service') . ".\n\n" .
+                                    "📍 Lieu : " . ($serviceRequest->city ?? 'Non précisé') . "\n" .
+                                    "💰 Budget estimé : " . ($request->budget_range ?? 'Non précisé') . "\n" .
+                                    "⏳ Urgence : " . ($request->urgency ?? 'Standard') . "\n\n" .
+                                    "📝 Description :\n" . $serviceRequest->description;
+
+                \App\Models\Message::create([
+                    'conversation_id' => $conversation->id,
+                    'sender_id'       => $user->id,
+                    'content'         => $automatedMessage,
+                    'message'         => $automatedMessage,
+                    'is_read'         => false,
+                ]);
+
+                return redirect()->route('user.messages.index', ['id' => $conversation->id])
+                                 ->with('success', 'Votre demande a été envoyée. Vous pouvez maintenant échanger avec l\'artisan.');
+            }
+
+            return redirect()->route('user.service-requests.index')->with('success', 'Votre demande a été enregistrée.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur création demande service: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de l\'envoi de la demande.')->withInput();
         }
-
-        $serviceRequest = ServiceRequest::create($validated);
-
-        if ($artisanId) {
-            Notification::create([
-                'user_id'      => $artisanId,
-                'type'         => 'service_request',
-                'related_type' => 'request',
-                'related_id'   => $serviceRequest->id,
-                'title'        => 'Nouvelle demande',
-                'message'      => "{$user->name} vous sollicite pour : " . ($serviceRequest->requested_service_name ?? 'un service'),
-                'action_url'   => route('user.artisan.service-requests.index'),
-                'is_read'      => false,
-            ]);
-
-            // Create/open conversation
-            $conversation = \App\Models\Conversation::findOrCreateBetween($user->id, $artisanId);
-            
-            // Send the automated first message from the client
-            $automatedMessage = "Bonjour,\nJe souhaiterais faire appel à vos services pour : " . ($serviceRequest->requested_service_name ?? 'un service') . ".\n\n" .
-                                "📍 Lieu : " . ($serviceRequest->city ?? 'Non précisé') . "\n" .
-                                "💰 Budget estimé : " . ($request->budget_range ?? 'Non précisé') . "\n" .
-                                "⏳ Urgence : " . ($request->urgency ?? 'Standard') . "\n\n" .
-                                "📝 Description :\n" . $serviceRequest->description;
-
-            \App\Models\Message::create([
-                'conversation_id' => $conversation->id,
-                'sender_id'       => $user->id,
-                'content'         => $automatedMessage,
-                'message'         => $automatedMessage,
-                'is_read'         => false,
-            ]);
-
-            return redirect()->route('user.messages.index', ['id' => $conversation->id])
-                             ->with('success', 'Votre demande a été envoyée. Vous pouvez maintenant échanger avec l\'artisan.');
-        }
-
-        return redirect()->route('user.service-requests.index')->with('success', 'Votre demande a été enregistrée.');
     }
 
     public function accept(ServiceRequest $serviceRequest): RedirectResponse
     {
-        $serviceRequest->update([
-            'status'      => 'accepted',
-            // accepted_at is set when payment is made (chrono starts)
-        ]);
-        $artisan = Auth::user();
+        try {
+            $serviceRequest->update([
+                'status'      => 'accepted',
+            ]);
+            $artisan = Auth::user();
 
-        // Create a Mission to track the work (start/end dates, rating, feedback)
-        Mission::firstOrCreate(
-            [
-                'service_request_id' => $serviceRequest->id,
-                'service_id'  => $serviceRequest->service_id,
-                'client_id'   => $serviceRequest->user_id,
-                'artisan_id'  => $artisan->id,
-            ],
-            [
-                'title'       => $serviceRequest->requested_service_name ?? ($serviceRequest->service->title ?? 'Mission'),
-                'description' => $serviceRequest->description,
-                'status'      => 'pending',
-                'amount'      => $serviceRequest->budget_max ?? 0,
-            ]
-        );
+            // Create a Mission to track the work
+            Mission::firstOrCreate(
+                [
+                    'service_request_id' => $serviceRequest->id,
+                    'service_id'  => $serviceRequest->service_id,
+                    'client_id'   => $serviceRequest->user_id,
+                    'artisan_id'  => $artisan->id,
+                ],
+                [
+                    'title'       => $serviceRequest->requested_service_name ?? ($serviceRequest->service->title ?? 'Mission'),
+                    'description' => $serviceRequest->description,
+                    'status'      => 'pending',
+                    'amount'      => $serviceRequest->budget_max ?? 0,
+                ]
+            );
 
-        Notification::create([
-            'user_id'      => $serviceRequest->user_id,
-            'type'         => 'service_accepted',
-            'related_type' => 'request',
-            'related_id'   => $serviceRequest->id,
-            'title'        => 'Demande acceptée 🎉',
-            'message'      => "L'artisan {$artisan->name} a accepté votre demande. Choisissez votre mode de paiement pour démarrer.",
-            'action_url'   => route('user.service-requests.index'),
-            'is_read'      => false,
-        ]);
+            Notification::create([
+                'user_id'      => $serviceRequest->user_id,
+                'type'         => 'service_accepted',
+                'related_type' => 'request',
+                'related_id'   => $serviceRequest->id,
+                'title'        => 'Demande acceptée 🎉',
+                'message'      => "L'artisan {$artisan->name} a accepté votre demande. Choisissez votre mode de paiement pour démarrer.",
+                'action_url'   => route('user.service-requests.index'),
+                'is_read'      => false,
+            ]);
 
-        Conversation::findOrCreateBetween($serviceRequest->user_id, $artisan->id, 'service', $serviceRequest->id);
+            Conversation::findOrCreateBetween($serviceRequest->user_id, $artisan->id, 'service', $serviceRequest->id);
 
-        return back()->with('success', 'Demande acceptée. En attente du paiement du client pour démarrer le chrono.');
+            return back()->with('success', 'Demande acceptée. En attente du paiement du client pour démarrer le chrono.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur acceptation demande service: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de l\'acceptation de la demande.');
+        }
     }
 
     public function payCash(ServiceRequest $serviceRequest): RedirectResponse
@@ -127,48 +136,58 @@ class ServiceRequestController extends Controller
             return back()->with('error', 'Le paiement ne peut être effectué qu\'une fois la demande acceptée.');
         }
 
-        $serviceRequest->update([
-            'status'      => 'in_progress',
-            'accepted_at' => now(), // Start chrono
-        ]);
-
-        if ($serviceRequest->mission) {
-            $serviceRequest->mission->update([
-                'status'          => 'in_progress',
-                'payment_channel' => 'cash',
-                'start_date'      => now(),
+        try {
+            $serviceRequest->update([
+                'status'      => 'in_progress',
+                'accepted_at' => now(), // Start chrono
             ]);
+
+            if ($serviceRequest->mission) {
+                $serviceRequest->mission->update([
+                    'status'          => 'in_progress',
+                    'payment_channel' => 'cash',
+                    'start_date'      => now(),
+                ]);
+            }
+
+            Notification::create([
+                'user_id'    => $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id,
+                'type'       => 'mission_started',
+                'title'      => 'Paiement en espèces - Mission démarrée',
+                'message'    => "Le client a choisi le paiement en espèces. Le chrono a démarré.",
+                'action_url'   => route('user.service-requests.index'),
+                'is_read'    => false,
+            ]);
+
+            return back()->with('success', 'Paiement en espèces sélectionné. Le chrono a démarré !');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur paiement espèces: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de la validation du paiement.');
         }
-
-        Notification::create([
-            'user_id'    => $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id,
-            'type'       => 'mission_started',
-            'title'      => 'Paiement en espèces - Mission démarrée',
-            'message'    => "Le client a choisi le paiement en espèces. Le chrono a démarré.",
-            'action_url'   => route('user.service-requests.index'),
-            'is_read'    => false,
-        ]);
-
-        return back()->with('success', 'Paiement en espèces sélectionné. Le chrono a démarré !');
     }
 
     public function reject(ServiceRequest $serviceRequest): RedirectResponse
     {
-        $serviceRequest->update(['status' => 'rejected']);
-        $artisan = Auth::user();
+        try {
+            $serviceRequest->update(['status' => 'rejected']);
+            $artisan = Auth::user();
 
-        Notification::create([
-            'user_id'      => $serviceRequest->user_id,
-            'type'         => 'service_rejected',
-            'related_type' => 'request',
-            'related_id'   => $serviceRequest->id,
-            'title'        => 'Demande refusée',
-            'message'      => "L'artisan {$artisan->name} n'est pas disponible.",
-            'action_url'   => route('user.service-requests.index'),
-            'is_read'      => false,
-        ]);
+            Notification::create([
+                'user_id'      => $serviceRequest->user_id,
+                'type'         => 'service_rejected',
+                'related_type' => 'request',
+                'related_id'   => $serviceRequest->id,
+                'title'        => 'Demande refusée',
+                'message'      => "L'artisan {$artisan->name} n'est pas disponible.",
+                'action_url'   => route('user.service-requests.index'),
+                'is_read'      => false,
+            ]);
 
-        return back()->with('info', 'Demande refusée.');
+            return back()->with('info', 'Demande refusée.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur refus demande service: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors du refus de la demande.');
+        }
     }
 
     public function artisanRequests(): View
@@ -454,5 +473,46 @@ class ServiceRequestController extends Controller
         ]);
 
         return back()->with('success', 'Merci pour votre evaluation !');
+    }
+
+    /**
+     * Admin view of all service requests.
+     */
+    public function adminIndex(): View
+    {
+        $serviceRequests = ServiceRequest::with(['user', 'service.artisan', 'mission'])
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total'     => ServiceRequest::count(),
+            'pending'   => ServiceRequest::where('status', 'pending')->count(),
+            'accepted'  => ServiceRequest::where('status', 'accepted')->count(),
+            'rejected'  => ServiceRequest::where('status', 'rejected')->count(),
+            'completed' => ServiceRequest::where('status', 'completed')->count(),
+        ];
+
+        return view('admin.service-requests.index', compact('serviceRequests', 'stats'));
+    }
+
+    /**
+     * Admin responds/updates status of a service request.
+     */
+    public function adminRespond(Request $request, ServiceRequest $serviceRequest): RedirectResponse
+    {
+        $request->validate([
+            'status' => 'required|in:pending,accepted,rejected,completed,cancelled',
+        ]);
+
+        try {
+            $serviceRequest->update([
+                'status' => $request->status,
+            ]);
+
+            return back()->with('success', 'Statut de la demande mis à jour par l\'administration.');
+        } catch (\Throwable $e) {
+            \Log::error('Erreur mise à jour admin demande service: ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors de la mise à jour.');
+        }
     }
 }
