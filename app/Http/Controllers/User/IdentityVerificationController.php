@@ -4,6 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\IdentityVerification;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -76,6 +78,21 @@ class IdentityVerificationController extends Controller
             'verification_rejection_reason' => null,
             'verification_rejection_comment' => null,
         ]);
+
+        // Notify admins about submitted general identity verification
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'      => $admin->id,
+                'type'         => 'identity_verification_submitted',
+                'related_type' => 'user',
+                'related_id'   => $user->id,
+                'title'        => 'Vérification d\'identité reçue',
+                'message'      => "L'utilisateur {$user->name} ({$user->user_type_label}) a soumis ses documents d'identité pour vérification.",
+                'action_url'   => route('admin.verifications-general.index'),
+                'is_read'      => false,
+            ]);
+        }
 
         return back()->with('success', 'Votre demande de vérification d\'identité a été soumise avec succès. Elle est en cours d\'examen.');
     }

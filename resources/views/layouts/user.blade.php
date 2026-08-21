@@ -410,6 +410,159 @@
     </script>
 
     @stack('scripts')
+
+    {{-- ═══ Real-time Notification Polling ═══ --}}
+    <div id="notif-toast-container"
+         style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:12px;pointer-events:none;"></div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        const POLL_INTERVAL = 15000; // 15 secondes
+        const ROUTE_COUNT   = '{{ route("user.notifications.unread-count") }}';
+        const ROUTE_NOTIFS  = '{{ route("user.notifications.index") }}';
+        const CSRF          = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+        // Timestamp de démarrage de la page (epoch seconds)
+        let lastChecked = Math.floor(Date.now() / 1000);
+
+        // Badge element
+        const bellLink = document.querySelector('a[href="{{ route("user.notifications.index") }}"]');
+
+        // ── Toast Factory ────────────────────────────────────────
+        function showToast(notif) {
+            const isRating = notif.type === 'artisan_rated';
+            const icon     = isRating ? '⭐' : '🔔';
+            const accent   = isRating ? '#f59e0b' : '#29B6D1';
+
+            const toast = document.createElement('div');
+            toast.setAttribute('role', 'alert');
+            toast.style.cssText = `
+                pointer-events:auto;
+                display:flex;align-items:flex-start;gap:12px;
+                background:#fff;border-radius:16px;
+                border-left:4px solid ${accent};
+                box-shadow:0 8px 32px rgba(0,0,0,.12);
+                padding:14px 16px;max-width:340px;width:100%;
+                animation:slideInToast .35s cubic-bezier(.34,1.56,.64,1) both;
+                cursor:pointer;
+            `;
+
+            // Stars row only for rating
+            const starsHtml = isRating
+                ? `<div style="margin-top:3px;font-size:13px;letter-spacing:1px;">${extractStars(notif.message)}</div>`
+                : '';
+
+            toast.innerHTML = `
+                <div style="font-size:22px;line-height:1;flex-shrink:0;margin-top:1px;">${icon}</div>
+                <div style="flex:1;min-width:0;">
+                    <p style="font-weight:800;font-size:13px;color:#0f172a;margin:0 0 2px;">${escHtml(notif.title)}</p>
+                    <p style="font-size:11px;color:#64748b;margin:0;line-height:1.4;">${escHtml(notif.message)}</p>
+                    ${starsHtml}
+                </div>
+                <button onclick="this.closest('[role=alert]').remove()"
+                        style="flex-shrink:0;background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;line-height:1;padding:0 2px;"
+                        aria-label="Fermer">×</button>
+            `;
+
+            toast.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') return;
+                if (notif.action_url) window.location.href = notif.action_url;
+            });
+
+            document.getElementById('notif-toast-container').appendChild(toast);
+
+            // Auto-dismiss after 7s
+            setTimeout(() => {
+                toast.style.animation = 'fadeOutToast .4s ease forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 7000);
+        }
+
+        function extractStars(msg) {
+            const m = msg.match(/(\d)\/5/);
+            if (!m) return '';
+            const n = parseInt(m[1]);
+            return '⭐'.repeat(n) + '☆'.repeat(5 - n);
+        }
+
+        function escHtml(str) {
+            return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // ── Badge Update ─────────────────────────────────────────
+        function updateBadge(count) {
+            if (!bellLink) return;
+            let badge = bellLink.querySelector('.notif-live-badge');
+            if (count > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'notif-live-badge';
+                    badge.style.cssText = `
+                        position:absolute;top:6px;right:6px;
+                        min-width:16px;height:16px;
+                        background:#ef4444;color:#fff;
+                        font-size:8px;font-weight:900;
+                        display:flex;align-items:center;justify-content:center;
+                        border-radius:9999px;border:2px solid #fff;
+                        animation:pulse 2s infinite;
+                    `;
+                    bellLink.style.position = 'relative';
+                    bellLink.appendChild(badge);
+                }
+                badge.textContent = count > 9 ? '9+' : count;
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+
+        // ── Poll ─────────────────────────────────────────────────
+        async function poll() {
+            try {
+                const url = `${ROUTE_COUNT}?since=${lastChecked}`;
+                const res = await fetch(url, {
+                    headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
+                });
+                if (!res.ok) return;
+
+                const data = await res.json();
+
+                // Update badge
+                updateBadge(data.count ?? 0);
+
+                // Show toasts for new notifications
+                if (Array.isArray(data.new_notifications) && data.new_notifications.length > 0) {
+                    // Show max 3 toasts at once to avoid spam
+                    data.new_notifications.slice(0, 3).forEach(showToast);
+                }
+
+                lastChecked = Math.floor(Date.now() / 1000);
+            } catch (_) {
+                // Silently ignore network errors
+            }
+        }
+
+        // ── CSS Animations ────────────────────────────────────────
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInToast {
+                from { opacity:0; transform:translateX(60px) scale(.9); }
+                to   { opacity:1; transform:translateX(0)    scale(1); }
+            }
+            @keyframes fadeOutToast {
+                to { opacity:0; transform:translateX(60px) scale(.9); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Start polling after 5s (let page settle), then every 15s
+        setTimeout(() => {
+            poll();
+            setInterval(poll, POLL_INTERVAL);
+        }, 5000);
+    })();
+    </script>
 </body>
 
 </html>

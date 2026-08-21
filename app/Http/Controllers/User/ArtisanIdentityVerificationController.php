@@ -4,6 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\ArtisanLevel;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +63,21 @@ class ArtisanIdentityVerificationController extends Controller
             'verification_rejection_reason' => null,
             'verification_rejection_comment' => null,
         ]);
+
+        // Notify admins about submitted artisan identity verification
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'      => $admin->id,
+                'type'         => 'artisan_verification_submitted',
+                'related_type' => 'user',
+                'related_id'   => $user->id,
+                'title'        => 'Vérification d\'identité artisan reçue',
+                'message'      => "L'artisan {$user->name} a soumis ses documents d'identité pour vérification.",
+                'action_url'   => route('admin.verifications.index'),
+                'is_read'      => false,
+            ]);
+        }
 
         return back()->with('success', 'Votre dossier de vérification d\'identité a été soumis avec succès. Il est en cours d\'examen par notre équipe.');
     }

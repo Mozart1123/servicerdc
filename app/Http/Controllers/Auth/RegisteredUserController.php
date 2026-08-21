@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,6 +66,24 @@ class RegisteredUserController extends Controller
         ]);
 
         Auth::login($user);
+
+        // Notify all admins & super_admins when a professional account is created
+        if ($user->isArtisan() || $user->isRecruiter()) {
+            $typeLabel  = $user->isArtisan() ? 'artisan' : 'recruteur';
+            $adminUsers = User::whereIn('role', ['admin', 'super_admin'])->get();
+            foreach ($adminUsers as $admin) {
+                Notification::create([
+                    'user_id'      => $admin->id,
+                    'type'         => 'new_account_pending',
+                    'related_type' => 'user',
+                    'related_id'   => $user->id,
+                    'title'        => 'Nouveau compte ' . $typeLabel . ' à approuver',
+                    'message'      => "{$user->name} vient de créer un compte {$typeLabel}. Veuillez vérifier et approuver son profil.",
+                    'action_url'   => route('admin.users-mgmt.pending'),
+                    'is_read'      => false,
+                ]);
+            }
+        }
 
         if ($user->isArtisan()) {
             return redirect()->route('user.artisan.level')
