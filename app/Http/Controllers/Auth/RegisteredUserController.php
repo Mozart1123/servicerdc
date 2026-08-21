@@ -62,6 +62,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'user_type' => $request->user_type,
             'role' => User::ROLE_USER, // Default role for new users
+            'status' => User::STATUS_PENDING ?? 'pending',
             'terms_accepted_at' => now(),
         ]);
 

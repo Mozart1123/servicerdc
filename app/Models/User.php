@@ -25,6 +25,7 @@ class User extends Authenticatable
     public const TYPE_RECRUITER = 'recruiter';
 
     public const STATUS_ACTIVE    = 'active';
+    public const STATUS_PENDING   = 'pending';
     public const STATUS_SUSPENDED = 'suspended';
 
     public const ROLES = [

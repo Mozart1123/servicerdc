@@ -35,19 +35,9 @@ class UserController extends Controller
      */
     public function getCountsApi()
     {
-        $pendingCount = User::where(function($q) {
-            $q->where('status', 'pending')
-              ->orWhereHas('artisanLevel', function($aq) {
-                  $aq->where('verification_status', 'pending');
-              })
-              ->orWhereHas('identityVerification', function($iq) {
-                  $iq->where('verification_status', 'pending');
-              });
-        })->count();
-
         return response()->json([
-            'pending'  => $pendingCount,
-            'flagged'  => User::where('status', 'suspended')->count(),
+            'pending'  => User::where('status', User::STATUS_PENDING)->count(),
+            'flagged'  => User::whereIn('status', ['suspended', 'inactive', 'banned', 'disabled'])->count(),
             'jobs'     => JobOffer::where('status', 'active')->count(),
             'services' => Service::where('status', 'active')->count(),
             'reviews'  => \App\Models\Review::count(),
@@ -225,19 +215,13 @@ class UserController extends Controller
     }
 
     /**
-     * Display users pending validation or identity verification.
+     * Display users pending validation.
      */
     public function pending(Request $request)
     {
-        $users = User::where(function($q) {
-            $q->where('status', 'pending')
-              ->orWhereHas('artisanLevel', function($aq) {
-                  $aq->where('verification_status', 'pending');
-              })
-              ->orWhereHas('identityVerification', function($iq) {
-                  $iq->where('verification_status', 'pending');
-              });
-        })->with(['artisanLevel', 'identityVerification'])->latest()->paginate(20);
+        $users = User::where('status', User::STATUS_PENDING)
+            ->latest()
+            ->paginate(20);
 
         if ($request->wantsJson()) {
             return response()->json($users);
@@ -251,7 +235,9 @@ class UserController extends Controller
      */
     public function flagged(Request $request)
     {
-        $users = User::where('status', 'suspended')->latest()->paginate(20);
+        $users = User::whereIn('status', ['suspended', 'inactive', 'banned', 'disabled'])
+            ->latest()
+            ->paginate(20);
 
         if ($request->wantsJson()) {
             return response()->json($users);
@@ -261,30 +247,93 @@ class UserController extends Controller
     }
 
     /**
-     * Display documents pending verification.
+     * Display documents & identity verifications pending verification.
      */
     public function documents(Request $request)
     {
-        $query = Document::with('user');
+        // 1. Standard Document table records
+        $standardDocs = Document::with('user')->get()->map(function($d) {
+            return [
+                'id'         => $d->id,
+                'user'       => $d->user,
+                'type'       => $d->type ?? 'Document',
+                'file_path'  => $d->file_path,
+                'status'     => $d->status,
+                'created_at' => $d->created_at,
+                'source'     => 'document'
+            ];
+        });
+
+        // 2. Artisan Identity Verifications
+        $artisanDocs = \App\Models\ArtisanLevel::with('user')
+            ->whereNotNull('identity_document_path')
+            ->get()
+            ->map(function($a) {
+                return [
+                    'id'         => $a->id,
+                    'user'       => $a->user,
+                    'type'       => 'Identité Artisan (' . ($a->identity_document_type ?? 'Doc') . ')',
+                    'file_path'  => $a->identity_document_path,
+                    'status'     => $a->verification_status ?? 'pending',
+                    'created_at' => $a->updated_at,
+                    'source'     => 'artisan_level'
+                ];
+            });
+
+        // 3. General Identity Verifications (Recruiters & Clients)
+        $generalDocs = \App\Models\IdentityVerification::with('user')
+            ->whereNotNull('identity_document_path')
+            ->get()
+            ->map(function($g) {
+                return [
+                    'id'         => $g->id,
+                    'user'       => $g->user,
+                    'type'       => 'Identité Recruteur/Client (' . ($g->identity_document_type ?? 'Doc') . ')',
+                    'file_path'  => $g->identity_document_path,
+                    'status'     => $g->verification_status ?? 'pending',
+                    'created_at' => $g->updated_at,
+                    'source'     => 'identity_verification'
+                ];
+            });
+
+        $allDocs = $standardDocs->concat($artisanDocs)->concat($generalDocs)->sortByDesc('created_at')->values();
 
         if ($request->has('type') && $request->type) {
-            $query->where('type', $request->type);
+            $typeFilter = strtolower($request->type);
+            $allDocs = $allDocs->filter(function($item) use ($typeFilter) {
+                return str_contains(strtolower($item['type']), $typeFilter);
+            })->values();
         }
 
-        $documents = $query->latest()->paginate(20);
+        $pendingCount   = $allDocs->where('status', 'pending')->count();
+        $verified30d    = $allDocs->where('status', 'approved')->where('created_at', '>=', now()->subDays(30))->count()
+                        + $allDocs->where('status', 'verified')->where('created_at', '>=', now()->subDays(30))->count();
+        $rejectedCount  = $allDocs->where('status', 'rejected')->count();
+        $totalCount     = $allDocs->count();
 
         $stats = [
-            'pending' => Document::where('status', 'pending')->count(),
-            'verified_30d' => Document::where('status', 'verified')->where('updated_at', '>=', now()->subDays(30))->count(),
-            'rejected_rate' => Document::count() > 0 
-                ? round((Document::where('status', 'rejected')->count() / Document::count()) * 100) 
-                : 0,
+            'pending'       => $pendingCount,
+            'verified_30d'  => $verified30d,
+            'rejected_rate' => $totalCount > 0 ? round(($rejectedCount / $totalCount) * 100) : 0,
+        ];
+
+        // Paginate manually
+        $page = (int) $request->get('page', 1);
+        $perPage = 20;
+        $paginatedItems = $allDocs->slice(($page - 1) * $perPage, $perPage)->values();
+        $lastPage = max(1, (int) ceil($totalCount / $perPage));
+
+        $documents = [
+            'data'         => $paginatedItems,
+            'current_page' => $page,
+            'last_page'    => $lastPage,
+            'total'        => $totalCount,
         ];
 
         if ($request->wantsJson()) {
             return response()->json([
                 'documents' => $documents,
-                'stats' => $stats
+                'stats'     => $stats
             ]);
         }
 

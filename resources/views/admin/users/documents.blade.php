@@ -6,7 +6,7 @@
 @section('page_subtitle', 'Validez les pièces d\'identité et les certificats professionnels pour garantir la sécurité de la plateforme.')
 
 @section('content')
-<div class="space-y-8 pb-20" x-data="kycManager()">
+<div class="space-y-8 pb-20" x-data="kycManager({{ json_encode($documents['data']) }}, {{ json_encode(['current_page' => $documents['current_page'], 'last_page' => $documents['last_page'], 'total' => $documents['total']]) }}, {{ json_encode($stats) }})">
     <!-- Verification Stats -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- En Attente -->
@@ -71,28 +71,28 @@
             </div>
         </div>
 
-        <!-- Scaled Responsive Table -->
-        <div class="relative min-h-[400px] overflow-x-hidden">
-            <table class="w-full text-left border-collapse table-fixed lg:table-auto">
+        <!-- Scaled Responsive Table Container -->
+        <div class="relative min-h-[400px] overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[650px] sm:min-w-0">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="pl-4 pr-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest w-[40%] sm:w-auto">Utilisateur</th>
-                        <th class="px-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest w-[15%] sm:w-auto">Type</th>
-                        <th class="px-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest hidden min-[480px]:table-cell">Envoi</th>
-                        <th class="px-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-[15%] sm:w-auto">Statut</th>
-                        <th class="pr-4 pl-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right w-[30%] sm:w-auto">Action</th>
+                        <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
+                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</th>
+                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest hidden min-[480px]:table-cell">Envoi</th>
+                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Statut</th>
+                        <th class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     <template x-for="doc in documents" :key="doc.id">
                         <tr class="group hover:bg-slate-50/30 transition-colors">
                             <td class="pl-4 pr-2 sm:px-8 py-4 sm:py-6">
-                                <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
-                                    <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(doc.user.name)}&background=random&color=fff`" 
-                                         class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl shadow-sm border border-slate-100 shrink-0">
+                                <div class="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                                    <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(doc.user ? doc.user.name : 'User')}&background=random&color=fff`" 
+                                         class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 shrink-0 object-cover">
                                     <div class="min-w-0">
-                                        <p class="text-[10px] sm:text-sm font-black text-slate-900 truncate" x-text="doc.user.name"></p>
-                                        <p class="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate" x-text="`#USR-${doc.user.id}`"></p>
+                                        <p class="text-xs sm:text-sm font-black text-slate-900 truncate" x-text="doc.user ? doc.user.name : 'Utilisateur'"></p>
+                                        <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate" x-text="`#USR-${doc.user ? doc.user.id : ''}`"></p>
                                     </div>
                                 </div>
                             </td>
@@ -105,12 +105,12 @@
                             <td class="px-2 sm:px-8 py-4 sm:py-6 text-center">
                                 <span :class="{
                                     'bg-amber-500': doc.status === 'pending',
-                                    'bg-emerald-500': doc.status === 'verified',
+                                    'bg-emerald-500': doc.status === 'verified' || doc.status === 'approved',
                                     'bg-red-500': doc.status === 'rejected'
-                                }" class="inline-block w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full"></span>
+                                }" class="inline-block w-2.5 h-2.5 rounded-full"></span>
                             </td>
                             <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
-                                <button @click="openViewer(doc)" class="px-2 sm:px-6 py-2 sm:py-2.5 bg-slate-900 text-white text-[7px] sm:text-[9px] font-black uppercase tracking-tighter sm:tracking-widest rounded-lg sm:rounded-xl hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-blue-500/10">Examiner</button>
+                                <button @click="openViewer(doc)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-slate-900 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-blue-500/10">Examiner</button>
                             </td>
                         </tr>
                     </template>
@@ -120,7 +120,7 @@
         
         <!-- Pagination -->
         <template x-if="pagination.last_page > 1">
-            <div class="px-10 py-8 bg-slate-50/30 border-t border-slate-50 flex items-center justify-between">
+            <div class="px-6 sm:px-10 py-6 sm:py-8 bg-slate-50/30 border-t border-slate-50 flex items-center justify-between">
                 <button @click="changePage(pagination.current_page - 1)" :disabled="pagination.current_page === 1" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-rdc-blue disabled:opacity-30 transition-all cursor-pointer">
                     <i class="fas fa-chevron-left"></i>
                 </button>
@@ -138,55 +138,55 @@
         <div class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm" @click="modalOpen = false"></div>
 
         <!-- Modal Panel -->
-        <div class="relative min-h-screen md:flex md:items-center md:justify-center p-4">
-            <div class="bg-white w-full max-w-6xl rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col md:flex-row h-[85vh]">
+        <div class="relative min-h-screen flex items-center justify-center p-2 sm:p-4">
+            <div class="bg-white w-full max-w-6xl rounded-2xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden relative flex flex-col md:flex-row max-h-[90vh] md:h-[85vh]">
                 <!-- Close Button -->
-                <button @click="modalOpen = false" class="absolute top-6 right-6 z-20 w-12 h-12 bg-white/10 hover:bg-white text-white hover:text-slate-900 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-lg border border-white/20">
-                    <i class="fas fa-times text-lg"></i>
+                <button @click="modalOpen = false" class="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 hover:bg-white text-white hover:text-slate-900 rounded-full flex items-center justify-center backdrop-blur-md transition-all shadow-lg border border-white/20">
+                    <i class="fas fa-times text-sm sm:text-lg"></i>
                 </button>
 
                 <!-- Image Viewer -->
-                <div class="flex-1 bg-slate-900 relative flex items-center justify-center p-8 overflow-hidden group">
+                <div class="flex-1 bg-slate-900 relative flex items-center justify-center p-4 sm:p-8 overflow-hidden min-h-[250px] md:min-h-0">
                     <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
-                    <img :src="`/${activeDoc.file_path}`" class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl border border-slate-700/50" alt="Preview">
+                    <img :src="`/${activeDoc.file_path}`" class="max-w-full max-h-[40vh] md:max-h-[70vh] object-contain rounded-lg shadow-2xl border border-slate-700/50" alt="Preview">
                 </div>
 
                 <!-- Sidebar Info -->
-                <div class="w-full md:w-[400px] bg-white border-l border-slate-100 flex flex-col z-10">
-                    <div class="p-8 border-b border-slate-100 bg-slate-50/50">
-                        <div class="flex items-center gap-4 mb-6" x-if="activeDoc.user">
-                            <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(activeDoc.user.name)}&background=random&color=fff`" class="w-16 h-16 rounded-2xl bg-white object-cover border-4 border-white shadow-xl">
+                <div class="w-full md:w-[400px] bg-white border-t md:border-t-0 md:border-l border-slate-100 flex flex-col z-10 overflow-y-auto">
+                    <div class="p-4 sm:p-8 border-b border-slate-100 bg-slate-50/50">
+                        <div class="flex items-center gap-4 mb-4 sm:mb-6" x-if="activeDoc.user">
+                            <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(activeDoc.user ? activeDoc.user.name : 'User')}&background=random&color=fff`" class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white object-cover border-4 border-white shadow-xl">
                             <div>
-                                <h3 class="text-xl font-black text-slate-900" x-text="activeDoc.user.name"></h3>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1" x-text="`#USR-${activeDoc.user.id}`"></p>
+                                <h3 class="text-base sm:text-xl font-black text-slate-900" x-text="activeDoc.user ? activeDoc.user.name : 'Utilisateur'"></h3>
+                                <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mt-1" x-text="`#USR-${activeDoc.user ? activeDoc.user.id : ''}`"></p>
                             </div>
                         </div>
                         <div class="space-y-4">
-                            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Type de Document</p>
-                                <p class="text-sm font-black text-slate-800 uppercase" x-text="activeDoc.type"></p>
+                            <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-100 shadow-sm">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Type de Document</p>
+                                <p class="text-xs sm:text-sm font-black text-slate-800 uppercase" x-text="activeDoc.type"></p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="p-8 flex-1 overflow-y-auto">
-                        <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-6 border-b border-slate-100 pb-2">Points de Contrôle</h4>
+                    <div class="p-4 sm:p-8 flex-1 overflow-y-auto">
+                        <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 sm:mb-6 border-b border-slate-100 pb-2">Points de Contrôle</h4>
                         <ul class="space-y-4">
-                            <li class="flex items-center justify-between text-sm">
+                            <li class="flex items-center justify-between text-xs sm:text-sm">
                                 <span class="text-slate-500 font-medium">Validité Visuelle</span>
                                 <span class="text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded-lg">Manuel</span>
                             </li>
                         </ul>
                     </div>
 
-                    <div class="p-8 border-t border-slate-100 bg-slate-50" x-show="activeDoc.status === 'pending'">
-                        <div class="grid grid-cols-2 gap-4">
-                            <button @click="reject()" class="py-4 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 text-xs font-black uppercase tracking-widest hover:border-red-500 hover:text-red-500 hover:bg-red-50 transition-all flex flex-col items-center gap-2 shadow-sm group">
-                                <i class="fas fa-times text-xl group-hover:scale-110 transition-transform"></i>
+                    <div class="p-4 sm:p-8 border-t border-slate-100 bg-slate-50" x-show="activeDoc.status === 'pending'">
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                            <button @click="reject()" class="py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white border-2 border-slate-200 text-slate-900 text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-red-500 hover:text-red-500 hover:bg-red-50 transition-all flex flex-col items-center gap-1 sm:gap-2 shadow-sm group">
+                                <i class="fas fa-times text-base sm:text-xl group-hover:scale-110 transition-transform"></i>
                                 Rejeter
                             </button>
-                            <button @click="verify()" class="py-4 rounded-2xl bg-rdc-blue text-white text-xs font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20 flex flex-col items-center gap-2 transform hover:-translate-y-1 group">
-                                <i class="fas fa-check text-xl group-hover:scale-110 transition-transform"></i>
+                            <button @click="verify()" class="py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-rdc-blue text-white text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20 flex flex-col items-center gap-1 sm:gap-2 transform hover:-translate-y-1 group">
+                                <i class="fas fa-check text-base sm:text-xl group-hover:scale-110 transition-transform"></i>
                                 Valider
                             </button>
                         </div>
@@ -198,19 +198,21 @@
 </div>
 
 <script>
-function kycManager() {
+function kycManager(initialDocs = [], initialPagination = {}, initialStats = {}) {
     return {
-        documents: [],
-        stats: { pending: 0, verified_30d: 0, rejected_rate: 0 },
+        documents: initialDocs,
+        stats: initialStats,
         loading: false,
         type: '',
-        page: 1,
-        pagination: {},
+        page: initialPagination.current_page || 1,
+        pagination: initialPagination,
         modalOpen: false,
         activeDoc: {},
 
         init() {
-            this.fetchDocuments();
+            if (this.documents.length === 0) {
+                this.fetchDocuments();
+            }
         },
 
         fetchDocuments() {

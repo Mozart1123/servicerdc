@@ -293,6 +293,7 @@ function userManager() {
             .then(res => {
                 if (res.success) {
                     user.status = res.status;
+                    document.dispatchEvent(new CustomEvent('users-updated'));
                 } else {
                     alert(res.error || 'Erreur lors du changement de statut');
                 }
