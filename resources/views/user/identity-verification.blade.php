@@ -76,8 +76,9 @@
                         </a>
                     @endif
                     @if($verification->selfie_path)
-                        <a href="{{ route('user.identity-verification.general.download', ['file' => 'selfie']) }}" target="_blank" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-sm">
-                            <i class="fas fa-user-circle mr-1.5"></i> Selfie
+                        <a href="{{ route('user.identity-verification.general.download', ['file' => 'selfie']) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 transition">
+                            <i class="fas fa-user-circle text-current"></i>
+                            <span>SELFIE</span>
                         </a>
                     @endif
                 </div>
@@ -102,8 +103,9 @@
                         </a>
                     @endif
                     @if($verification->selfie_path)
-                        <a href="{{ route('user.identity-verification.general.download', ['file' => 'selfie']) }}" target="_blank" class="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition shadow-sm">
-                            <i class="fas fa-camera mr-1.5"></i> Selfie
+                        <a href="{{ route('user.identity-verification.general.download', ['file' => 'selfie']) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 transition">
+                            <i class="fas fa-camera text-current"></i>
+                            <span>SELFIE</span>
                         </a>
                     @endif
                 </div>
