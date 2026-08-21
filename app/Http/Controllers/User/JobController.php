@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\JobApplication;
 use App\Models\JobOffer;
+use App\Models\Message;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -396,6 +397,42 @@ class JobController extends Controller
         Conversation::findOrCreateBetween($application->user_id, $user->id, 'job', $application->id);
 
         return back()->with('success', 'Candidature marquée pour entretien.');
+    }
+
+    public function hireApplication(int $applicationId): RedirectResponse
+    {
+        $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
+        $recruiter   = Auth::user();
+
+        $application->update(['status' => 'hired']);
+
+        Notification::create([
+            'user_id'      => $application->user_id,
+            'type'         => 'application_hired',
+            'related_type' => 'application',
+            'related_id'   => $application->id,
+            'title'        => 'Félicitations, vous êtes embauché(e) ! 🎊',
+            'message'      => "Vous avez été embauché(e) pour \"{$application->jobOffer->title}\" chez {$application->jobOffer->company_name}.",
+            'action_url'   => route('user.applications.index'),
+            'is_read'      => false,
+        ]);
+
+        $conversation = Conversation::findOrCreateBetween($application->user_id, $recruiter->id, 'job', $application->id);
+
+        $systemText = "Félicitations ! Votre candidature pour \"{$application->jobOffer->title}\" a été retenue et vous êtes officiellement embauché(e). " .
+                      "{$recruiter->name} vous contactera prochainement pour les prochaines étapes.";
+
+        Message::create([
+            'conversation_id' => $conversation->id,
+            'sender_id'       => $recruiter->id,
+            'receiver_id'     => $application->user_id,
+            'content'         => $systemText,
+            'message'         => $systemText,
+            'is_read'         => false,
+            'is_system'       => true,
+        ]);
+
+        return back()->with('success', 'Candidat marqué comme embauché et notifié.');
     }
 
     public function myJobOffers(): View

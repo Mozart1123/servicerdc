@@ -77,10 +77,18 @@
         @endif
     </form>
 
-    {{-- Table --}}
+    {{-- Table / Cards --}}
+    <style>
+        .desktop-table { display: none; }
+        .mobile-cards  { display: block; }
+        @media (min-width: 768px) {
+            .desktop-table { display: block; }
+            .mobile-cards  { display: none; }
+        }
+    </style>
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden" data-aos="fade-up" data-aos-delay="200">
         @if($applications->count() > 0)
-        <div class="overflow-x-auto">
+        <div class="desktop-table overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/70 border-b border-slate-100">
@@ -156,13 +164,11 @@
                                         <i class="fas fa-lock text-[8px]"></i> Débloquer
                                     </a>
                                 @else
-                                    {{-- Voir dossier --}}
                                     <button onclick="openCvModal({{ $app->id }})"
                                         class="px-3 py-1.5 bg-slate-100 text-slate-600 text-[10px] font-black rounded-xl hover:bg-rdc-blue hover:text-white transition uppercase tracking-widest">
                                         Dossier
                                     </button>
 
-                                    {{-- Discuss when approved --}}
                                     @if(in_array($app->status, ['approved', 'accepted', 'interview', 'hired']))
                                     <a href="{{ route('user.messages.start.user', $app->user_id) }}"
                                        class="px-3 py-1.5 bg-rdc-blue text-white text-[10px] font-black rounded-xl hover:bg-rdc-blue-dark transition uppercase tracking-widest inline-flex items-center gap-1">
@@ -171,28 +177,24 @@
                                     @endif
 
                                     @if($app->status === 'pending')
-                                    {{-- Approve --}}
                                     <form action="{{ route('user.applications.approve', $app->id) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition shadow-sm" title="Approuver">
                                             <i class="fas fa-check text-xs"></i>
                                         </button>
                                     </form>
-                                    {{-- Interview --}}
                                     <form action="{{ route('user.applications.interview', $app->id) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white transition shadow-sm" title="Inviter à un entretien">
                                             <i class="fas fa-phone-alt text-xs"></i>
                                         </button>
                                     </form>
-                                    {{-- Reject — opens modal --}}
                                     <button type="button"
                                             onclick="openRejectModal({{ $app->id }}, '{{ addslashes($app->user->name) }}')"
                                             class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm" title="Refuser">
                                         <i class="fas fa-times text-xs"></i>
                                     </button>
                                     @elseif($app->status === 'interview')
-                                    {{-- Hire --}}
                                     <form action="{{ route('user.applications.hire', $app->id) }}" method="POST"
                                           onsubmit="return confirm('Marquer comme embauché ?')">
                                         @csrf
@@ -209,6 +211,75 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="mobile-cards p-3 space-y-3">
+            @foreach($applications as $app)
+                @php
+                    $sc = match($app->status) {
+                        'approved','accepted' => ['bg'=>'bg-emerald-50','text'=>'text-emerald-700','label'=>'Approuvée'],
+                        'rejected'  => ['bg'=>'bg-red-50','text'=>'text-red-600','label'=>'Refusée'],
+                        'interview' => ['bg'=>'bg-blue-50','text'=>'text-blue-700','label'=>'Entretien'],
+                        'hired'     => ['bg'=>'bg-purple-50','text'=>'text-purple-700','label'=>'Embauché'],
+                        default     => ['bg'=>'bg-amber-50','text'=>'text-amber-700','label'=>'En attente'],
+                    };
+                    $initials = collect(explode(' ', $app->user->name ?? 'U'))->map(fn($w) => strtoupper($w[0] ?? ''))->take(2)->join('');
+                @endphp
+                <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        @if($app->user->photo_url)
+                            <img src="{{ $app->user->photo_url }}" class="w-14 h-14 rounded-xl object-cover border border-slate-200" alt="{{ $app->user->name }}">
+                        @else
+                            <div class="w-14 h-14 rounded-xl bg-[#16a3b0] text-white flex items-center justify-center text-sm font-black border border-[#16a3b0]/30">{{ $initials }}</div>
+                        @endif
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="font-black text-slate-900 text-[15px] truncate">{{ $app->user->name }}</p>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wide {{ $sc['bg'] }} {{ $sc['text'] }}">
+                                    {{ $sc['label'] }}
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 font-medium mt-0.5 truncate">{{ $app->jobOffer->title ?? '—' }}</p>
+                            <div class="flex items-center justify-between mt-2 text-[10px] text-slate-400">
+                                <span>{{ $app->jobOffer->contract_type ?? '' }}</span>
+                                <span>{{ $app->created_at->format('d/m/Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <button type="button" onclick="openCvModal({{ $app->id }})" class="flex-1 min-w-[95px] px-3 py-2 rounded-xl bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wide">
+                            Dossier
+                        </button>
+
+                        @if(in_array($app->status, ['approved', 'accepted', 'interview', 'hired']))
+                            <a href="{{ route('user.messages.start.user', $app->user_id) }}" class="flex-1 min-w-[95px] px-3 py-2 rounded-xl bg-rdc-blue text-white text-[10px] font-bold uppercase tracking-wide text-center">
+                                Discuter
+                            </a>
+                        @endif
+
+                        @if($app->status === 'pending')
+                            <form action="{{ route('user.applications.approve', $app->id) }}" method="POST" class="flex-1 min-w-[95px]">
+                                @csrf
+                                <button type="submit" class="w-full px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wide">
+                                    Accepter
+                                </button>
+                            </form>
+                            <button type="button" onclick="openRejectModal({{ $app->id }}, '{{ addslashes($app->user->name) }}')" class="flex-1 min-w-[95px] px-3 py-2 rounded-xl bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-wide">
+                                Refuser
+                            </button>
+                        @elseif($app->status === 'interview')
+                            <form action="{{ route('user.applications.hire', $app->id) }}" method="POST" class="flex-1 min-w-[95px]">
+                                @csrf
+                                <button type="submit" class="w-full px-3 py-2 rounded-xl bg-purple-50 text-purple-700 text-[10px] font-bold uppercase tracking-wide">
+                                    Embaucher
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
         @if($applications->hasPages())
         <div class="px-6 py-4 border-t border-slate-100">{{ $applications->links() }}</div>
         @endif
