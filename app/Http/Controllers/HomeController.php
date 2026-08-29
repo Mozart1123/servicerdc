@@ -8,6 +8,7 @@ use App\Models\JobOffer;
 use App\Models\NewsletterSubscriber;
 use App\Models\Service;
 use App\Models\Category;
+use App\Models\SupportTicket;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -35,6 +36,34 @@ class HomeController extends Controller
     public function contact(): View
     {
         return view('contact');
+    }
+
+    /**
+     * Handle the public contact form submission.
+     *
+     * Creates a support ticket for the authenticated user. SupportTicket.user_id
+     * is a required, non-nullable foreign key, so guests are asked to log in
+     * first rather than allowing anonymous tickets (would need a schema change).
+     */
+    public function submitContact(Request $request): RedirectResponse
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Veuillez vous connecter pour nous envoyer un message.');
+        }
+
+        $validated = $request->validate([
+            'subject' => ['required', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        SupportTicket::create([
+            'user_id'     => auth()->id(),
+            'subject'     => $validated['subject'],
+            'message'     => $validated['message'],
+            'ticket_type' => 'general',
+        ]);
+
+        return back()->with('success', 'Merci ! Votre message a bien été envoyé, notre équipe vous répondra bientôt.');
     }
 
     public function howItWorks(): View

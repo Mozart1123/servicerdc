@@ -55,6 +55,7 @@ use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingContro
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact', [HomeController::class, 'submitContact'])->name('contact.submit')->middleware('throttle:5,1');
 Route::get('/how-it-works', [HomeController::class, 'howItWorks'])->name('how-it-works');
 
 // Public Catalog Routes
