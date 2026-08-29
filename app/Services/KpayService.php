@@ -16,10 +16,18 @@ class KpayService
     public function __construct()
     {
         $this->baseUrl = 'https://admin.kpay.site/api/v1';
-        $this->apiKey = env('KPAY_API_KEY');
-        $this->secretKey = env('KPAY_SECRET_KEY');
+        // IMPORTANT: read credentials via config(), never env() directly here.
+        // Once `php artisan config:cache` has run (part of our deploy routine via
+        // `php artisan optimize`), Laravel stops reading the .env file at runtime —
+        // any env('KPAY_...') call outside of a config/*.php file silently returns
+        // null in that state, which is what caused the "API Key and Secret Key are
+        // required" 401 errors in production. config('services.kpay.*') is safe
+        // because config/services.php's own env() calls are baked into the cache
+        // when it's built.
+        $this->apiKey = config('services.kpay.api_key');
+        $this->secretKey = config('services.kpay.secret_key');
         // If no explicit webhook secret is provided, try falling back to secret key
-        $this->webhookSecret = env('KPAY_WEBHOOK_SECRET', $this->secretKey);
+        $this->webhookSecret = config('services.kpay.webhook_secret') ?: $this->secretKey;
     }
 
     /**
@@ -198,24 +206,48 @@ class KpayService
     }
 
     /**
-     * Convert USD to the target currency using K-Pay exchange rates
+     * Get the current USD -> target currency exchange rate.
+     *
+     * Tries K-Pay's live exchange-rate endpoint first (so the app always reflects
+     * the real rate the operator will actually apply); falls back to a static
+     * approximation only if that call fails, so payments never hard-fail just
+     * because the rate endpoint is briefly unavailable.
+     *
+     * NOTE: per K-Pay's own API reference, GET /payments/exchange-rate is
+     * documented for conversions BETWEEN THEIR SUPPORTED ZONE CURRENCIES
+     * (XAF, XOF, KES, CDF, UGX, RWF, SLE, ZMW) — USD is not listed among
+     * them. It's unconfirmed whether `from=USD` is actually honored server
+     * side or silently ignored/defaulted. Until this is verified against
+     * the live API (or confirmed with K-Pay support), assume this call may
+     * always be falling through to the hardcoded $fallbacks below — meaning
+     * the "live" rate could really be a static one that goes stale over
+     * time. Worth a one-off manual check: call this endpoint directly with
+     * real prod keys (GET /payments/exchange-rate?from=USD&to=CDF) and log
+     * what comes back.
      */
-    public function convertUsdToLocal(float|string $usdAmount, string $targetCurrency): float
+    public function getExchangeRate(string $targetCurrency): float
     {
-        $usdAmount = (float) $usdAmount;
-        if ($targetCurrency === 'USD') return $usdAmount;
-
-        $response = $this->client()->get('/payments/exchange-rate', [
-            'from' => 'USD',
-            'to' => $targetCurrency
-        ]);
-
-        if ($response->successful()) {
-            $rate = (float) $response->json('rate', 1.0);
-            return $usdAmount * $rate;
+        if ($targetCurrency === 'USD') {
+            return 1.0;
         }
 
-        // Fallbacks
+        try {
+            $response = $this->client()->get('/payments/exchange-rate', [
+                'from' => 'USD',
+                'to' => $targetCurrency,
+            ]);
+
+            if ($response->successful()) {
+                return (float) $response->json('rate', 1.0);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('K-PAY exchange rate lookup failed, using fallback rate', [
+                'target' => $targetCurrency,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Fallbacks (approximate — used only when the live rate endpoint is unreachable)
         $fallbacks = [
             'XAF' => 600,
             'XOF' => 600,
@@ -223,6 +255,17 @@ class KpayService
             'KES' => 130,
         ];
 
-        return $usdAmount * ($fallbacks[$targetCurrency] ?? 1.0);
+        return (float) ($fallbacks[$targetCurrency] ?? 1.0);
+    }
+
+    /**
+     * Convert USD to the target currency using K-Pay exchange rates
+     */
+    public function convertUsdToLocal(float|string $usdAmount, string $targetCurrency): float
+    {
+        $usdAmount = (float) $usdAmount;
+        if ($targetCurrency === 'USD') return $usdAmount;
+
+        return $usdAmount * $this->getExchangeRate($targetCurrency);
     }
 }
