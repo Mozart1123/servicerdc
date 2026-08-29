@@ -111,7 +111,7 @@ class UserController extends Controller
         }
 
         $newStatus = $user->status === User::STATUS_ACTIVE ? User::STATUS_SUSPENDED : User::STATUS_ACTIVE;
-        $user->update(['status' => $newStatus]);
+        $user->forceFill(['status' => $newStatus])->save();
 
         return response()->json([
             'success' => true,
@@ -136,7 +136,7 @@ class UserController extends Controller
         }
 
         // Promote to admin keeping all existing data intact
-        $user->update(['role' => User::ROLE_ADMIN]);
+        $user->forceFill(['role' => User::ROLE_ADMIN])->save();
 
         return response()->json([
             'success' => true,
@@ -160,7 +160,7 @@ class UserController extends Controller
             return back()->with('error', 'Vous ne pouvez pas modifier votre propre rôle.');
         }
 
-        $user->update(['role' => User::ROLE_ADMIN]);
+        $user->forceFill(['role' => User::ROLE_ADMIN])->save();
 
         return back()->with('success', "{$user->name} est désormais Administrateur.");
     }
@@ -183,7 +183,7 @@ class UserController extends Controller
         }
 
         $newStatus = $user->status === User::STATUS_ACTIVE ? User::STATUS_SUSPENDED : User::STATUS_ACTIVE;
-        $user->update(['status' => $newStatus]);
+        $user->forceFill(['status' => $newStatus])->save();
 
         $message = $newStatus === User::STATUS_SUSPENDED
             ? "Le compte de {$user->name} a été suspendu."
@@ -378,7 +378,7 @@ class UserController extends Controller
     public function approveApi(int $id)
     {
         $user = User::findOrFail($id);
-        $user->update(['status' => User::STATUS_ACTIVE]);
+        $user->forceFill(['status' => User::STATUS_ACTIVE])->save();
 
         return response()->json([
             'success' => true,

@@ -36,10 +36,10 @@ class SecurityHeaders
             );
         }
 
-        // Content-Security-Policy in Report-Only mode.
-        // Permissive for now (unsafe-inline needed for Alpine.js x-data and onclick handlers
-        // in Blade views) — use Report-Only to log violations without breaking the app.
-        // Progressively tighten directives once violations are audited.
+        // Content-Security-Policy — now enforced (was Report-Only).
+        // Still permissive (unsafe-inline needed for Alpine.js x-data and onclick handlers
+        // in Blade views). Progressively tighten directives (drop unsafe-inline/unsafe-eval)
+        // once inline handlers are migrated to attached listeners / nonces.
         $cspValue = implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com http://localhost:* http://127.0.0.1:* http://[::1]:* http://*.kaspersky-labs.com ws://*.kaspersky-labs.com",
@@ -54,7 +54,7 @@ class SecurityHeaders
             "form-action 'self'",
         ]);
 
-        $response->headers->set('Content-Security-Policy-Report-Only', $cspValue);
+        $response->headers->set('Content-Security-Policy', $cspValue);
 
         return $response;
     }

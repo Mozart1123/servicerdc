@@ -88,6 +88,11 @@ class ServiceRequestController extends Controller
 
     public function accept(ServiceRequest $serviceRequest): RedirectResponse
     {
+        $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if ($artisanId !== Auth::id()) {
+            abort(403, 'Cette demande ne vous a pas été adressée.');
+        }
+
         try {
             $serviceRequest->update([
                 'status'      => 'accepted',
@@ -132,6 +137,9 @@ class ServiceRequestController extends Controller
 
     public function payCash(ServiceRequest $serviceRequest): RedirectResponse
     {
+        if ($serviceRequest->user_id !== Auth::id()) {
+            abort(403);
+        }
         if ($serviceRequest->status !== 'accepted') {
             return back()->with('error', 'Le paiement ne peut être effectué qu\'une fois la demande acceptée.');
         }
@@ -168,6 +176,11 @@ class ServiceRequestController extends Controller
 
     public function reject(ServiceRequest $serviceRequest): RedirectResponse
     {
+        $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if ($artisanId !== Auth::id()) {
+            abort(403, 'Cette demande ne vous a pas été adressée.');
+        }
+
         try {
             $serviceRequest->update(['status' => 'rejected']);
             $artisan = Auth::user();
@@ -283,6 +296,15 @@ class ServiceRequestController extends Controller
 
     public function show(ServiceRequest $serviceRequest): View
     {
+        $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        $isClient  = $serviceRequest->user_id === Auth::id();
+        $isArtisan = $artisanId === Auth::id();
+        $isAdmin   = in_array(Auth::user()->role, ['admin', 'super_admin'], true);
+
+        if (!$isClient && !$isArtisan && !$isAdmin) {
+            abort(403, 'Vous n\'êtes pas autorisé à consulter cette demande.');
+        }
+
         $serviceRequest->load(['user', 'service.artisan', 'mission']);
 
         // Load conversation if one exists between client and artisan
@@ -317,6 +339,10 @@ class ServiceRequestController extends Controller
      */
     public function startMission(ServiceRequest $serviceRequest): RedirectResponse
     {
+        $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if ($artisanId !== Auth::id()) {
+            abort(403);
+        }
         // Guard: only proceed if payment was made (status must be accepted)
         if ($serviceRequest->status !== 'accepted') {
             return back()->with('error', 'La mission ne peut démarrer qu\'après le paiement du client.');
@@ -404,6 +430,11 @@ class ServiceRequestController extends Controller
      */
     public function cancel(ServiceRequest $serviceRequest): RedirectResponse
     {
+        $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if ($serviceRequest->user_id !== Auth::id() && $artisanId !== Auth::id()) {
+            abort(403);
+        }
+
         $serviceRequest->update(['status' => 'cancelled']);
 
         $mission = $serviceRequest->mission;

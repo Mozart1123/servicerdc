@@ -20,6 +20,10 @@ class AdminUsersSeeder extends Seeder
      */
     public function run(): void
     {
+        // role/status are not mass-assignable, so each seeded user below has its
+        // role applied afterwards via forceFill (bypassing $fillable is fine here:
+        // these are trusted, hardcoded values, not user input).
+
         // Create Super Admin
         User::updateOrCreate(
             ['email' => 'superadmin@proconnect.com'],
@@ -28,12 +32,11 @@ class AdminUsersSeeder extends Seeder
                 'email' => 'superadmin@proconnect.com',
                 'phone' => '+243 999 000 001',
                 'password' => Hash::make('SuperAdmin123!'),
-                'role' => User::ROLE_SUPER_ADMIN,
                 'user_type' => User::TYPE_CLIENT,
                 'terms_accepted_at' => now(),
                 'email_verified_at' => now(),
             ]
-        );
+        )->forceFill(['role' => User::ROLE_SUPER_ADMIN])->save();
 
         // Create Admin
         User::updateOrCreate(
@@ -43,12 +46,11 @@ class AdminUsersSeeder extends Seeder
                 'email' => 'admin@proconnect.com',
                 'phone' => '+243 999 000 002',
                 'password' => Hash::make('Admin123!'),
-                'role' => User::ROLE_ADMIN,
                 'user_type' => User::TYPE_CLIENT,
                 'terms_accepted_at' => now(),
                 'email_verified_at' => now(),
             ]
-        );
+        )->forceFill(['role' => User::ROLE_ADMIN])->save();
 
         // Create Test User
         User::updateOrCreate(
@@ -58,12 +60,11 @@ class AdminUsersSeeder extends Seeder
                 'email' => 'user@proconnect.com',
                 'phone' => '+243 999 000 003',
                 'password' => Hash::make('User123!'),
-                'role' => User::ROLE_USER,
                 'user_type' => User::TYPE_CLIENT,
                 'terms_accepted_at' => now(),
                 'email_verified_at' => now(),
             ]
-        );
+        )->forceFill(['role' => User::ROLE_USER])->save();
 
         // Create Artisan Test User
         User::updateOrCreate(
@@ -73,12 +74,11 @@ class AdminUsersSeeder extends Seeder
                 'email' => 'artisan@proconnect.com',
                 'phone' => '+243 999 111 222',
                 'password' => Hash::make('Artisan123!'),
-                'role' => User::ROLE_USER,
                 'user_type' => User::TYPE_ARTISAN,
                 'terms_accepted_at' => now(),
                 'email_verified_at' => now(),
             ]
-        );
+        )->forceFill(['role' => User::ROLE_USER])->save();
 
         // Create Job Seeker Test User
         User::updateOrCreate(
@@ -88,12 +88,11 @@ class AdminUsersSeeder extends Seeder
                 'email' => 'chercheur@proconnect.com',
                 'phone' => '+243 999 333 444',
                 'password' => Hash::make('Candidat123!'),
-                'role' => User::ROLE_USER,
                 'user_type' => User::TYPE_JOB_SEEKER,
                 'terms_accepted_at' => now(),
                 'email_verified_at' => now(),
             ]
-        );
+        )->forceFill(['role' => User::ROLE_USER])->save();
 
         $this->command->info('Admin and test users seeded successfully!');
         $this->command->table(

@@ -56,10 +56,12 @@ class SocialAuthController extends Controller
                     'email' => $socialUser->email,
                     $column => $socialUser->id,
                     'password' => Hash::make(Str::random(24)),
-                    'role' => User::ROLE_USER,
                     'user_type' => null,
                     'email_verified_at' => now(),
                 ]);
+
+                // role is not mass-assignable; set explicitly via forceFill.
+                $newUser->forceFill(['role' => User::ROLE_USER])->save();
 
                 Auth::login($newUser);
 

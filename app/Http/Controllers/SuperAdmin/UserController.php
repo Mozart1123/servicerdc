@@ -58,15 +58,20 @@ class UserController extends Controller
             'phone' => ['nullable', 'string', 'max:20'],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
-            'role' => $request->role,
             'user_type' => $request->user_type,
             'phone' => $request->phone,
-            'status' => 'active',
         ]);
+
+        // role/status are not mass-assignable; the role value is validated above
+        // ('in:user,admin,super_admin') so forceFill here is safe and explicit.
+        $user->forceFill([
+            'role' => $request->role,
+            'status' => 'active',
+        ])->save();
 
         return redirect()->route('super-admin.users.index')->with('success', 'User created successfully.');
     }
@@ -108,7 +113,6 @@ class UserController extends Controller
         $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'role' => $request->role,
             'user_type' => $request->user_type,
             'phone' => $request->phone,
         ];
@@ -118,6 +122,9 @@ class UserController extends Controller
         }
 
         $user->update($data);
+        // role is not mass-assignable; the value is validated above ('in:user,admin,super_admin')
+        // so forceFill here is safe and explicit about the elevated privilege being granted.
+        $user->forceFill(['role' => $request->role])->save();
 
         return redirect()->route('super-admin.users.index')->with('success', 'User updated successfully.');
     }
@@ -134,7 +141,7 @@ class UserController extends Controller
         }
 
         $newStatus = $user->status === 'active' ? 'suspended' : 'active';
-        $user->update(['status' => $newStatus]);
+        $user->forceFill(['status' => $newStatus])->save();
 
         $label = $newStatus === 'active' ? 'activated' : 'suspended';
         return redirect()->back()->with('success', "{$user->name} has been {$label}.");
@@ -209,7 +216,7 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'You cannot demote your own account.');
         }
 
-        $user->update(['role' => $request->role]);
+        $user->forceFill(['role' => $request->role])->save();
 
         return redirect()->back()->with('success', "{$user->name}'s role has been updated to " . ucfirst(str_replace('_', ' ', $request->role)) . '.');
     }

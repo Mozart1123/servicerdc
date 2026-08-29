@@ -461,10 +461,28 @@ class DashboardController extends Controller
         ]);
 
         $mission = Mission::findOrFail($missionId);
-        
+
         // Check authorization
         if (Auth::id() !== $mission->client_id && Auth::id() !== $mission->artisan_id) {
             abort(403, 'Unauthorized');
+        }
+
+        // Only the artisan can advance the mission (start work / mark it done) —
+        // the client cannot unilaterally trigger payout by self-declaring completion.
+        if (in_array($request->status, ['in_progress', 'completed'], true) && Auth::id() !== $mission->artisan_id) {
+            abort(403, 'Seul l\'artisan peut passer la mission à ce statut.');
+        }
+
+        // Only the client can cancel, and only before the artisan has actually
+        // started (or finished) the mission — cancelling a running/completed
+        // mission requires the artisan's side, not a unilateral client action.
+        if ($request->status === 'cancelled') {
+            if (Auth::id() !== $mission->client_id) {
+                abort(403, 'Seul le client peut annuler la mission.');
+            }
+            if (in_array($mission->status, ['in_progress', 'completed'], true)) {
+                abort(403, 'La mission ne peut plus être annulée une fois démarrée.');
+            }
         }
 
         // Update mission status

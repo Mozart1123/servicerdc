@@ -61,10 +61,15 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'user_type' => $request->user_type,
-            'role' => User::ROLE_USER, // Default role for new users
-            'status' => User::STATUS_PENDING ?? 'pending',
             'terms_accepted_at' => now(),
         ]);
+
+        // role/status are not mass-assignable; set them explicitly via forceFill
+        // to avoid depending on the model's default attribute values.
+        $user->forceFill([
+            'role' => User::ROLE_USER, // Default role for new users
+            'status' => User::STATUS_PENDING ?? 'pending',
+        ])->save();
 
         Auth::login($user);
 

@@ -322,6 +322,10 @@ class JobController extends Controller
             $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
             $recruiter   = Auth::user();
 
+            if ($application->jobOffer?->employer_id !== $recruiter->id && $application->jobOffer?->user_id !== $recruiter->id) {
+                abort(403, 'Vous n\'êtes pas autorisé à gérer cette candidature.');
+            }
+
             $application->update(['status' => 'approved']);
 
             Notification::create([
@@ -369,6 +373,10 @@ class JobController extends Controller
             $recruiter   = Auth::user();
             $reason      = $request->input('rejection_reason');
 
+            if ($application->jobOffer?->employer_id !== $recruiter->id && $application->jobOffer?->user_id !== $recruiter->id) {
+                abort(403, 'Vous n\'êtes pas autorisé à gérer cette candidature.');
+            }
+
             $application->update([
                 'status'           => 'rejected',
                 'rejection_reason' => $reason,
@@ -413,6 +421,10 @@ class JobController extends Controller
             $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
             $user        = Auth::user();
 
+            if ($application->jobOffer?->employer_id !== $user->id && $application->jobOffer?->user_id !== $user->id) {
+                abort(403, 'Vous n\'êtes pas autorisé à gérer cette candidature.');
+            }
+
             $application->update(['status' => 'interview']);
 
             Notification::create([
@@ -440,6 +452,10 @@ class JobController extends Controller
         try {
             $application = JobApplication::with('jobOffer', 'user')->findOrFail($applicationId);
             $recruiter   = Auth::user();
+
+            if ($application->jobOffer?->employer_id !== $recruiter->id && $application->jobOffer?->user_id !== $recruiter->id) {
+                abort(403, 'Vous n\'êtes pas autorisé à gérer cette candidature.');
+            }
 
             $application->update(['status' => 'hired']);
 

@@ -112,7 +112,7 @@ class DashboardController extends Controller
             return redirect()->back()->with('error', 'You cannot demote your own account.');
         }
 
-        $user->update(['role' => $request->role]);
+        $user->forceFill(['role' => $request->role])->save();
 
         return redirect()->back()->with('success', "{$user->name}'s role has been updated to {$request->role}.");
     }
@@ -129,7 +129,7 @@ class DashboardController extends Controller
         }
 
         $newStatus = $user->status === 'active' ? 'suspended' : 'active';
-        $user->update(['status' => $newStatus]);
+        $user->forceFill(['status' => $newStatus])->save();
 
         $label = $newStatus === 'active' ? 'activated' : 'suspended';
         return redirect()->back()->with('success', "{$user->name} has been {$label}.");

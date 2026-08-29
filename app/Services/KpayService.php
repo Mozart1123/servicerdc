@@ -27,14 +27,24 @@ class KpayService
      */
     protected function client()
     {
-        return Http::withHeaders([
+        $client = Http::withHeaders([
             'X-API-Key' => $this->apiKey,
             'X-Secret-Key' => $this->secretKey,
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ])
-        ->withoutVerifying() // Bypass SSL cert issue on local Windows dev
         ->baseUrl($this->baseUrl);
+
+        // SSL verification is only bypassed on local dev machines with a broken
+        // certificate store. It must NEVER be disabled in production/staging —
+        // this client carries live payment credentials and financial data, and
+        // disabling verification allows a man-in-the-middle to intercept or
+        // tamper with API keys, payment requests, and balance responses.
+        if (app()->environment('local')) {
+            $client = $client->withoutVerifying();
+        }
+
+        return $client;
     }
 
     /**

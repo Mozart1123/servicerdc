@@ -93,7 +93,7 @@ Route::middleware('auth:sanctum,web')->get('/user', function (Request $request) 
 });
 
 // ─── K-PAY Webhooks ─────────────────────────────────────────────────────────
-Route::prefix('webhooks/kpay')->name('api.webhooks.kpay.')->group(function () {
+Route::prefix('webhooks/kpay')->name('api.webhooks.kpay.')->middleware('throttle:60,1')->group(function () {
     Route::post('/',         [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handleGeneric'])->name('generic');
     Route::post('/deposits', [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handleDeposit'])->name('deposits');
     Route::post('/payouts',  [\App\Http\Controllers\Webhook\KpayWebhookController::class, 'handlePayout'])->name('payouts');
