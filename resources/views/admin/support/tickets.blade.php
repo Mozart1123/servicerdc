@@ -29,6 +29,23 @@
         })
         .then(() => window.location.reload());
     },
+    refunding: false,
+    refundTicket(id) {
+        if(!confirm('Rembourser intégralement le paiement lié à cette mission via K-PAY ? Cette action est irréversible.')) return;
+        this.refunding = true;
+        fetch(`/admin/support-hq/tickets/${id}/refund`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            this.refunding = false;
+            if (data.error) { alert(data.error); return; }
+            alert(data.message || 'Remboursement initié.');
+            window.location.reload();
+        })
+        .catch(() => { this.refunding = false; alert('Erreur réseau — le remboursement n\'a peut-être pas été initié.'); });
+    },
     closeTicket(id) {
         if(confirm('Fermer ce ticket ?')) {
             fetch(`/admin/support-hq/tickets/${id}/close`, {
@@ -171,7 +188,19 @@
                     <textarea x-model="reply" rows="4" class="w-full px-8 py-5 bg-slate-50 border-none rounded-2xl text-sm font-medium outline-none ring-1 ring-slate-100 focus:ring-4 focus:ring-rdc-blue/10" placeholder="Écrire une réponse..."></textarea>
                 </div>
 
-                <div class="pt-8 flex gap-4">
+                <template x-if="selectedTicket.refund_amount">
+                    <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-4 ml-4">
+                        <i class="fas fa-circle-check"></i> Remboursement déjà initié (<span x-text="selectedTicket.refund_amount"></span> $)
+                    </p>
+                </template>
+
+                <div class="pt-2 flex flex-wrap gap-4">
+                    <template x-if="selectedTicket.mission_id && !selectedTicket.refund_amount">
+                        <button @click="refundTicket(selectedTicket.id)" :disabled="refunding" class="px-8 py-5 bg-orange-50 text-orange-600 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-orange-500 hover:text-white transition-all disabled:opacity-50">
+                            <i class="fas fa-rotate-left"></i>
+                            <span x-text="refunding ? 'Traitement...' : 'Rembourser'">Rembourser</span>
+                        </button>
+                    </template>
                     <button @click="closeTicket(selectedTicket.id)" class="px-8 py-5 bg-rose-50 text-rose-500 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all">Fermer le Ticket</button>
                     <button @click="sendReply()" :disabled="loading" class="flex-1 py-5 bg-slate-900 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-rdc-blue transition-all disabled:opacity-50">
                         <span x-text="loading ? 'Envoi...' : 'Envoyer la Réponse'">Envoyer la Réponse</span>

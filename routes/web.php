@@ -415,6 +415,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::get('/tickets', [AdminSupportController::class, 'tickets'])->name('tickets');
             Route::post('/tickets/{id}/reply', [AdminSupportController::class, 'replyTicket'])->name('tickets.reply');
             Route::post('/tickets/{id}/close', [AdminSupportController::class, 'closeTicket'])->name('tickets.close');
+            Route::post('/tickets/{id}/refund', [AdminSupportController::class, 'refundTicket'])->name('tickets.refund');
             Route::get('/docs', [AdminSupportController::class, 'docs'])->name('docs');
             Route::get('/suggestions', [AdminSupportController::class, 'suggestions'])->name('suggestions');
             Route::post('/suggestions/{id}/toggle', [AdminSupportController::class, 'toggleSuggestionStatus'])->name('suggestions.toggle');
@@ -432,6 +433,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::prefix('missions')->name('missions.')->group(function (): void {
             Route::get('/', [AdminMissionController::class, 'index'])->name('index');
             Route::get('/{mission}', [AdminMissionController::class, 'show'])->name('show');
+            Route::post('/{mission}/refund', [AdminMissionController::class, 'refund'])->name('refund');
         });
 
         // Payout Requests (demandes de retrait artisans)

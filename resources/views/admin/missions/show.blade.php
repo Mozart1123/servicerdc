@@ -81,6 +81,40 @@
         </div>
     </div>
 
+    <!-- Payment / Refund Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fas fa-wallet text-rdc-blue"></i> Paiement
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            @if($transaction)
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Montant confirmé</p>
+                        <p class="text-sm font-semibold text-slate-800">{{ number_format($transaction->amount, 2) }} {{ $transaction->currency }}</p>
+                        <p class="text-xs text-slate-400 mt-1">Réf. {{ $transaction->reference_id }}</p>
+                    </div>
+                    @if($transaction->status === 'refunded')
+                        <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500">
+                            <i class="fas fa-rotate-left"></i> Remboursé
+                        </span>
+                    @else
+                        <form action="{{ route('admin.missions.refund', $mission) }}" method="POST" onsubmit="return confirm('Rembourser intégralement ce paiement via K-PAY ? Cette action est irréversible.');">
+                            @csrf
+                            <button type="submit" class="px-5 py-2.5 bg-orange-50 text-orange-600 text-xs font-bold rounded-xl hover:bg-orange-500 hover:text-white transition-all">
+                                <i class="fas fa-rotate-left"></i> Rembourser via K-PAY
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            @else
+                <p class="text-sm text-slate-400">Aucun paiement confirmé pour cette mission.</p>
+            @endif
+        </div>
+    </div>
+
     <!-- Review / Avis Client Card -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">

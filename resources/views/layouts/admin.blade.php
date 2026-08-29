@@ -426,6 +426,14 @@
             @if(session('info'))
                 <div x-init="$nextTick(() => add('{{ session('info') }}', 'info'))"></div>
             @endif
+            @if(session('error'))
+                {{-- No dedicated red toast style exists yet, so this reuses the
+                     'info' (blue) style rather than fail completely silently —
+                     controllers across the admin panel already do ->with('error', ...)
+                     (e.g. FinancialController::processWithdrawal) but nothing here
+                     ever rendered it before this. --}}
+                <div x-init="$nextTick(() => add('⚠ {{ session('error') }}', 'info'))"></div>
+            @endif
         </div>
         
         <!-- Footer -->

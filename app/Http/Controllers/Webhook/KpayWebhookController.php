@@ -147,9 +147,42 @@ class KpayWebhookController extends Controller
                     return; // Silently ignore — idempotent
                 }
 
+                // ── 4a-bis. REFUND EVENTS ───────────────────────────────────────
+                // Handled separately from the generic COMPLETED/FAILED/CANCELLED
+                // mapping below: a refund event arrives for a transaction that is
+                // already 'succeeded' and needs its own state transition + wallet
+                // reversal, not a re-run of the normal payment-fulfillment logic.
+                if (str_starts_with($event, 'refund.')) {
+                    $this->handleTransactionRefund($transaction, $status, $kpayRef, $data);
+                    return;
+                }
+
                 // ── 4b. Update the generic Transaction record ──────────────────
                 if ($kpayRef && !$transaction->kpay_reference) {
                     $transaction->kpay_reference = $kpayRef;
+                }
+
+                // Audit: surface any mismatch between the amount/currency we
+                // initiated with and what K-PAY actually confirms back. This is
+                // our main empirical signal for the RD Congo providers
+                // (VODACOM_MPESA_COD, AIRTEL_COD, ORANGE_COD), whose docs list
+                // both CDF and USD as supported without documenting how a given
+                // deposit's currency is actually chosen — if K-PAY is silently
+                // charging in a different currency than we assumed, this is what
+                // will show it.
+                if (isset($data['currency']) && $data['currency'] !== $transaction->currency) {
+                    Log::warning('K-PAY Webhook: currency mismatch — K-PAY confirmed a different currency than we assumed', [
+                        'externalId'       => $externalId,
+                        'assumed_currency' => $transaction->currency,
+                        'kpay_currency'    => $data['currency'],
+                    ]);
+                }
+                if (isset($data['amount']) && round((float) $data['amount'], 2) !== round((float) $transaction->amount, 2)) {
+                    Log::warning('K-PAY Webhook: amount mismatch between our record and K-PAY confirmation', [
+                        'externalId'  => $externalId,
+                        'our_amount'  => $transaction->amount,
+                        'kpay_amount' => $data['amount'],
+                    ]);
                 }
 
                 $newStatus = match (true) {
@@ -420,6 +453,134 @@ class KpayWebhookController extends Controller
             'is_read'    => false,
             'action_url' => '/user/missions/' . $mission->id,
         ]);
+    }
+
+    /**
+     * Handle a refund.* webhook event for a transaction that was previously
+     * 'succeeded' (whether the refund was triggered from our own admin panel
+     * via KpayService::refundPayment(), or directly from K-PAY's dashboard —
+     * this is the single source of truth either way).
+     *
+     * On a completed refund:
+     *  - Marks the transaction 'refunded' (idempotent: a second refund.completed
+     *    webhook for the same transaction is a no-op).
+     *  - Reverses the artisan's wallet credit, if one was made for this payment
+     *    (mission / service_request payments only — subscriptions never credit
+     *    a wallet, so this step is simply skipped for those).
+     *  - Notifies the client, the artisan (if the wallet was touched), and admins.
+     *
+     * If the wallet reversal itself fails (e.g. the artisan already withdrew
+     * the funds and the wallet balance is now too low to debit), the refund
+     * to the client already happened at K-PAY — we don't roll that back. We
+     * flag it for manual admin follow-up instead, same pattern already used
+     * elsewhere in this controller for other "money already moved, needs a
+     * human" edge cases.
+     */
+    protected function handleTransactionRefund(Transaction $transaction, ?string $status, ?string $kpayRef, array $data): void
+    {
+        // Idempotency — a transaction can only be refunded once.
+        if ($transaction->status === 'refunded') {
+            Log::info("K-PAY Webhook: refund event ignored — transaction #{$transaction->id} already marked refunded.");
+            return;
+        }
+
+        if ($status !== 'COMPLETED') {
+            // Refund attempt failed or was cancelled on K-PAY's side — the
+            // transaction stays 'succeeded' (the original payment is untouched).
+            Log::warning("K-PAY Webhook: refund NOT completed for transaction #{$transaction->id}", [
+                'status'     => $status,
+                'kpayRef'    => $kpayRef,
+                'reference'  => $transaction->reference_id,
+            ]);
+
+            $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id'    => $admin->id,
+                    'type'       => 'refund_failed',
+                    'title'      => 'Échec de remboursement K-PAY',
+                    'message'    => "Le remboursement du paiement #{$transaction->reference_id} a échoué côté K-PAY (statut: {$status}). Vérifiez manuellement.",
+                    'is_read'    => false,
+                    'action_url' => '/admin/support-hq/tickets',
+                ]);
+            }
+            return;
+        }
+
+        $transaction->status = 'refunded';
+        $transaction->save();
+
+        Log::info("K-PAY Webhook: transaction #{$transaction->id} refunded.", ['reference' => $transaction->reference_id]);
+
+        // ── REVERSE ARTISAN WALLET CREDIT, IF ANY ──
+        $walletReversed = false;
+        $walletReversalFailed = false;
+        $lookupRef = $transaction->kpay_reference ?? $transaction->reference_id;
+
+        $creditTx = \App\Models\WalletTransaction::where('reference_id', $lookupRef)
+            ->where('type', 'credit')
+            ->first();
+
+        if ($creditTx) {
+            $wallet = $creditTx->wallet;
+            if ($wallet) {
+                try {
+                    $wallet->debit(
+                        amount: $creditTx->net_amount,
+                        description: "Remboursement — {$creditTx->description}",
+                        referenceId: 'REFUND-' . $lookupRef
+                    );
+                    $walletReversed = true;
+                } catch (\Throwable $e) {
+                    // Most likely: artisan already withdrew the funds, balance too low.
+                    $walletReversalFailed = true;
+                    Log::alert("K-PAY Webhook: could not reverse wallet credit for refunded transaction #{$transaction->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        // ── NOTIFY CLIENT ──
+        if ($transaction->user_id) {
+            Notification::create([
+                'user_id'      => $transaction->user_id,
+                'type'         => 'payment_refunded',
+                'related_type' => 'transaction',
+                'related_id'   => $transaction->id,
+                'title'        => 'Remboursement confirmé',
+                'message'      => "Votre paiement de {$transaction->amount} {$transaction->currency} a été remboursé.",
+                'is_read'      => false,
+            ]);
+        }
+
+        // ── NOTIFY ARTISAN, IF THE WALLET WAS TOUCHED ──
+        if ($creditTx && $creditTx->user_id) {
+            Notification::create([
+                'user_id'      => $creditTx->user_id,
+                'type'         => $walletReversed ? 'wallet_debited_refund' : 'wallet_refund_needs_review',
+                'related_type' => 'transaction',
+                'related_id'   => $transaction->id,
+                'title'        => $walletReversed ? 'Paiement remboursé au client' : 'Remboursement — action requise',
+                'message'      => $walletReversed
+                    ? "Le paiement lié à \"{$creditTx->description}\" a été remboursé au client ; le montant correspondant a été retiré de votre solde."
+                    : "Le paiement lié à \"{$creditTx->description}\" a été remboursé au client, mais votre solde n'a pas pu être ajusté automatiquement (solde insuffisant). L'équipe support va vous contacter.",
+                'is_read'      => false,
+            ]);
+        }
+
+        // ── NOTIFY ADMINS ──
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'    => $admin->id,
+                'type'       => $walletReversalFailed ? 'refund_wallet_reversal_failed' : 'refund_completed',
+                'title'      => $walletReversalFailed ? 'Remboursement effectué — solde artisan non ajusté' : 'Remboursement effectué',
+                'message'    => $walletReversalFailed
+                    ? "Transaction #{$transaction->reference_id} remboursée au client, mais le solde de l'artisan n'a pas pu être débité automatiquement (solde insuffisant). Intervention manuelle nécessaire."
+                    : "Transaction #{$transaction->reference_id} ({$transaction->amount} {$transaction->currency}) remboursée avec succès.",
+                'is_read'    => false,
+                'action_url' => '/admin/support-hq/tickets',
+            ]);
+        }
     }
 
     /**

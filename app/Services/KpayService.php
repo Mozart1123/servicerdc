@@ -268,4 +268,34 @@ class KpayService
 
         return $usdAmount * $this->getExchangeRate($targetCurrency);
     }
+
+    /**
+     * Refund a completed payment via K-PAY.
+     *
+     * Per K-PAY's API reference:
+     * - Full amount only — K-PAY does not support partial refunds.
+     * - Must be requested within 7 days of the original payment.
+     * - Only one active refund is allowed per payment.
+     * K-PAY enforces all three rules server-side; we just surface whatever
+     * error it returns (e.g. "refund window expired", "refund already exists").
+     *
+     * @param string $paymentId K-PAY's own payment id (our `kpay_reference` column — NOT our externalId).
+     */
+    public function refundPayment(string $paymentId, ?string $reason = null): array
+    {
+        $response = $this->client()->post("/payments/{$paymentId}/refund", array_filter([
+            'reason' => $reason,
+        ]));
+
+        if ($response->failed()) {
+            Log::error('K-PAY Refund Failed', [
+                'paymentId' => $paymentId,
+                'status'    => $response->status(),
+                'body'      => $response->json(),
+            ]);
+            throw new Exception($response->json('message', 'Unknown error'), $response->status());
+        }
+
+        return $response->json();
+    }
 }
