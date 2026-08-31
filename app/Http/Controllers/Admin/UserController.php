@@ -27,7 +27,9 @@ class UserController extends Controller
             return response()->json($users);
         }
 
-        return view('admin.users.index', compact('users'));
+        $provinces = config('drc.provinces');
+
+        return view('admin.users.index', compact('users', 'provinces'));
     }
 
     /**
@@ -70,6 +72,10 @@ class UserController extends Controller
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        if ($request->filled('province')) {
+            $query->where('province', $request->province);
         }
 
         $users = $query->latest()->paginate(20);

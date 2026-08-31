@@ -27,38 +27,18 @@ class SettingController extends Controller
 
     public function geo()
     {
-        $allProvinces = [
-            'Bas-Uele', 'Équateur', 'Haut-Katanga', 'Haut-Lomami', 'Haut-Uele',
-            'Ituri', 'Kasaï', 'Kasaï Central', 'Kasaï Oriental', 'Kinshasa',
-            'Kongo Central', 'Kwango', 'Kwilu', 'Lomami', 'Lualaba', 'Mai-Ndombe',
-            'Maniema', 'Mongala', 'Nord-Kivu', 'Nord-Ubangi', 'Sankuru',
-            'Sud-Kivu', 'Sud-Ubangi', 'Tanganyika', 'Tshopo', 'Tshuapa'
-        ];
+        $provinceStats = app(\App\Services\ProvinceStatsService::class)->compute();
 
-        // Fetch provinces that have at least one user
-        $activeProvincesFromDb = \App\Models\User::whereNotNull('province')
-            ->select('province')
-            ->distinct()
-            ->pluck('province')
-            ->toArray();
+        // Conserve le format attendu par l'ancienne vue pour compat (liste latérale)
+        $activeProvinces = array_map(fn ($p) => [
+            'name'      => $p['name'],
+            'is_active' => $p['is_active'],
+        ], $provinceStats);
 
-        // Normalize matching
-        $activeProvinces = [];
-        foreach ($allProvinces as $p) {
-            $active = false;
-            foreach ($activeProvincesFromDb as $activeDb) {
-                if (strtolower(trim($p)) === strtolower(trim($activeDb))) {
-                    $active = true;
-                    break;
-                }
-            }
-            $activeProvinces[] = [
-                'name' => $p,
-                'is_active' => $active
-            ];
-        }
-
-        return view('admin.settings.geo', compact('activeProvinces'));
+        return view('admin.settings.geo', [
+            'activeProvinces' => $activeProvinces,
+            'provinceStats'   => $provinceStats,
+        ]);
     }
 
     public function api()

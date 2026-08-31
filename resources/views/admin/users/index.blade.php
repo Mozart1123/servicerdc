@@ -94,6 +94,16 @@
                     <option value="pending">En attente</option>
                 </select>
             </div>
+
+            <div class="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Province:</span>
+                <select x-model="province" class="bg-transparent border-none text-xs font-black text-slate-900 focus:ring-0 cursor-pointer uppercase tracking-tight">
+                    <option value="">Toutes</option>
+                    @foreach($provinces as $p)
+                        <option value="{{ $p }}">{{ $p }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
     </div>
 
@@ -234,20 +244,29 @@ function userManager() {
         search: '',
         role: '',
         status: '',
+        province: '',
         page: 1,
         pagination: {},
 
         init() {
+            // Permet un lien direct pré-filtré depuis la carte géographique
+            // (/admin/settings/geo), ex. /admin/users?province=Kinshasa
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('province')) {
+                this.province = params.get('province');
+            }
+
             this.fetchUsers();
             this.$watch('search', () => { this.page = 1; this.fetchUsers(); });
             this.$watch('role', () => { this.page = 1; this.fetchUsers(); });
             this.$watch('status', () => { this.page = 1; this.fetchUsers(); });
+            this.$watch('province', () => { this.page = 1; this.fetchUsers(); });
         },
 
         fetchUsers() {
             this.loading = true;
-            let url = `/admin/users/api?page=${this.page}&search=${this.search}&role=${this.role}&status=${this.status}`;
-            
+            let url = `/admin/users/api?page=${this.page}&search=${encodeURIComponent(this.search)}&role=${this.role}&status=${this.status}&province=${encodeURIComponent(this.province)}`;
+
             fetch(url)
                 .then(r => r.json())
                 .then(res => {

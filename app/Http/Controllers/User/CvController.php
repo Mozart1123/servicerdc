@@ -14,12 +14,15 @@ use Illuminate\View\View;
 
 class CvController extends Controller
 {
-    private const DRC_PROVINCES = [
-        'Bas-Uele', 'Bas-Congo', 'Bandundu', 'Équateur', 'Haut-Katanga', 'Haut-Lomami', 'Haut-Uele',
-        'Ituri', 'Kasaï', 'Kasaï Central', 'Kasaï Oriental', 'Kinshasa', 'Kwango', 'Kwilu',
-        'Lomami', 'Lualaba', 'Mai-Ndombe', 'Maniema', 'Mongala', 'Nord-Kivu', 'Nord-Ubangi',
-        'Sankuru', 'Sud-Kivu', 'Sud-Ubangi', 'Tanganyika', 'Tshopo', 'Tshuapa',
-    ];
+    /**
+     * Liste canonique des 26 provinces — voir config/drc.php.
+     *
+     * @return array<int, string>
+     */
+    private static function provinces(): array
+    {
+        return config('drc.provinces');
+    }
 
     /**
      * Show the CV page (upload focus).
@@ -29,7 +32,7 @@ class CvController extends Controller
         $user                = Auth::user();
         $cv                  = $user->cv;
         $returnTo            = request('return_to');
-        $provinces           = self::DRC_PROVINCES;
+        $provinces           = self::provinces();
         $experienceEntries   = $this->getExperienceEntries($cv);
         $educationEntries    = $this->getEducationEntries($cv);
         $skills             = $this->getSkills($cv);
@@ -46,7 +49,7 @@ class CvController extends Controller
         $user                = Auth::user();
         $cv                  = $user->cv;
         $returnTo            = request('return_to');
-        $provinces           = self::DRC_PROVINCES;
+        $provinces           = self::provinces();
         $experienceEntries   = $this->getExperienceEntries($cv);
         $educationEntries    = $this->getEducationEntries($cv);
         $skills             = $this->getSkills($cv);
@@ -76,7 +79,7 @@ class CvController extends Controller
             'full_name'                 => ['required', 'string', 'max:255'],
             'job_title'                 => ['required', 'string', 'max:255'],
             'phone'                     => ['required', 'string', 'regex:/^(\+243|0)\d{9}$/'],
-            'province'                  => ['required', 'string', Rule::in(self::DRC_PROVINCES)],
+            'province'                  => ['required', 'string', Rule::in(self::provinces())],
             'address'                   => ['required', 'string', 'max:255'],
             'summary'                   => ['nullable', 'string', 'max:1200'],
             'experience'                => ['nullable', 'array'],

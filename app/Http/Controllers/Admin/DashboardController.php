@@ -101,37 +101,27 @@ class DashboardController extends Controller
     {
         \App\Services\SystemActivityService::log('SERV', 'Consultation des statistiques live', 'info');
         
-        // Define all 26 provinces of DRC
-        $allProvinces = [
-            'Kinshasa', 'Kongo-Central', 'Kwango', 'Kwilu', 'Mai-Ndombe', 'Kasaï', 
-            'Kasaï-Central', 'Kasaï-Oriental', 'Lomami', 'Sankuru', 'Maniema', 
-            'Sud-Kivu', 'Nord-Kivu', 'Ituri', 'Haut-Uele', 'Bas-Uele', 'Tshopo', 
-            'Mongala', 'Nord-Ubangi', 'Sud-Ubangi', 'Équateur', 'Tshuapa', 
-            'Tanganyika', 'Haut-Lomami', 'Lualaba', 'Haut-Katanga'
-        ];
+        // Source unique de vérité pour la liste des 26 provinces + agrégats
+        // (utilisateurs par rôle, volume d'usage réel) — voir ProvinceStatsService.
+        $stats = app(\App\Services\ProvinceStatsService::class)->compute();
 
-        // Fetch user counts per province
-        $userCountsByProvince = \App\Models\User::select('province', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
-            ->whereNotNull('province')
-            ->groupBy('province')
-            ->pluck('total', 'province')
-            ->toArray();
-
-        $totalUsersWithProvince = array_sum($userCountsByProvince) ?: 1; // Prevent division by zero
+        $totalUsersWithProvince = array_sum(array_column($stats, 'user_count')) ?: 1; // Prevent division by zero
 
         $provinceData = [];
         $idCounter = 1;
-        foreach ($allProvinces as $provinceName) {
-            $count = $userCountsByProvince[$provinceName] ?? 0;
-            $percentage = round(($count / $totalUsersWithProvince) * 100);
-            
+        foreach ($stats as $p) {
             $provinceData[] = [
-                'id' => $idCounter++,
-                'name' => $provinceName,
-                'active' => $count > 0, // Active if at least one user
-                'userCount' => $count,
-                'percentage' => $percentage,
-                'cities' => [] // Could be populated dynamically if needed, keeping empty for now or populate with defaults
+                'id'                    => $idCounter++,
+                'name'                  => $p['name'],
+                'active'                => $p['is_active'],
+                'userCount'             => $p['user_count'],
+                'usersByType'           => $p['users_by_type'],
+                'percentage'            => round(($p['user_count'] / $totalUsersWithProvince) * 100),
+                'missionsCount'         => $p['missions_count'],
+                'serviceRequestsCount'  => $p['service_requests_count'],
+                'jobOffersCount'        => $p['job_offers_count'],
+                'usageCount'            => $p['usage_count'],
+                'cities'                => [],
             ];
         }
 
