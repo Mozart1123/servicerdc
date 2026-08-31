@@ -60,7 +60,7 @@ class SettingController extends Controller
                 \Illuminate\Support\Facades\Artisan::call('up');
                 $status = false;
             } else {
-                \Illuminate\Support\Facades\Artisan::call('down');
+                \Illuminate\Support\Facades\Artisan::call('down', ['--render' => 'errors.maintenance']);
                 $status = true;
             }
             return response()->json(['success' => true, 'isDown' => $status]);
