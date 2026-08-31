@@ -436,8 +436,8 @@ class DashboardController extends Controller
      */
     public function missionDetail(int $id): View
     {
-        $mission = Mission::with('client', 'artisan', 'service')->findOrFail($id);
-        
+        $mission = Mission::with('client', 'artisan', 'service', 'serviceRequest')->findOrFail($id);
+
         // Check authorization
         if (Auth::id() !== $mission->client_id && Auth::id() !== $mission->artisan_id) {
             abort(403, 'Unauthorized');
@@ -451,8 +451,24 @@ class DashboardController extends Controller
 
     /**
      * Update mission status.
+     *
+     * IMPORTANT — completion is gated behind client validation:
+     * When the ARTISAN requests 'completed' on a mission that has a linked
+     * ServiceRequest still 'in_progress', this does NOT complete the mission
+     * directly. It delegates to ServiceRequestController::complete(), which
+     * only *signals* the work is done and puts the request in
+     * 'awaiting_validation' — the mission itself stays 'in_progress' until
+     * the CLIENT confirms via ServiceRequestController::validateCompletion().
+     * This closes the same gap here as on the /service-requests pages: an
+     * artisan can no longer unilaterally close out (and become eligible for
+     * payout on) a mission the client hasn't actually confirmed.
+     *
+     * A mission with no linked ServiceRequest (legacy data — every mission
+     * created going forward always has one) falls back to the old direct
+     * update below, since there's no ServiceRequest to hold the intermediate
+     * state.
      */
-    public function updateMissionStatus(Request $request, int $missionId): RedirectResponse
+    public function updateMissionStatus(Request $request, int $missionId, ServiceRequestController $serviceRequestController): RedirectResponse
     {
         $request->validate([
             'status' => ['required', 'in:pending,in_progress,completed,cancelled'],
@@ -460,15 +476,34 @@ class DashboardController extends Controller
             'rating' => ['nullable', 'integer', 'min:1', 'max:5'],
         ]);
 
-        $mission = Mission::findOrFail($missionId);
+        $mission = Mission::with('serviceRequest')->findOrFail($missionId);
 
         // Check authorization
         if (Auth::id() !== $mission->client_id && Auth::id() !== $mission->artisan_id) {
             abort(403, 'Unauthorized');
         }
 
+        if ($request->status === 'completed' && $mission->serviceRequest) {
+            $serviceRequest = $mission->serviceRequest;
+
+            if (Auth::id() === $mission->artisan_id) {
+                // Artisan: delegate to the guarded "signal completion" flow.
+                return $serviceRequestController->complete($serviceRequest);
+            }
+
+            if (Auth::id() === $mission->client_id) {
+                if ($serviceRequest->status === 'awaiting_validation') {
+                    // Client confirming: delegate to the guarded validation flow.
+                    return $serviceRequestController->validateCompletion($serviceRequest);
+                }
+                return redirect()->back()->with('error', "L'artisan doit d'abord signaler le travail comme terminé avant que vous puissiez confirmer.");
+            }
+        }
+
         // Only the artisan can advance the mission (start work / mark it done) —
         // the client cannot unilaterally trigger payout by self-declaring completion.
+        // (For 'completed' this is only reached in the legacy no-linked-ServiceRequest
+        // fallback — the normal case is fully handled by the delegation block above.)
         if (in_array($request->status, ['in_progress', 'completed'], true) && Auth::id() !== $mission->artisan_id) {
             abort(403, 'Seul l\'artisan peut passer la mission à ce statut.');
         }

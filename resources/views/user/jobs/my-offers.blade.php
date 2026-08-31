@@ -21,7 +21,7 @@
     {{-- Job Offers Table/List --}}
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden" data-aos="fade-up" data-aos-delay="100">
         @if($jobOffers->count() > 0)
-            <div class="overflow-x-auto">
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50/50 border-b border-slate-100">
@@ -119,6 +119,88 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            <div class="md:hidden p-3 space-y-3">
+                @foreach($jobOffers as $job)
+                @php
+                    $offerImage = null;
+
+                    if (!empty($job->company_logo)) {
+                        $offerImage = \Illuminate\Support\Str::startsWith($job->company_logo, ['http://', 'https://'])
+                            ? $job->company_logo
+                            : Storage::url($job->company_logo);
+                    } elseif (!empty($job->image)) {
+                        $offerImage = \Illuminate\Support\Str::startsWith($job->image, ['http://', 'https://'])
+                            ? $job->image
+                            : Storage::url($job->image);
+                    } elseif (!empty($job->company?->logo)) {
+                        $offerImage = \Illuminate\Support\Str::startsWith($job->company->logo, ['http://', 'https://'])
+                            ? $job->company->logo
+                            : Storage::url($job->company->logo);
+                    }
+
+                    $companyLabel = $job->company_name ?? $job->company?->name ?? $job->title;
+                    $initials = collect(explode(' ', trim($companyLabel)))
+                        ->take(2)
+                        ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
+                        ->implode('');
+
+                    $badgeClasses = [
+                        'bg-sky-100 text-sky-700',
+                        'bg-amber-100 text-amber-700',
+                        'bg-emerald-100 text-emerald-700',
+                        'bg-violet-100 text-violet-700',
+                        'bg-rose-100 text-rose-700',
+                    ];
+                    $badgeClass = $badgeClasses[$job->id % count($badgeClasses)];
+                @endphp
+                <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        @if($offerImage)
+                            <img src="{{ $offerImage }}" alt="{{ $job->title }}" class="w-14 h-14 rounded-xl object-cover border border-gray-100 shadow-sm shrink-0">
+                        @else
+                            <div class="w-14 h-14 rounded-xl flex items-center justify-center text-[11px] font-black tracking-wide shadow-sm border border-gray-100 shrink-0 {{ $badgeClass }}">
+                                {{ $initials ?: strtoupper(substr($job->title, 0, 2)) }}
+                            </div>
+                        @endif
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="font-black text-slate-900 text-[15px] truncate">{{ $job->title }}</p>
+                                @if($job->status === 'active')
+                                    <span class="shrink-0 px-2.5 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-green-100">Actif</span>
+                                @else
+                                    <span class="shrink-0 px-2.5 py-1 bg-slate-100 text-slate-500 text-[10px] font-black rounded-full uppercase tracking-widest border border-slate-200">Fermé</span>
+                                @endif
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-medium mt-0.5 truncate lowercase italic">{{ $job->contract_type }} • {{ $job->location }}</p>
+                            <div class="flex items-center justify-between mt-2 text-[10px] text-slate-400">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-black">{{ $job->applications_count }}</span>
+                                    candidature{{ $job->applications_count > 1 ? 's' : '' }}
+                                </span>
+                                <span>{{ $job->created_at->format('d/m/Y') }} · {{ $job->created_at->diffForHumans() }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex items-center gap-2">
+                        <a href="{{ route('user.jobs.show', $job->id) }}" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wide">
+                            <i class="fas fa-eye text-xs"></i> Voir
+                        </a>
+                        <a href="{{ route('user.jobs.edit', $job->id) }}" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-wide">
+                            <i class="fas fa-edit text-xs"></i> Modifier
+                        </a>
+                        <form action="{{ route('user.jobs.destroy', $job->id) }}" method="POST" class="flex-1" onsubmit="return confirm('Confirmer la suppression ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 text-red-500 text-[10px] font-bold uppercase tracking-wide">
+                                <i class="fas fa-trash-alt text-xs"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endforeach
             </div>
 
             @if($jobOffers->hasPages())

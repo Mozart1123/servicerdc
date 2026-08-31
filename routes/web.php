@@ -141,6 +141,8 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::post('/service-requests/{serviceRequest}/complete', [UserServiceRequestController::class, 'complete'])->name('service-requests.complete');
             Route::post('/service-requests/{serviceRequest}/start', [UserServiceRequestController::class, 'startMission'])->name('service-requests.start');
             Route::post('/service-requests/{serviceRequest}/pay-cash', [UserServiceRequestController::class, 'payCash'])->name('service-requests.pay-cash');
+            Route::post('/service-requests/{serviceRequest}/pause-work', [UserServiceRequestController::class, 'pauseWork'])->name('service-requests.pause-work');
+            Route::post('/service-requests/{serviceRequest}/resume-work', [UserServiceRequestController::class, 'resumeWork'])->name('service-requests.resume-work');
             Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
             Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
             Route::get('/artisan/level', [UserDashboardController::class, 'level'])->name('artisan.level');
@@ -174,6 +176,7 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
         Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
         Route::post('/service-requests/{serviceRequest}/rate', [UserServiceRequestController::class, 'rate'])->name('service-requests.rate');
+        Route::post('/service-requests/{serviceRequest}/validate-completion', [UserServiceRequestController::class, 'validateCompletion'])->name('service-requests.validate-completion');
         Route::get('/reviews', [UserDashboardController::class, 'myReviews'])->name('reviews.index');
         // Service Requests
         // (Handled above, client-facing vs artisan-facing separated)

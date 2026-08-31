@@ -95,16 +95,26 @@
       @endif
 
       <!-- PRICING -->
-      <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      @php
+        $planCount = isset($plans) ? $plans->count() : 0;
+        $gridClass = match(true) {
+          $planCount >= 3 => 'grid grid-cols-1 md:grid-cols-3 gap-8',
+          $planCount === 2 => 'grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto',
+          $planCount === 1 => 'grid grid-cols-1 max-w-md mx-auto',
+          default => 'grid grid-cols-1 md:grid-cols-3 gap-8',
+        };
+      @endphp
+      <section class="{{ $gridClass }} mb-12">
 
         @if(isset($plans) && $plans->count() > 0)
           @foreach($plans as $plan)
           @php
             $isCurrentPlan = isset($activeSubscription) && $activeSubscription && $activeSubscription->plan->slug === $plan->slug;
             $colorMap = [
-              'slate' => ['icon_bg' => 'bg-gray-100', 'icon_text' => 'text-gray-600', 'icon' => 'fa-user', 'border' => '', 'scale' => '', 'btn' => 'bg-gray-100 text-gray-700'],
-              'blue'  => ['icon_bg' => 'bg-cyan-100', 'icon_text' => 'text-rdc-blue', 'icon' => 'fa-star', 'border' => 'border-2 border-rdc-blue shadow-xl', 'scale' => 'md:scale-105', 'btn' => 'bg-rdc-blue text-white hover:bg-rdc-blue-dark'],
-              'amber' => ['icon_bg' => 'bg-yellow-100', 'icon_text' => 'text-rdc-yellow', 'icon' => 'fa-crown', 'border' => '', 'scale' => '', 'btn' => 'bg-rdc-dark-blue text-white hover:bg-black'],
+              'slate'   => ['icon_bg' => 'bg-gray-100', 'icon_text' => 'text-gray-600', 'icon' => 'fa-user', 'border' => '', 'scale' => '', 'btn' => 'bg-gray-100 text-gray-700'],
+              'blue'    => ['icon_bg' => 'bg-cyan-100', 'icon_text' => 'text-rdc-blue', 'icon' => 'fa-star', 'border' => 'border-2 border-rdc-blue shadow-xl', 'scale' => 'md:scale-105', 'btn' => 'bg-rdc-blue text-white hover:bg-rdc-blue-dark'],
+              'amber'   => ['icon_bg' => 'bg-yellow-100', 'icon_text' => 'text-rdc-yellow', 'icon' => 'fa-crown', 'border' => '', 'scale' => '', 'btn' => 'bg-rdc-dark-blue text-white hover:bg-black'],
+              'emerald' => ['icon_bg' => 'bg-emerald-100', 'icon_text' => 'text-emerald-600', 'icon' => 'fa-briefcase', 'border' => 'border-2 border-emerald-500 shadow-xl', 'scale' => '', 'btn' => 'bg-emerald-600 text-white hover:bg-emerald-700'],
             ];
             $c = $colorMap[$plan->color] ?? $colorMap['slate'];
           @endphp

@@ -55,7 +55,7 @@
     <div class="space-y-4">
         @forelse($serviceRequests as $req)
         @php
-            $colors = ['pending' => 'amber', 'accepted' => 'emerald', 'rejected' => 'red', 'completed' => 'blue', 'cancelled' => 'slate'];
+            $colors = ['pending' => 'amber', 'accepted' => 'emerald', 'awaiting_validation' => 'amber', 'rejected' => 'red', 'completed' => 'blue', 'cancelled' => 'slate'];
             $c = $colors[$req->status] ?? 'slate';
         @endphp
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all p-6" data-aos="fade-up">
@@ -83,9 +83,16 @@
                         @endif
                         <span><i class="fas fa-fire mr-1 text-orange-400"></i>{{ $req->urgency_label }}</span>
                         <span><i class="fas fa-dollar-sign mr-1"></i>{{ $req->budget_range }}</span>
-                        @if($req->status === 'in_progress' && $req->accepted_at)
-                        <span class="text-emerald-600 font-bold" data-accepted-at="{{ $req->accepted_at->toIso8601String() }}">
-                            <i class="fas fa-stopwatch mr-1"></i><span>00:00:00</span>
+                        @if($req->status === 'in_progress')
+                        @php
+                            $isPausedList = $req->isWorkPaused();
+                            $workedSecondsList = $req->totalWorkedSeconds();
+                            $wh = intdiv($workedSecondsList, 3600);
+                            $wm = intdiv($workedSecondsList % 3600, 60);
+                            $ws = $workedSecondsList % 60;
+                        @endphp
+                        <span class="{{ $isPausedList ? 'text-slate-400' : 'text-emerald-600' }} font-bold">
+                            <i class="fas {{ $isPausedList ? 'fa-pause' : 'fa-stopwatch' }} mr-1"></i>{{ sprintf('%02d:%02d:%02d', $wh, $wm, $ws) }}{{ $isPausedList ? ' (en pause)' : '' }}
                         </span>
                         @endif
                         @if($req->status === 'completed' && $req->accepted_at && $req->completed_at)
@@ -134,7 +141,7 @@
 
                     @if($req->status === 'in_progress')
                     <form action="{{ route('user.service-requests.complete', $req->id) }}" method="POST"
-                          onsubmit="return confirm('Marquer ce service comme terminé ?')">
+                          onsubmit="return confirm('Signaler ce service comme terminé ? Le client devra confirmer avant la clôture.')">
                         @csrf
                         <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 text-sm font-bold rounded-xl hover:bg-blue-100 border border-blue-200 transition">
                             <i class="fas fa-flag-checkered"></i> Terminé
@@ -147,6 +154,16 @@
                             <i class="fas fa-ban"></i> Annuler
                         </button>
                     </form>
+                    <a href="{{ route('user.messages.start.user', $req->user_id) }}"
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white text-sm font-bold rounded-xl hover:bg-rdc-blue-dark transition">
+                        <i class="fas fa-comments"></i> Discuter
+                    </a>
+                    @endif
+
+                    @if($req->status === 'awaiting_validation')
+                    <span class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 text-sm font-bold rounded-xl border border-amber-200">
+                        <i class="fas fa-hourglass-half"></i> En attente de validation client
+                    </span>
                     <a href="{{ route('user.messages.start.user', $req->user_id) }}"
                        class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white text-sm font-bold rounded-xl hover:bg-rdc-blue-dark transition">
                         <i class="fas fa-comments"></i> Discuter
@@ -186,24 +203,4 @@
         @endif
     </div>
 </div>
-
-<script>
-(function() {
-    const badges = document.querySelectorAll('[data-accepted-at]');
-    if (!badges.length) return;
-    function updateBadges() {
-        const now = Date.now();
-        badges.forEach(badge => {
-            const acceptedAt = new Date(badge.dataset.acceptedAt).getTime();
-            const diff = Math.floor((now - acceptedAt) / 1000);
-            const h = String(Math.floor(diff / 3600)).padStart(2, '0');
-            const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-            const s = String(diff % 60).padStart(2, '0');
-            badge.querySelector('span:last-child').textContent = h + ':' + m + ':' + s;
-        });
-    }
-    updateBadges();
-    setInterval(updateBadges, 1000);
-})();
-</script>
 @endsection

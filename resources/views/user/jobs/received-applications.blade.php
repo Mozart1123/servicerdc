@@ -16,6 +16,19 @@
     @endif
     @endforeach
 
+    {{-- Plan Badge --}}
+    <div class="flex justify-end" data-aos="fade-down">
+        @if(auth()->user()->isPremiumRecruiter())
+        <span class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black rounded-full uppercase tracking-widest">
+            <i class="fas fa-crown text-amber-400"></i> Plan Premium
+        </span>
+        @else
+        <span class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 border border-slate-200 text-xs font-black rounded-full uppercase tracking-widest">
+            <i class="fas fa-user"></i> Plan Gratuit
+        </span>
+        @endif
+    </div>
+
     {{-- Stats --}}
     <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
         @foreach([
@@ -48,7 +61,7 @@
                 </div>
                 <div>
                     <h4 class="font-heading font-black text-slate-900 text-sm">Candidatures supplémentaires verrouillées</h4>
-                    <p class="text-xs text-slate-500 mt-0.5">Vous avez reçu plus de 10 candidatures. Passez à l'abonnement Premium pour déverrouiller et voir les détails des candidats supplémentaires.</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Le plan Gratuit permet de voir les 5 premières candidatures par offre. Passez à l'abonnement Premium pour déverrouiller et voir les détails des candidats supplémentaires.</p>
                 </div>
             </div>
             <a href="{{ route('user.subscription.index') }}" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition whitespace-nowrap uppercase tracking-wider">

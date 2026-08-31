@@ -55,12 +55,13 @@ class ServiceRequest extends Model
     }
 
     // Status constants
-    const STATUS_PENDING     = 'pending';
-    const STATUS_ACCEPTED    = 'accepted';
-    const STATUS_IN_PROGRESS = 'in_progress';
-    const STATUS_REJECTED    = 'rejected';
-    const STATUS_COMPLETED   = 'completed';
-    const STATUS_CANCELLED   = 'cancelled';
+    const STATUS_PENDING             = 'pending';
+    const STATUS_ACCEPTED            = 'accepted';
+    const STATUS_IN_PROGRESS         = 'in_progress';
+    const STATUS_AWAITING_VALIDATION = 'awaiting_validation'; // artisan says done, waiting on client confirmation
+    const STATUS_REJECTED            = 'rejected';
+    const STATUS_COMPLETED           = 'completed';
+    const STATUS_CANCELLED           = 'cancelled';
 
     // ==========================================
     // Relationships
@@ -101,6 +102,60 @@ class ServiceRequest extends Model
         return $this->hasOne(ArtisanRating::class);
     }
 
+    public function workSessions()
+    {
+        return $this->hasMany(ServiceRequestWorkSession::class)->orderBy('started_at');
+    }
+
+    /**
+     * The currently-open work session, if any. Null means work is paused
+     * (or simply hasn't started/isn't in_progress).
+     */
+    public function activeWorkSession()
+    {
+        return $this->hasOne(ServiceRequestWorkSession::class)->whereNull('ended_at')->latest('started_at');
+    }
+
+    /**
+     * True when the service is in progress but there's no active work
+     * session — i.e. the artisan has paused.
+     */
+    public function isWorkPaused(): bool
+    {
+        return $this->status === 'in_progress' && !$this->activeWorkSession;
+    }
+
+    /**
+     * Total worked time across all sessions, in seconds. If a session is
+     * still active this keeps growing on every call (each session's own
+     * durationInSeconds() counts up to now() while unclosed), which is what
+     * makes the live-ticking display work without any extra bookkeeping.
+     */
+    public function totalWorkedSeconds(): int
+    {
+        return $this->workSessions->sum(fn (ServiceRequestWorkSession $session) => $session->durationInSeconds());
+    }
+
+    /**
+     * Worked time broken down by calendar day (grouped by the date portion
+     * of each session's started_at), sorted chronologically. Each entry is
+     * ['date' => 'Y-m-d', 'seconds' => int]. A session that happens to still
+     * be active is simply attributed to the day it started on.
+     */
+    public function workSessionsByDay()
+    {
+        return $this->workSessions
+            ->groupBy(fn (ServiceRequestWorkSession $session) => $session->started_at->toDateString())
+            ->map(function ($sessions, $date) {
+                return [
+                    'date'    => $date,
+                    'seconds' => $sessions->sum(fn (ServiceRequestWorkSession $s) => $s->durationInSeconds()),
+                ];
+            })
+            ->sortKeys()
+            ->values();
+    }
+
     // ==========================================
     // Scopes
     // ==========================================
@@ -129,27 +184,29 @@ class ServiceRequest extends Model
     public function getStatusLabelAttribute(): string
     {
         return match($this->status) {
-            'pending'     => 'En attente',
-            'accepted'    => 'Acceptée',
-            'in_progress' => 'En cours',
-            'rejected'    => 'Refusée',
-            'completed'   => 'Terminée',
-            'cancelled'   => 'Annulée',
-            'addressed'   => 'Traitée',
-            default       => $this->status,
+            'pending'             => 'En attente',
+            'accepted'            => 'Acceptée',
+            'in_progress'         => 'En cours',
+            'awaiting_validation' => 'À valider',
+            'rejected'            => 'Refusée',
+            'completed'           => 'Terminée',
+            'cancelled'           => 'Annulée',
+            'addressed'           => 'Traitée',
+            default               => $this->status,
         };
     }
 
     public function getStatusColorAttribute(): string
     {
         return match($this->status) {
-            'pending'     => 'amber',
-            'accepted'    => 'orange',
-            'in_progress' => 'emerald',
-            'rejected'    => 'red',
-            'completed'   => 'blue',
-            'cancelled'   => 'slate',
-            default       => 'slate',
+            'pending'             => 'amber',
+            'accepted'            => 'orange',
+            'in_progress'         => 'emerald',
+            'awaiting_validation' => 'amber',
+            'rejected'            => 'red',
+            'completed'           => 'blue',
+            'cancelled'           => 'slate',
+            default               => 'slate',
         };
     }
 

@@ -6,13 +6,6 @@
 @section($contentSection)
 <div class="max-w-3xl mx-auto space-y-6 pb-10">
 
-    {{-- Toast Notification (vanilla JS) --}}
-    <div id="pay-toast" style="display:none"
-         class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3">
-        <i id="pay-toast-icon" class="fas fa-check-circle"></i>
-        <span id="pay-toast-msg"></span>
-    </div>
-
     {{-- Flash Messages --}}
     @foreach(['success' => 'emerald', 'error' => 'red', 'info' => 'blue'] as $type => $color)
     @if(session($type))
@@ -46,61 +39,261 @@
         </div>
     </div>
 
-    {{-- Live Timer / Elapsed Time Card --}}
-    @if($serviceRequest->status === 'in_progress' && $serviceRequest->accepted_at)
-    <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl shadow-xl shadow-emerald-200 p-6 text-white" data-aos="fade-up" id="timer-card">
+    {{-- Cumulative Work-Time Card (in_progress) --}}
+    @if($serviceRequest->status === 'in_progress')
+    @php
+        $isPaused          = $serviceRequest->isWorkPaused();
+        $activeSession     = $serviceRequest->activeWorkSession;
+        $totalSecondsNow   = $serviceRequest->totalWorkedSeconds();
+        $baseSeconds       = $totalSecondsNow - ($activeSession ? $activeSession->durationInSeconds() : 0);
+        $lastClosedSession = $serviceRequest->workSessions->whereNotNull('ended_at')->sortByDesc('ended_at')->first();
+    @endphp
+    <div class="{{ $isPaused ? 'bg-slate-700' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-200' }} rounded-2xl shadow-xl p-6 text-white"
+         data-aos="fade-up" id="timer-card"
+         data-base-seconds="{{ $baseSeconds }}"
+         data-active-since="{{ $activeSession?->started_at?->toIso8601String() }}">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100 mb-1">Service en cours</p>
-                <p class="text-sm font-bold text-emerald-50">Le chronomètre est lancé</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] {{ $isPaused ? 'text-slate-300' : 'text-emerald-100' }} mb-1">
+                    {{ $isPaused ? 'Travail en pause' : 'Service en cours' }}
+                </p>
+                <p class="text-sm font-bold {{ $isPaused ? 'text-slate-200' : 'text-emerald-50' }}">
+                    @if($isPaused && $lastClosedSession)
+                        Mis en pause {{ $lastClosedSession->ended_at->diffForHumans() }}
+                    @elseif($isPaused)
+                        Le travail n'a pas encore commencé aujourd'hui
+                    @else
+                        Le chronomètre est lancé
+                    @endif
+                </p>
             </div>
             <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                <i class="fas fa-stopwatch text-2xl"></i>
+                <i class="fas {{ $isPaused ? 'fa-pause' : 'fa-stopwatch' }} text-2xl"></i>
             </div>
         </div>
         <div class="mt-4 text-center">
             <p id="live-timer" class="font-mono text-5xl font-black tracking-wider text-white">00:00:00</p>
-            <p class="text-xs text-emerald-100 mt-2 uppercase tracking-widest">Heures : Minutes : Secondes</p>
+            <p class="text-xs {{ $isPaused ? 'text-slate-300' : 'text-emerald-100' }} mt-2 uppercase tracking-widest">Temps de travail cumulé</p>
         </div>
     </div>
+
+    @if($serviceRequest->artisan_id === auth()->id())
+    <div class="flex justify-center" data-aos="fade-up">
+        @if($isPaused)
+        <form action="{{ route('user.service-requests.resume-work', $serviceRequest->id) }}" method="POST">
+            @csrf
+            <button type="submit" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-[11px] uppercase tracking-widest transition-all inline-flex items-center gap-2 shadow-lg shadow-emerald-200">
+                <i class="fas fa-play"></i> Reprendre le travail
+            </button>
+        </form>
+        @else
+        <form action="{{ route('user.service-requests.pause-work', $serviceRequest->id) }}" method="POST">
+            @csrf
+            <button type="submit" class="px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl text-[11px] uppercase tracking-widest transition-all inline-flex items-center gap-2">
+                <i class="fas fa-pause"></i> Mettre en pause
+            </button>
+        </form>
+        @endif
+    </div>
+    @endif
+
+    {{-- Worked time per day --}}
+    @if($serviceRequest->workSessions->isNotEmpty())
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6" data-aos="fade-up">
+        <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <i class="fas fa-calendar-days text-rdc-blue"></i> Temps travaillé par jour
+        </h3>
+        @php
+            $joursFr = ['Monday' => 'Lundi', 'Tuesday' => 'Mardi', 'Wednesday' => 'Mercredi', 'Thursday' => 'Jeudi', 'Friday' => 'Vendredi', 'Saturday' => 'Samedi', 'Sunday' => 'Dimanche'];
+            $moisFr  = ['01' => 'janvier', '02' => 'février', '03' => 'mars', '04' => 'avril', '05' => 'mai', '06' => 'juin', '07' => 'juillet', '08' => 'août', '09' => 'septembre', '10' => 'octobre', '11' => 'novembre', '12' => 'décembre'];
+            $fmtDuration = function (int $seconds) {
+                $h = intdiv($seconds, 3600);
+                $m = intdiv($seconds % 3600, 60);
+                $s = $seconds % 60;
+                if ($h > 0) return sprintf('%dh %02dmin', $h, $m);
+                if ($m > 0) return sprintf('%dmin %02ds', $m, $s);
+                return "{$s}s";
+            };
+            $todayStr     = \Carbon\Carbon::today()->toDateString();
+            $yesterdayStr = \Carbon\Carbon::yesterday()->toDateString();
+        @endphp
+        <div class="divide-y divide-slate-100">
+            @foreach($serviceRequest->workSessionsByDay() as $day)
+            @php
+                $dateObj = \Carbon\Carbon::parse($day['date']);
+                if ($day['date'] === $todayStr) {
+                    $dayLabel = "Aujourd'hui";
+                } elseif ($day['date'] === $yesterdayStr) {
+                    $dayLabel = 'Hier';
+                } else {
+                    $dayLabel = $joursFr[$dateObj->format('l')] . ' ' . $dateObj->format('d') . ' ' . $moisFr[$dateObj->format('m')];
+                    if ((int) $dateObj->format('Y') !== (int) now()->format('Y')) {
+                        $dayLabel .= ' ' . $dateObj->format('Y');
+                    }
+                }
+                $isTodayLive = $day['date'] === $todayStr && $activeSession;
+                $todayBaseSeconds = $isTodayLive ? $day['seconds'] - $activeSession->durationInSeconds() : $day['seconds'];
+            @endphp
+            <div class="flex items-center justify-between py-3">
+                <span class="text-sm font-semibold text-slate-700">{{ $dayLabel }}</span>
+                <span class="text-sm font-black text-slate-900 font-mono"
+                      @if($isTodayLive) id="day-total-today" data-base-seconds="{{ $todayBaseSeconds }}" @endif>
+                    {{ $fmtDuration($day['seconds']) }}
+                </span>
+            </div>
+            @endforeach
+        </div>
+        <div class="flex items-center justify-between pt-4 mt-2 border-t-2 border-slate-100">
+            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Total</span>
+            <span class="text-base font-black text-rdc-blue font-mono">{{ $fmtDuration($totalSecondsNow) }}</span>
+        </div>
+    </div>
+    @endif
+
     <script>
     (function() {
-        const acceptedAt = new Date('{{ $serviceRequest->accepted_at->toIso8601String() }}').getTime();
-        const timerEl = document.getElementById('live-timer');
-        function updateTimer() {
-            const now = Date.now();
-            const diff = Math.floor((now - acceptedAt) / 1000);
-            const h = String(Math.floor(diff / 3600)).padStart(2, '0');
-            const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-            const s = String(diff % 60).padStart(2, '0');
-            timerEl.textContent = h + ':' + m + ':' + s;
+        var card = document.getElementById('timer-card');
+        if (!card) return;
+        var timerEl    = document.getElementById('live-timer');
+        var dayTotalEl = document.getElementById('day-total-today');
+        var baseSeconds     = parseInt(card.dataset.baseSeconds || '0', 10);
+        var dayBaseSeconds  = dayTotalEl ? parseInt(dayTotalEl.dataset.baseSeconds || '0', 10) : null;
+        var activeSince = card.dataset.activeSince ? new Date(card.dataset.activeSince).getTime() : null;
+
+        function format(totalSeconds) {
+            var h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            var m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            var s = String(totalSeconds % 60).padStart(2, '0');
+            return h + ':' + m + ':' + s;
         }
+
+        function formatShort(totalSeconds) {
+            var h = Math.floor(totalSeconds / 3600);
+            var m = Math.floor((totalSeconds % 3600) / 60);
+            var s = totalSeconds % 60;
+            if (h > 0) return h + 'h ' + String(m).padStart(2, '0') + 'min';
+            if (m > 0) return m + 'min ' + String(s).padStart(2, '0') + 's';
+            return s + 's';
+        }
+
+        function updateTimer() {
+            var elapsedSinceResume = activeSince ? Math.floor((Date.now() - activeSince) / 1000) : 0;
+            timerEl.textContent = format(baseSeconds + elapsedSinceResume);
+            if (dayTotalEl) {
+                dayTotalEl.textContent = formatShort(dayBaseSeconds + elapsedSinceResume);
+            }
+        }
+
         updateTimer();
-        setInterval(updateTimer, 1000);
+        if (activeSince) {
+            setInterval(updateTimer, 1000);
+        }
     })();
     </script>
     @endif
 
-    @if($serviceRequest->status === 'completed' && $serviceRequest->accepted_at && $serviceRequest->completed_at)
+    {{-- Awaiting Client Validation Banner --}}
+    @if($serviceRequest->status === 'awaiting_validation')
+    <div class="bg-gradient-to-r from-amber-400 to-amber-500 rounded-2xl shadow-xl shadow-amber-200 p-6 text-white" data-aos="fade-up">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm shrink-0">
+                <i class="fas fa-flag-checkered text-2xl"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-100 mb-1">En attente de confirmation</p>
+                @if($serviceRequest->user_id === auth()->id())
+                    <p class="text-sm font-bold text-white">L'artisan indique que le travail est terminé. Confirmez-vous que la prestation est bien réalisée ?</p>
+                @else
+                    <p class="text-sm font-bold text-white">En attente de la confirmation du client avant la clôture de la mission.</p>
+                @endif
+            </div>
+        </div>
+        @if($serviceRequest->user_id === auth()->id())
+        <form action="{{ route('user.service-requests.validate-completion', $serviceRequest->id) }}" method="POST" class="mt-5"
+              onsubmit="return confirm('Confirmez-vous que le travail est bien terminé et que vous êtes satisfait(e) ?');">
+            @csrf
+            <button type="submit" class="w-full py-3.5 bg-white text-amber-600 font-black rounded-xl text-[11px] uppercase tracking-widest hover:bg-amber-50 transition-all">
+                <i class="fas fa-check-circle mr-2"></i> Confirmer la fin du service
+            </button>
+        </form>
+        @endif
+    </div>
+    @endif
+
+    @if($serviceRequest->status === 'completed')
     @php
-        $diff = $serviceRequest->completed_at->diff($serviceRequest->accepted_at);
-        $elapsedStr = $diff->h > 0 ? "{$diff->h}h {$diff->i}min" : "{$diff->i}min {$diff->s}s";
+        $totalWorkedFinal = $serviceRequest->totalWorkedSeconds();
+        $fmtDurationLong = function (int $seconds) {
+            $h = intdiv($seconds, 3600);
+            $m = intdiv($seconds % 3600, 60);
+            return $h > 0 ? "{$h}h " . str_pad((string) $m, 2, '0', STR_PAD_LEFT) . 'min' : "{$m}min " . str_pad((string) ($seconds % 60), 2, '0', STR_PAD_LEFT) . 's';
+        };
     @endphp
     <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-xl shadow-blue-200 p-6 text-white" data-aos="fade-up">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100 mb-1">Service terminé</p>
-                <p class="text-sm font-bold text-blue-50">Durée totale du service</p>
+                <p class="text-sm font-bold text-blue-50">Temps de travail total (hors pauses)</p>
             </div>
             <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
                 <i class="fas fa-flag-checkered text-2xl"></i>
             </div>
         </div>
         <div class="mt-4 text-center">
-            <p class="font-mono text-5xl font-black tracking-wider text-white">{{ $elapsedStr }}</p>
-            <p class="text-xs text-blue-100 mt-2 uppercase tracking-widest">Du {{ $serviceRequest->accepted_at->format('H:i') }} au {{ $serviceRequest->completed_at->format('H:i') }}</p>
+            <p class="font-mono text-5xl font-black tracking-wider text-white">{{ $fmtDurationLong($totalWorkedFinal) }}</p>
+            @if($serviceRequest->accepted_at && $serviceRequest->completed_at)
+            <p class="text-xs text-blue-100 mt-2 uppercase tracking-widest">Du {{ $serviceRequest->accepted_at->format('d/m/Y') }} au {{ $serviceRequest->completed_at->format('d/m/Y') }}</p>
+            @endif
         </div>
     </div>
+
+    {{-- Worked time per day (final, static breakdown) --}}
+    @if($serviceRequest->workSessions->isNotEmpty())
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6" data-aos="fade-up">
+        <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <i class="fas fa-calendar-days text-rdc-blue"></i> Temps travaillé par jour
+        </h3>
+        @php
+            $joursFr = ['Monday' => 'Lundi', 'Tuesday' => 'Mardi', 'Wednesday' => 'Mercredi', 'Thursday' => 'Jeudi', 'Friday' => 'Vendredi', 'Saturday' => 'Samedi', 'Sunday' => 'Dimanche'];
+            $moisFr  = ['01' => 'janvier', '02' => 'février', '03' => 'mars', '04' => 'avril', '05' => 'mai', '06' => 'juin', '07' => 'juillet', '08' => 'août', '09' => 'septembre', '10' => 'octobre', '11' => 'novembre', '12' => 'décembre'];
+            $fmtDuration = function (int $seconds) {
+                $h = intdiv($seconds, 3600);
+                $m = intdiv($seconds % 3600, 60);
+                $s = $seconds % 60;
+                if ($h > 0) return sprintf('%dh %02dmin', $h, $m);
+                if ($m > 0) return sprintf('%dmin %02ds', $m, $s);
+                return "{$s}s";
+            };
+            $todayStr     = \Carbon\Carbon::today()->toDateString();
+            $yesterdayStr = \Carbon\Carbon::yesterday()->toDateString();
+        @endphp
+        <div class="divide-y divide-slate-100">
+            @foreach($serviceRequest->workSessionsByDay() as $day)
+            @php
+                $dateObj = \Carbon\Carbon::parse($day['date']);
+                if ($day['date'] === $todayStr) {
+                    $dayLabel = "Aujourd'hui";
+                } elseif ($day['date'] === $yesterdayStr) {
+                    $dayLabel = 'Hier';
+                } else {
+                    $dayLabel = $joursFr[$dateObj->format('l')] . ' ' . $dateObj->format('d') . ' ' . $moisFr[$dateObj->format('m')];
+                    if ((int) $dateObj->format('Y') !== (int) now()->format('Y')) {
+                        $dayLabel .= ' ' . $dateObj->format('Y');
+                    }
+                }
+            @endphp
+            <div class="flex items-center justify-between py-3">
+                <span class="text-sm font-semibold text-slate-700">{{ $dayLabel }}</span>
+                <span class="text-sm font-black text-slate-900 font-mono">{{ $fmtDuration($day['seconds']) }}</span>
+            </div>
+            @endforeach
+        </div>
+        <div class="flex items-center justify-between pt-4 mt-2 border-t-2 border-slate-100">
+            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Total</span>
+            <span class="text-base font-black text-rdc-blue font-mono">{{ $fmtDuration($totalWorkedFinal) }}</span>
+        </div>
+    </div>
+    @endif
     @endif
 
     {{-- Paid Status Banner --}}
@@ -162,17 +355,7 @@
         @endif
     </div>
 
-        {{-- Bouton Payer l'artisan (Seulement si Client, status in_progress/completed et NON payé) --}}
-        @if(in_array($serviceRequest->status, ['in_progress', 'completed']) && $serviceRequest->user_id === auth()->id() && $serviceRequest->payment_status !== 'paid')
-        <button type="button" id="btn-open-pay-modal"
-                onclick="openPayModal()"
-                class="inline-flex items-center gap-2 px-6 py-3 bg-[#16a3b0] hover:bg-[#138e9b] text-white font-bold rounded-xl transition shadow-lg shadow-teal-500/20 transform hover:-translate-y-0.5 cursor-pointer">
-            <i class="fas fa-wallet text-lg"></i>
-            <span>Payer l'artisan ({{ number_format($amountToPay, 2) }} $)</span>
-        </button>
-        @endif
-
-        @if(in_array($serviceRequest->status, ['accepted', 'in_progress', 'completed']) && isset($conversation))
+        @if(in_array($serviceRequest->status, ['accepted', 'in_progress', 'awaiting_validation', 'completed']) && isset($conversation))
         <a href="{{ route('user.messages.index', ['id' => $conversation->id]) }}"
            class="inline-flex items-center gap-2 px-6 py-3 bg-rdc-blue text-white font-bold rounded-xl hover:bg-rdc-blue-dark transition shadow-lg shadow-blue-200">
             <i class="fas fa-comments"></i> Discuter avec l'artisan
@@ -180,10 +363,11 @@
         @endif
 
         @if($serviceRequest->status === 'in_progress' && $serviceRequest->artisan_id === auth()->id())
-        <form action="{{ route('user.service-requests.complete', $serviceRequest->id) }}" method="POST">
+        <form action="{{ route('user.service-requests.complete', $serviceRequest->id) }}" method="POST"
+              onsubmit="return confirm('Signaler ce service comme terminé ? Le client devra confirmer avant que la mission soit officiellement clôturée.');">
             @csrf
             <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-200">
-                <i class="fas fa-check-circle"></i> Marquer comme terminé
+                <i class="fas fa-check-circle"></i> Signaler le travail terminé
             </button>
         </form>
         @endif
@@ -204,113 +388,18 @@
         </a>
     </div>
 
-    {{-- ===== MODAL PAIEMENT ARTISAN (Vanilla JS — pas d'Alpine) ===== --}}
-    <div id="pay-modal"
-         style="display:none"
-         class="fixed inset-0 z-[9990] overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-         onclick="handleModalBackdropClick(event)">
-
-        <div id="pay-modal-box" class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
-
-            {{-- Close Button --}}
-            <button id="btn-close-modal" type="button" onclick="closePayModal()"
-                    class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition cursor-pointer">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-
-            {{-- Header --}}
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 rounded-2xl bg-[#16a3b0]/10 text-[#16a3b0] flex items-center justify-center text-xl shrink-0">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-slate-900">Règlement du service</h3>
-                    <p class="text-xs text-slate-400">Paiement Mobile Money direct à l'artisan</p>
-                </div>
-            </div>
-
-            {{-- Summary Box --}}
-            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-6 space-y-2">
-                <div class="flex justify-between items-center text-xs text-slate-500">
-                    <span>Prestation :</span>
-                    <span class="font-bold text-slate-800">{{ $serviceRequest->requested_service_name }}</span>
-                </div>
-                <div class="flex justify-between items-center text-xs text-slate-500">
-                    <span>Artisan :</span>
-                    <span class="font-bold text-slate-800">{{ $serviceRequest->artisan?->name ?? $serviceRequest->service?->artisan?->name ?? 'Artisan ProConnect' }}</span>
-                </div>
-                <div class="pt-2 border-t border-slate-200 flex justify-between items-center">
-                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Montant total</span>
-                    <span class="text-2xl font-black text-slate-900">{{ number_format($amountToPay, 2) }} $</span>
-                </div>
-            </div>
-
-            {{-- STATE: Idle / Failed --}}
-            <div id="modal-state-idle" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Numéro Mobile Money</label>
-                    <div class="relative">
-                        <input type="tel" id="pay-phone"
-                               placeholder="+243 81 234 5678"
-                               oninput="debounceDetect(this.value)"
-                               class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:border-[#16a3b0] outline-none">
-                        <div id="pay-provider-badge" style="display:none"
-                             class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#16a3b0] uppercase"></div>
-                        <div id="pay-detecting" style="display:none"
-                             class="absolute right-4 top-1/2 -translate-y-1/2">
-                            <i class="fas fa-circle-notch animate-spin text-[#16a3b0]"></i>
-                        </div>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-1">Opérateurs supportés : M-Pesa, Orange Money, Airtel Money, Afrimoney</p>
-                </div>
-
-                <button id="btn-confirm-pay" type="button" onclick="submitPayment()"
-                        class="w-full py-3.5 px-6 bg-[#16a3b0] hover:bg-[#138e9b] text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
-                    <span id="btn-pay-text"><i class="fas fa-lock mr-1"></i> Confirmer &amp; Payer ({{ number_format($amountToPay, 2) }} $)</span>
-                    <span id="btn-pay-loading" style="display:none" class="flex items-center gap-2">
-                        <i class="fas fa-circle-notch animate-spin"></i> Traitement...
-                    </span>
-                </button>
-            </div>
-
-            {{-- STATE: Pending (USSD sent) --}}
-            <div id="modal-state-pending" style="display:none" class="py-8 text-center space-y-3">
-                <div class="w-16 h-16 bg-teal-50 text-[#16a3b0] rounded-full flex items-center justify-center mx-auto text-2xl animate-pulse">
-                    <i class="fas fa-mobile-screen"></i>
-                </div>
-                <h4 class="text-base font-bold text-slate-900">Paiement en cours de confirmation...</h4>
-                <p class="text-xs text-slate-500 max-w-xs mx-auto">
-                    Validez le prompt USSD sur votre téléphone <strong id="pay-phone-display"></strong>.
-                </p>
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 text-xs rounded-full border border-amber-200">
-                    <i class="fas fa-circle-notch animate-spin"></i> Attente de validation réseau...
-                </div>
-            </div>
-
-            {{-- STATE: Success --}}
-            <div id="modal-state-success" style="display:none" class="py-8 text-center space-y-3">
-                <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h4 class="text-lg font-bold text-slate-900">Paiement confirmé !</h4>
-                <p class="text-xs text-slate-500">Le solde a été crédité sur le portefeuille de l'artisan. Redirection en cours...</p>
-            </div>
-
-        </div>
-    </div>
-
-    {{-- Payment Choice (Client Only, when accepted and waiting for payment) --}}
+    {{-- Démarrer le service (Client Only, when accepted and waiting to start) --}}
     @if($serviceRequest->status === 'accepted' && $serviceRequest->user_id === auth()->id() && $serviceRequest->mission)
     @php $mission = $serviceRequest->mission; @endphp
-    <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm mt-6" data-aos="fade-up" x-data="missionPayment">
+    <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm mt-6" data-aos="fade-up">
 
         <div class="flex items-center gap-3 mb-6">
             <div class="w-10 h-10 rounded-xl bg-blue-50 text-rdc-blue flex items-center justify-center">
-                <i class="fas fa-wallet"></i>
+                <i class="fas fa-play"></i>
             </div>
             <div>
                 <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Demarrer le service</h3>
-                <p class="text-[10px] font-bold text-slate-400">Choisissez votre mode de paiement pour lancer le chrono</p>
+                <p class="text-[10px] font-bold text-slate-400">Confirmez pour lancer le chrono</p>
             </div>
             <div class="ml-auto text-right">
                 <p class="text-2xl font-heading font-black text-slate-900">${{ number_format($mission->amount ?? 0, 2) }}</p>
@@ -318,52 +407,16 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {{-- K-PAY Option --}}
-            <div class="border-2 border-rdc-blue/20 rounded-2xl p-5">
-                <h4 class="font-bold text-slate-900 mb-1"><i class="fas fa-mobile-screen-button mr-2 text-rdc-blue"></i>Paiement Mobile (K-PAY)</h4>
-                <p class="text-xs text-slate-500 mb-4">Commission de {{ number_format($mission->commission_amount ?? ($mission->amount * 0.15), 2) }} $ debitee par push USSD.</p>
-
-                <div x-show="state === 'idle' || state === 'failed'" class="space-y-3">
-                    <div class="relative">
-                        <input type="tel" x-model="phone" @input.debounce.600ms="detectProvider()"
-                               placeholder="+243 9xx xxx xxx"
-                               class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 outline-none pr-14">
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-rdc-blue uppercase" x-show="provider && !detecting" x-text="provider.split('_')[0]"></div>
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2" x-show="detecting"><i class="fas fa-circle-notch animate-spin text-rdc-blue text-xs"></i></div>
-                    </div>
-                    <button @click="pay()" :disabled="loading" class="w-full relative px-6 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-black rounded-xl text-[10px] uppercase tracking-widest transition-all disabled:opacity-60">
-                        <span :class="{'opacity-0': loading}">Payer via K-PAY</span>
-                        <div x-show="loading" class="absolute inset-0 flex items-center justify-center"><i class="fas fa-circle-notch animate-spin"></i></div>
-                    </button>
-                </div>
-
-                <div x-show="state === 'pending'" style="display:none" class="py-4 text-center">
-                    <i class="fas fa-mobile-screen text-3xl text-blue-500 animate-bounce mb-2"></i>
-                    <p class="text-sm font-bold text-slate-900">Verifiez votre telephone</p>
-                    <p class="text-xs text-slate-500 mt-1">Prompt USSD envoye au <b x-text="phone"></b></p>
-                </div>
-
-                <div x-show="state === 'success'" style="display:none" class="py-4 text-center">
-                    <i class="fas fa-check-circle text-3xl text-emerald-500 mb-2"></i>
-                    <p class="text-sm font-bold text-slate-900">Paiement valide ! Demarrage...</p>
-                </div>
-            </div>
-
-            {{-- Cash Option --}}
-            <div class="border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <h4 class="font-bold text-slate-900 mb-1"><i class="fas fa-money-bill-wave mr-2 text-emerald-600"></i>Paiement en especes</h4>
-                    <p class="text-xs text-slate-500">Paiement direct de la main a la main. Le chrono demarre immediatement.</p>
-                </div>
-                <form action="{{ route('user.service-requests.pay-cash', $serviceRequest->id) }}" method="POST" class="mt-4"
-                      onsubmit="return confirm('Confirmez le paiement en especes ? Le service demarrera immediatement.')">
-                    @csrf
-                    <button type="submit" class="w-full px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl text-[10px] uppercase tracking-widest transition-all">
-                        Choisir paiement Cash
-                    </button>
-                </form>
-            </div>
+        <div class="border border-slate-200 rounded-2xl p-5">
+            <h4 class="font-bold text-slate-900 mb-1"><i class="fas fa-money-bill-wave mr-2 text-emerald-600"></i>Paiement en espèces</h4>
+            <p class="text-xs text-slate-500 mb-4">Le règlement se fait directement de la main à la main avec l'artisan, en dehors de l'application.</p>
+            <form action="{{ route('user.service-requests.pay-cash', $serviceRequest->id) }}" method="POST"
+                  onsubmit="return confirm('Confirmez le démarrage du service ? Le chrono démarrera immédiatement.')">
+                @csrf
+                <button type="submit" class="w-full px-6 py-3 bg-slate-900 hover:bg-rdc-blue text-white font-black rounded-xl text-[10px] uppercase tracking-widest transition-all">
+                    Démarrer le service
+                </button>
+            </form>
         </div>
     </div>
     @endif
@@ -427,272 +480,4 @@
     @endif
 </div>
 
-{{-- =================== SCRIPTS =================== --}}
-<script>
-// ── Configuration (depuis PHP via Blade) ──────────────────────────
-const PAY_CFG = {
-    serviceRequestId: @json($serviceRequest->id),
-    csrf: @json(csrf_token()),
-    phone: @json(auth()->user()->phone ?? '')
-};
-
-// ── État du modal ─────────────────────────────────────────────────
-let payModalState  = 'idle';   // idle | pending | success | expired
-let payModalRef    = null;
-let payModalTimer  = null;
-let detectTimer    = null;
-let payProvider    = 'VODACOM_MPESA_COD';
-
-// ── Helpers DOM ───────────────────────────────────────────────────
-function $(id) { return document.getElementById(id); }
-function show(id) { var el = $(id); if (el) el.style.display = ''; }
-function hide(id) { var el = $(id); if (el) el.style.display = 'none'; }
-function showFlex(id) { var el = $(id); if (el) el.style.display = 'flex'; }
-
-// ── Toast ─────────────────────────────────────────────────────────
-function showPayToast(msg, type) {
-    type = type || 'success';
-    var t = $('pay-toast');
-    var i = $('pay-toast-icon');
-    var m = $('pay-toast-msg');
-    if (!t) return;
-    m.textContent = msg;
-    i.className = 'fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle');
-    t.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-2xl shadow-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3 '
-                + (type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white');
-    showFlex('pay-toast');
-    setTimeout(function() { hide('pay-toast'); }, 5000);
-}
-
-// ── Ouvrir / Fermer modal ─────────────────────────────────────────
-function openPayModal() {
-    payModalState = 'idle';
-    payModalRef   = null;
-    showFlex('pay-modal');
-    setModalState('idle');
-    var phoneEl = $('pay-phone');
-    if (phoneEl) phoneEl.value = PAY_CFG.phone || '';
-    document.addEventListener('keydown', escCloseModal);
-}
-
-function closePayModal() {
-    if (payModalState === 'pending') return; // empêche fermeture pendant USSD
-    hide('pay-modal');
-    document.removeEventListener('keydown', escCloseModal);
-    if (payModalTimer) { clearInterval(payModalTimer); payModalTimer = null; }
-}
-
-function escCloseModal(e) {
-    if (e.key === 'Escape') closePayModal();
-}
-
-function handleModalBackdropClick(e) {
-    if (e.target.id === 'pay-modal') closePayModal();
-}
-
-// ── États du modal ────────────────────────────────────────────────
-function setModalState(state) {
-    payModalState = state;
-    var states = ['idle', 'pending', 'success'];
-    states.forEach(function(s) {
-        var el = $('modal-state-' + s);
-        if (el) el.style.display = (s === state) ? '' : 'none';
-    });
-    // Bouton fermer : caché pendant pending
-    var closeBtn = $('btn-close-modal');
-    if (closeBtn) closeBtn.style.display = (state === 'pending') ? 'none' : '';
-}
-
-// ── Détection opérateur (debounce) ───────────────────────────────
-function debounceDetect(val) {
-    clearTimeout(detectTimer);
-    detectTimer = setTimeout(function() { detectProvider(val); }, 600);
-}
-
-async function detectProvider(phone) {
-    var digits = phone.replace(/\D/g, '');
-    if (digits.length < 9) {
-        hide('pay-provider-badge');
-        return;
-    }
-    show('pay-detecting');
-    hide('pay-provider-badge');
-    try {
-        var r = await fetch('/api/payments/predict-provider', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': PAY_CFG.csrf },
-            body: JSON.stringify({ phone_number: phone })
-        });
-        var d = await r.json();
-        if (d.provider) {
-            payProvider = d.provider;
-            var badge = $('pay-provider-badge');
-            badge.textContent = d.provider.split('_')[0];
-            show('pay-provider-badge');
-        }
-    } catch(e) {}
-    hide('pay-detecting');
-}
-
-// ── Soumettre le paiement ─────────────────────────────────────────
-async function submitPayment() {
-    var phoneEl = $('pay-phone');
-    if (!phoneEl || !phoneEl.value.trim()) {
-        showPayToast('Veuillez saisir un numéro de téléphone.', 'error');
-        return;
-    }
-    var phone = phoneEl.value.trim();
-
-    // UI loading
-    hide('btn-pay-text');
-    show('btn-pay-loading');
-    $('btn-confirm-pay').disabled = true;
-
-    try {
-        var r = await fetch('/api/client/payments/initiate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': PAY_CFG.csrf
-            },
-            body: JSON.stringify({
-                provider: payProvider || 'VODACOM_MPESA_COD',
-                phone_number: phone,
-                payment_type: 'service_request',
-                reference_id: PAY_CFG.serviceRequestId
-            })
-        });
-        var d = await r.json();
-        if (!r.ok) {
-            showPayToast(d.error || 'Erreur lors du paiement.', 'error');
-            show('btn-pay-text'); hide('btn-pay-loading');
-            $('btn-confirm-pay').disabled = false;
-            return;
-        }
-        payModalRef = d.reference;
-        var phoneDisplay = $('pay-phone-display');
-        if (phoneDisplay) phoneDisplay.textContent = phone;
-        setModalState('pending');
-        showPayToast('Confirmez le prompt USSD sur votre téléphone.', 'success');
-        startPolling();
-    } catch(e) {
-        showPayToast('Erreur réseau. Veuillez réessayer.', 'error');
-        show('btn-pay-text'); hide('btn-pay-loading');
-        $('btn-confirm-pay').disabled = false;
-    }
-}
-
-// ── Polling du statut ─────────────────────────────────────────────
-function startPolling() {
-    if (payModalTimer) clearInterval(payModalTimer);
-    var attempts = 0;
-    payModalTimer = setInterval(async function() {
-        attempts++;
-        if (attempts > 30) {
-            clearInterval(payModalTimer);
-            setModalState('idle');
-            showPayToast('Délai expiré. Réessayez.', 'error');
-            show('btn-pay-text'); hide('btn-pay-loading');
-            $('btn-confirm-pay').disabled = false;
-            return;
-        }
-        try {
-            var r = await fetch('/api/client/payments/status/' + payModalRef, {
-                headers: { 'Accept': 'application/json' }
-            });
-            var d = await r.json();
-            if (d.status === 'success') {
-                clearInterval(payModalTimer);
-                setModalState('success');
-                setTimeout(function() { window.location.reload(); }, 2000);
-            } else if (d.status === 'failed') {
-                clearInterval(payModalTimer);
-                setModalState('idle');
-                show('btn-pay-text'); hide('btn-pay-loading');
-                $('btn-confirm-pay').disabled = false;
-                showPayToast('Paiement échoué. Réessayez.', 'error');
-            }
-        } catch(e) {}
-    }, 4000);
-}
-
-// ── Alpine.data pour la section "Démarrer le service" (status=accepted) ──
-document.addEventListener('alpine:init', function() {
-    Alpine.data('missionPayment', function() {
-        return {
-            phone: '',
-            provider: '',
-            loading: false,
-            detecting: false,
-            pollInterval: null,
-            ref: null,
-            state: 'idle',
-            toast: { show: false, message: '', type: 'success' },
-            showToast: function(msg, type) {
-                type = type || 'success';
-                this.toast = { show: true, message: msg, type: type };
-                var self = this;
-                setTimeout(function() { self.toast.show = false; }, 5000);
-            },
-            detectProvider: async function() {
-                if (this.phone.replace(/\D/g, '').length < 9) return;
-                this.detecting = true;
-                try {
-                    var r = await fetch('/api/payments/predict-provider', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': PAY_CFG.csrf },
-                        body: JSON.stringify({ phone_number: this.phone })
-                    });
-                    var d = await r.json();
-                    if (d.provider) this.provider = d.provider;
-                } catch(e) {}
-                this.detecting = false;
-            },
-            pay: async function() {
-                if (!this.phone) { this.showToast('Veuillez saisir un numéro.', 'error'); return; }
-                this.loading = true;
-                try {
-                    var r = await fetch('/api/client/payments/initiate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': PAY_CFG.csrf
-                        },
-                        body: JSON.stringify({
-                            provider: this.provider || 'VODACOM_MPESA_COD',
-                            phone_number: this.phone,
-                            payment_type: 'mission',
-                            reference_id: @json($serviceRequest->mission?->id ?? 0)
-                        })
-                    });
-                    var d = await r.json();
-                    if (!r.ok) { this.showToast(d.error || 'Erreur paiement.', 'error'); this.loading = false; return; }
-                    this.ref = d.reference;
-                    this.state = 'pending';
-                    this.showToast('Confirmez le prompt USSD sur votre téléphone.', 'success');
-                    this.startPolling();
-                } catch(e) { this.showToast('Erreur réseau.', 'error'); }
-                this.loading = false;
-            },
-            startPolling: function() {
-                if (this.pollInterval) clearInterval(this.pollInterval);
-                var attempts = 0;
-                var self = this;
-                this.pollInterval = setInterval(async function() {
-                    attempts++;
-                    if (attempts > 24) { clearInterval(self.pollInterval); self.state = 'expired'; return; }
-                    try {
-                        var r = await fetch('/api/client/payments/status/' + self.ref, { headers: { 'Accept': 'application/json' } });
-                        var d = await r.json();
-                        if (d.status === 'success') { self.state = 'success'; clearInterval(self.pollInterval); setTimeout(function() { window.location.reload(); }, 2500); }
-                        else if (d.status === 'failed') { self.state = 'failed'; clearInterval(self.pollInterval); self.showToast('Paiement échoué.', 'error'); }
-                    } catch(e) {}
-                }, 5000);
-            }
-        };
-    });
-});
-</script>
 @endsection

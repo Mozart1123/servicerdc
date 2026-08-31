@@ -25,12 +25,13 @@
     <div class="flex flex-wrap gap-2">
         @php
             $statusFilters = [
-                ''           => ['label' => 'Toutes',     'count' => $stats['total']],
-                'pending'    => ['label' => 'En attente', 'count' => $stats['pending']],
-                'accepted'   => ['label' => 'Acceptées',  'count' => $stats['accepted']],
-                'rejected'   => ['label' => 'Refusées',   'count' => $stats['rejected']],
-                'completed'  => ['label' => 'Terminées',  'count' => $stats['completed']],
-                'cancelled'  => ['label' => 'Annulées',   'count' => $stats['cancelled'] ?? 0],
+                ''                    => ['label' => 'Toutes',     'count' => $stats['total']],
+                'pending'             => ['label' => 'En attente', 'count' => $stats['pending']],
+                'accepted'            => ['label' => 'Acceptées',  'count' => $stats['accepted']],
+                'awaiting_validation' => ['label' => 'À valider',  'count' => $stats['awaiting_validation'] ?? 0],
+                'rejected'            => ['label' => 'Refusées',   'count' => $stats['rejected']],
+                'completed'           => ['label' => 'Terminées',  'count' => $stats['completed']],
+                'cancelled'           => ['label' => 'Annulées',   'count' => $stats['cancelled'] ?? 0],
             ];
             $currentStatus = request('status', '');
         @endphp
@@ -74,11 +75,12 @@
         @forelse($serviceRequests as $req)
         @php
             $statusConfig = [
-                'pending'   => ['color' => 'amber',   'label' => 'En attente'],
-                'accepted'  => ['color' => 'emerald', 'label' => 'Acceptée'],
-                'rejected'  => ['color' => 'red',     'label' => 'Refusée'],
-                'completed' => ['color' => 'blue',    'label' => 'Terminée'],
-                'cancelled' => ['color' => 'slate',   'label' => 'Annulée'],
+                'pending'             => ['color' => 'amber',   'label' => 'En attente'],
+                'accepted'            => ['color' => 'emerald', 'label' => 'Acceptée'],
+                'awaiting_validation' => ['color' => 'amber',   'label' => 'À valider'],
+                'rejected'            => ['color' => 'red',     'label' => 'Refusée'],
+                'completed'           => ['color' => 'blue',    'label' => 'Terminée'],
+                'cancelled'           => ['color' => 'slate',   'label' => 'Annulée'],
             ];
             $sc = $statusConfig[$req->status] ?? ['color' => 'slate', 'label' => ucfirst($req->status)];
         @endphp

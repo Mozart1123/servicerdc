@@ -130,13 +130,13 @@ class JobApplication extends Model
             return false;
         }
 
-        // Check if this application is within the first 10 for this job
-        $top10Ids = static::where('job_offer_id', $this->job_offer_id)
+        // Check if this application is within the first 5 for this job
+        $top5Ids = static::where('job_offer_id', $this->job_offer_id)
                           ->orderBy('created_at', 'asc')
                           ->orderBy('id', 'asc')
-                          ->limit(10)
+                          ->limit(5)
                           ->pluck('id');
-                          
-        return !$top10Ids->contains($this->id);
+
+        return !$top5Ids->contains($this->id);
     }
 }

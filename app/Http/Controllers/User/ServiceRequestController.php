@@ -150,6 +150,8 @@ class ServiceRequestController extends Controller
                 'accepted_at' => now(), // Start chrono
             ]);
 
+            $serviceRequest->workSessions()->create(['started_at' => now()]);
+
             if ($serviceRequest->mission) {
                 $serviceRequest->mission->update([
                     'status'          => 'in_progress',
@@ -208,7 +210,7 @@ class ServiceRequestController extends Controller
         $user = Auth::user();
         
         $query = ServiceRequest::where('artisan_id', $user->id)
-            ->with('user', 'service')
+            ->with('user', 'service', 'workSessions')
             ->latest();
 
         $stats = [
@@ -282,11 +284,12 @@ class ServiceRequestController extends Controller
             ->latest();
 
         $stats = [
-            'total'     => $user->serviceRequests()->count(),
-            'pending'   => $user->serviceRequests()->where('status', 'pending')->count(),
-            'accepted'  => $user->serviceRequests()->where('status', 'accepted')->count(),
-            'rejected'  => $user->serviceRequests()->where('status', 'rejected')->count(),
-            'completed' => $user->serviceRequests()->where('status', 'completed')->count(),
+            'total'               => $user->serviceRequests()->count(),
+            'pending'             => $user->serviceRequests()->where('status', 'pending')->count(),
+            'accepted'            => $user->serviceRequests()->where('status', 'accepted')->count(),
+            'awaiting_validation' => $user->serviceRequests()->where('status', 'awaiting_validation')->count(),
+            'rejected'            => $user->serviceRequests()->where('status', 'rejected')->count(),
+            'completed'           => $user->serviceRequests()->where('status', 'completed')->count(),
         ];
 
         $serviceRequests = $query->paginate(15);
@@ -305,7 +308,7 @@ class ServiceRequestController extends Controller
             abort(403, 'Vous n\'êtes pas autorisé à consulter cette demande.');
         }
 
-        $serviceRequest->load(['user', 'service.artisan', 'mission']);
+        $serviceRequest->load(['user', 'service.artisan', 'mission', 'workSessions']);
 
         // Load conversation if one exists between client and artisan
         $conversation = null;
@@ -353,6 +356,8 @@ class ServiceRequestController extends Controller
             'accepted_at' => now(),
         ]);
 
+        $serviceRequest->workSessions()->create(['started_at' => now()]);
+
         $mission = $serviceRequest->mission;
         if ($mission) {
             $mission->update([
@@ -374,16 +379,128 @@ class ServiceRequestController extends Controller
     }
 
     /**
-     * Artisan marks the work as complete.
+     * Artisan pauses the work-time clock. Closes the currently active
+     * session; the worked total up to now is preserved (it's already summed
+     * from the closed session), it just stops growing until resumeWork().
      */
-    public function complete(ServiceRequest $serviceRequest): RedirectResponse
+    public function pauseWork(ServiceRequest $serviceRequest): RedirectResponse
     {
-        // Guard: only artisan can complete
         if ($serviceRequest->artisan_id !== Auth::id()) {
             abort(403);
         }
         if ($serviceRequest->status !== 'in_progress') {
-            return back()->with('error', 'Le service doit être en cours pour être terminé.');
+            return back()->with('error', 'Le service doit être en cours pour être mis en pause.');
+        }
+
+        $activeSession = $serviceRequest->activeWorkSession;
+        if (!$activeSession) {
+            return back()->with('error', 'Le travail est déjà en pause.');
+        }
+
+        $activeSession->update(['ended_at' => now()]);
+
+        return back()->with('success', 'Travail mis en pause.');
+    }
+
+    /**
+     * Artisan resumes the work-time clock. Opens a brand new session — the
+     * previous (closed) sessions are left untouched, so nothing is reset and
+     * nothing is double-counted.
+     */
+    public function resumeWork(ServiceRequest $serviceRequest): RedirectResponse
+    {
+        if ($serviceRequest->artisan_id !== Auth::id()) {
+            abort(403);
+        }
+        if ($serviceRequest->status !== 'in_progress') {
+            return back()->with('error', 'Le service doit être en cours pour être repris.');
+        }
+        if ($serviceRequest->activeWorkSession) {
+            return back()->with('error', 'Le travail est déjà en cours.');
+        }
+
+        $serviceRequest->workSessions()->create(['started_at' => now()]);
+
+        return back()->with('success', 'Travail repris.');
+    }
+
+    /**
+     * Artisan SIGNALS that the work is done — this does NOT close the mission
+     * by itself. It puts the request in 'awaiting_validation' and waits for
+     * the client to confirm via validateCompletion() below. This is what
+     * gates the mission/service_request 'completed' status (and therefore the
+     * rating form, and the payout_status bump for cash missions) behind the
+     * CLIENT's confirmation instead of the artisan's own declaration — the
+     * artisan can no longer unilaterally close out (and get paid for) a
+     * mission the client hasn't actually confirmed as satisfactorily done.
+     */
+    public function complete(ServiceRequest $serviceRequest): RedirectResponse
+    {
+        // Guard: only artisan can signal completion
+        if ($serviceRequest->artisan_id !== Auth::id()) {
+            abort(403);
+        }
+        if ($serviceRequest->status !== 'in_progress') {
+            return back()->with('error', 'Le service doit être en cours pour être marqué comme terminé.');
+        }
+
+        $serviceRequest->update([
+            'status' => 'awaiting_validation',
+        ]);
+
+        // Stop the clock: close whatever work session is still open, even if
+        // the artisan forgot to pause first — "signaling done" always ends
+        // active work.
+        $activeSession = $serviceRequest->activeWorkSession;
+        if ($activeSession) {
+            $activeSession->update(['ended_at' => now()]);
+        }
+
+        // NOTE: mission.status intentionally stays 'in_progress' here — it
+        // only becomes 'completed' once the client validates below. The
+        // missions.status column is a strict DB enum without an
+        // 'awaiting_validation' value, so the finer-grained intermediate
+        // state lives on service_requests.status (a plain string column)
+        // instead; the mission simply doesn't move until the client acts.
+
+        Notification::create([
+            'user_id'    => $serviceRequest->user_id,
+            'type'       => 'mission_awaiting_validation',
+            'title'      => 'Confirmation requise',
+            'message'    => "L'artisan indique que le travail est terminé. Merci de confirmer que la prestation vous convient.",
+            'action_url' => route('user.service-requests.show', $serviceRequest->id),
+            'is_read'    => false,
+        ]);
+
+        // Notify all admins that the mission is awaiting client validation
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'    => $admin->id,
+                'type'       => 'admin_mission_awaiting_validation',
+                'title'      => 'Mission en attente de validation client',
+                'message'    => "La mission #{$serviceRequest->id} a été marquée terminée par l'artisan. En attente de la confirmation du client.",
+                'action_url' => route('admin.missions.index'),
+                'is_read'    => false,
+            ]);
+        }
+
+        return back()->with('success', 'Travail marqué comme terminé. Le client doit maintenant confirmer avant que la mission soit officiellement clôturée.');
+    }
+
+    /**
+     * CLIENT confirms the artisan's work is actually done and satisfactory.
+     * This is the action that really closes out the mission — it's the
+     * counterpart to complete() above.
+     */
+    public function validateCompletion(ServiceRequest $serviceRequest): RedirectResponse
+    {
+        // Guard: only the client who made the request can validate it
+        if ($serviceRequest->user_id !== Auth::id()) {
+            abort(403);
+        }
+        if ($serviceRequest->status !== 'awaiting_validation') {
+            return back()->with('error', "Il n'y a rien à valider pour le moment.");
         }
 
         $serviceRequest->update([
@@ -400,29 +517,32 @@ class ServiceRequestController extends Controller
             ]);
         }
 
-        Notification::create([
-            'user_id'    => $serviceRequest->user_id,
-            'type'       => 'mission_completed',
-            'title'      => 'Mission terminée ✅',
-            'message'    => "L'artisan a terminé le travail. N'oubliez pas de laisser un avis !",
-            'action_url' => route('user.missions.index'),
-            'is_read'    => false,
-        ]);
+        $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
+        if ($artisanId) {
+            Notification::create([
+                'user_id'    => $artisanId,
+                'type'       => 'mission_validated_by_client',
+                'title'      => 'Mission validée par le client ✅',
+                'message'    => "Le client a confirmé que le travail est terminé et satisfaisant.",
+                'action_url' => route('user.artisan.service-requests.index'),
+                'is_read'    => false,
+            ]);
+        }
 
-        // Notify all admins about the completed mission
+        // Notify all admins about the confirmed completion
         $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
         foreach ($admins as $admin) {
             Notification::create([
                 'user_id'    => $admin->id,
                 'type'       => 'admin_mission_completed',
                 'title'      => 'Mission terminée',
-                'message'    => "La mission #{$serviceRequest->id} a été complétée. En attente de l'avis client.",
+                'message'    => "La mission #{$serviceRequest->id} a été validée par le client et est maintenant clôturée.",
                 'action_url' => route('admin.missions.index'),
                 'is_read'    => false,
             ]);
         }
 
-        return back()->with('success', 'Mission marquée comme terminée ! Le client peut maintenant laisser un avis.');
+        return back()->with('success', 'Merci d\'avoir confirmé ! Vous pouvez maintenant laisser un avis à l\'artisan.');
     }
 
     /**

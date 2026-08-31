@@ -24,8 +24,11 @@ class SubscriptionController extends Controller
         $plansQuery = SubscriptionPlan::where('is_active', true)
                                      ->orderBy('sort_order');
 
-        // Les artisans et clients ne doivent pas voir le plan Recruteur Premium
-        if (!$user->isRecruiter()) {
+        if ($user->isRecruiter()) {
+            // Recruteurs (et chercheurs d'emploi) ne doivent voir que le plan Recruteur Premium.
+            $plansQuery->where('slug', 'recruiter-premium');
+        } else {
+            // Les artisans et clients ne doivent pas voir le plan Recruteur Premium
             $plansQuery->where('slug', '!=', 'recruiter-premium');
         }
 
@@ -50,9 +53,27 @@ class SubscriptionController extends Controller
     public function checkout(Request $request): View
     {
         $plan = SubscriptionPlan::where('slug', $request->plan)->where('is_active', true)->firstOrFail();
+        $this->ensurePlanMatchesRole($plan, Auth::user());
         $billing = $request->billing === 'yearly' ? 'yearly' : 'monthly';
 
         return view('user.subscription.checkout', compact('plan', 'billing'));
+    }
+
+    /**
+     * Guard against subscribing to a plan that doesn't match the user's
+     * profile — a recruiter (or job seeker) can only subscribe to
+     * 'recruiter-premium'; everyone else can subscribe to anything BUT it.
+     * Without this, hiding the mismatched plans from index() is purely
+     * cosmetic: a direct visit to checkout?plan=... or a raw POST to
+     * /subscribe with a mismatched plan_id would otherwise still go through.
+     */
+    private function ensurePlanMatchesRole(SubscriptionPlan $plan, $user): void
+    {
+        $isRecruiterPlan = $plan->slug === 'recruiter-premium';
+
+        if ($isRecruiterPlan !== $user->isRecruiter()) {
+            abort(403, "Ce plan n'est pas disponible pour votre profil.");
+        }
     }
 
     /**
@@ -72,6 +93,7 @@ class SubscriptionController extends Controller
         ]);
 
         $plan   = SubscriptionPlan::findOrFail($request->plan_id);
+        $this->ensurePlanMatchesRole($plan, Auth::user());
         $billing = $request->billing_cycle;
         $amount  = $billing === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
 
