@@ -133,9 +133,14 @@ class PublicController extends Controller
         $query = User::where('user_type', 'artisan')->where('status', 'active');
 
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('profession', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('bio', 'like', '%' . $search . '%')
+                  ->orWhereHas('services', function ($sq) use ($search) {
+                      $sq->where('profession', 'like', '%' . $search . '%')
+                         ->orWhere('title', 'like', '%' . $search . '%');
+                  });
             });
         }
 

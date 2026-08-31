@@ -637,8 +637,23 @@
                         </p>
 
                         <!-- Barre de recherche améliorée -->
-                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-2 sm:p-3 shadow-2xl border border-white/20 
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-2 sm:p-3 shadow-2xl border border-white/20
                                     animate-fade-in-up" data-aos="fade-up" data-aos-delay="200">
+                            <!-- Sélecteur de type de recherche -->
+                            <div class="flex gap-1.5 px-1 pt-1 pb-2" id="search-type-selector">
+                                <button type="button" data-search-type="service"
+                                        class="search-type-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide transition-all bg-white text-gray-900">
+                                    Service
+                                </button>
+                                <button type="button" data-search-type="artisan"
+                                        class="search-type-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide transition-all bg-white/10 text-blue-100 hover:bg-white/20">
+                                    Artisan
+                                </button>
+                                <button type="button" data-search-type="job"
+                                        class="search-type-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide transition-all bg-white/10 text-blue-100 hover:bg-white/20">
+                                    Emploi
+                                </button>
+                            </div>
                             <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <div class="flex-1 relative">
                                     <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -666,20 +681,24 @@
                             <!-- Tags de recherche rapide -->
                             <div class="flex flex-wrap gap-2 mt-4">
                                 <span class="text-sm text-blue-100">Recherches rapides :</span>
-                                <button class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full 
-                                               text-sm transition-colors duration-300 text-blue-100">
+                                <button type="button" class="quick-search-btn px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full
+                                               text-sm transition-colors duration-300 text-blue-100"
+                                        data-search-type="service" data-search-query="Électricien">
                                     Électricien
                                 </button>
-                                <button class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full 
-                                               text-sm transition-colors duration-300 text-blue-100">
+                                <button type="button" class="quick-search-btn px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full
+                                               text-sm transition-colors duration-300 text-blue-100"
+                                        data-search-type="service" data-search-query="Plombier">
                                     Plombier
                                 </button>
-                                <button class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full 
-                                               text-sm transition-colors duration-300 text-blue-100">
+                                <button type="button" class="quick-search-btn px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full
+                                               text-sm transition-colors duration-300 text-blue-100"
+                                        data-search-type="service" data-search-query="Couturier">
                                     Couturier
                                 </button>
-                                <button class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full 
-                                               text-sm transition-colors duration-300 text-blue-100">
+                                <button type="button" class="quick-search-btn px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full
+                                               text-sm transition-colors duration-300 text-blue-100"
+                                        data-search-type="job" data-search-query="CDI Kinshasa">
                                     CDI Kinshasa
                                 </button>
                             </div>
@@ -1677,6 +1696,37 @@
             const searchSuggestions = document.getElementById('search-suggestions');
             const searchBtn = document.getElementById('search-btn');
 
+            // Type de recherche sélectionné (service / artisan / job) + routes publiques associées
+            const SEARCH_ROUTES = {
+                service: '{{ route('public.services.index') }}',
+                artisan: '{{ route('public.artisans.index') }}',
+                job: '{{ route('public.jobs.index') }}',
+            };
+            let selectedSearchType = 'service';
+
+            function setSearchType(type) {
+                selectedSearchType = SEARCH_ROUTES.hasOwnProperty(type) ? type : 'service';
+                document.querySelectorAll('.search-type-btn').forEach((btn) => {
+                    const isActive = btn.dataset.searchType === selectedSearchType;
+                    btn.classList.toggle('bg-white', isActive);
+                    btn.classList.toggle('text-gray-900', isActive);
+                    btn.classList.toggle('bg-white/10', !isActive);
+                    btn.classList.toggle('text-blue-100', !isActive);
+                });
+            }
+
+            document.querySelectorAll('.search-type-btn').forEach((btn) => {
+                btn.addEventListener('click', () => setSearchType(btn.dataset.searchType));
+            });
+
+            document.querySelectorAll('.quick-search-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    setSearchType(btn.dataset.searchType);
+                    if (searchInput) searchInput.value = btn.dataset.searchQuery || '';
+                    performSearch(btn.dataset.searchQuery || '');
+                });
+            });
+
             const suggestions = [
                 "Électricien Kinshasa",
                 "Plombier urgent",
@@ -1775,8 +1825,9 @@
                         setTimeout(() => {
                             searchBtn.innerHTML = originalHtml;
                             searchBtn.disabled = false;
-                            // Redirection vers résultats de recherche
-                            window.location.href = `{{ route('user.services.index') }}?search=${encodeURIComponent(query)}`;
+                            // Redirection vers la page de résultats publique correspondant au type sélectionné
+                            const targetRoute = SEARCH_ROUTES[selectedSearchType] || SEARCH_ROUTES.service;
+                            window.location.href = `${targetRoute}?search=${encodeURIComponent(query)}`;
                         }, 1000);
                     }
                 }
