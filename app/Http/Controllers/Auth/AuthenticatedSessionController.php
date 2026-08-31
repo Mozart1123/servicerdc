@@ -70,6 +70,28 @@ class AuthenticatedSessionController extends Controller
                 ])->onlyInput('email');
             }
 
+            // Artisans/recruteurs restent en attente de validation admin tant
+            // que leur compte n'a pas été approuvé depuis /admin/users-mgmt/pending
+            // — sans ce contrôle, se reconnecter suffisait à contourner
+            // entièrement la validation (celle-ci n'était vérifiée qu'à
+            // l'inscription, jamais aux connexions suivantes). Les clients et
+            // chercheurs d'emploi ne sont pas concernés (cohérent avec le
+            // reste du flux : seuls artisan/recruteur déclenchent une
+            // notification admin à l'inscription).
+            if (
+                $user->role === User::ROLE_USER
+                && in_array($user->user_type, [User::TYPE_ARTISAN, User::TYPE_RECRUITER], true)
+                && $user->status === User::STATUS_PENDING
+            ) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'email' => 'Votre compte est en attente de validation par un administrateur.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
 
             return $this->redirectToDashboard($user);

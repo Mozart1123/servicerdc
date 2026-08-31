@@ -15,7 +15,7 @@
 
         <!-- Scaled Responsive Table Container -->
         <div class="relative min-h-[400px] overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[650px] sm:min-w-0">
+            <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
                         <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
@@ -45,7 +45,7 @@
                                 </div>
                             </td>
                             <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
-                                <div class="flex items-center justify-end gap-2 sm:gap-3">
+                                <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
                                     <template x-if="user.artisan_level && user.artisan_level.verification_status === 'pending'">
                                         <a href="{{ route('admin.verifications.index') }}" class="px-3 sm:px-4 py-2 sm:py-2.5 bg-amber-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-amber-600 transition-all inline-flex items-center gap-1">
                                             <i class="fas fa-id-card"></i> Doc Artisan
@@ -56,8 +56,8 @@
                                             <i class="fas fa-id-card"></i> Doc Recruteur
                                         </a>
                                     </template>
-                                    <button @click="approve(user)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-emerald-600 active:scale-95 transition-all">Activer Compte</button>
-                                    <button @click="reject(user)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-white border border-slate-200 text-rdc-red text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-red-50 active:scale-95 transition-all">Refuser</button>
+                                    <button @click="approve(user)" :disabled="processing.has(user.id)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-emerald-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">Activer Compte</button>
+                                    <button @click="reject(user)" :disabled="processing.has(user.id)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-white border border-slate-200 text-rdc-red text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-red-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">Refuser</button>
                                 </div>
                             </td>
                         </tr>
@@ -105,6 +105,7 @@ function pendingManager(initialUsers = [], initialPagination = {}) {
     return {
         users: initialUsers,
         loading: false,
+        processing: new Set(),
         page: initialPagination.current_page || 1,
         pagination: initialPagination,
 
@@ -116,53 +117,80 @@ function pendingManager(initialUsers = [], initialPagination = {}) {
 
         fetchUsers() {
             this.loading = true;
-            fetch(`/admin/users/pending?page=${this.page}`, {
+            fetch(`{{ route('admin.users-mgmt.pending') }}?page=${this.page}`, {
                 headers: { 'Accept': 'application/json' }
             })
             .then(res => res.json())
             .then(data => {
                 this.users = data.data;
-                this.pagination = { 
-                    current_page: data.current_page, 
-                    last_page: data.last_page, 
-                    total: data.total 
+                this.pagination = {
+                    current_page: data.current_page,
+                    last_page: data.last_page,
+                    total: data.total
                 };
                 this.loading = false;
             })
-            .catch(() => { this.loading = false; });
+            .catch(() => {
+                this.loading = false;
+                alert('Erreur réseau : impossible de charger les comptes en attente.');
+            });
         },
 
         approve(user) {
-            fetch(`/admin/users/pending/${user.id}/approve-api`, {
+            if (this.processing.has(user.id)) return;
+            this.processing.add(user.id);
+            fetch(`{{ route('admin.users-mgmt.pending.approve-api', ':id') }}`.replace(':id', user.id), {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 }
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
             .then(data => {
+                this.processing.delete(user.id);
                 if (data.success) {
                     this.users = this.users.filter(u => u.id !== user.id);
                     document.dispatchEvent(new CustomEvent('users-updated'));
+                } else {
+                    alert(data.message || "Erreur lors de l'activation du compte.");
                 }
+            })
+            .catch(() => {
+                this.processing.delete(user.id);
+                alert(`Erreur réseau : impossible d'activer le compte de ${user.name}. Réessayez.`);
             });
         },
 
         reject(user) {
             if (!confirm(`Refuser l'inscription de ${user.name} ?`)) return;
-            fetch(`/admin/users/pending/${user.id}/reject-api`, {
+            if (this.processing.has(user.id)) return;
+            this.processing.add(user.id);
+            fetch(`{{ route('admin.users-mgmt.pending.reject-api', ':id') }}`.replace(':id', user.id), {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 }
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
             .then(data => {
+                this.processing.delete(user.id);
                 if (data.success) {
                     this.users = this.users.filter(u => u.id !== user.id);
+                } else {
+                    alert(data.message || "Erreur lors du refus de l'inscription.");
                 }
+            })
+            .catch(() => {
+                this.processing.delete(user.id);
+                alert(`Erreur réseau : impossible de refuser l'inscription de ${user.name}. Réessayez.`);
             });
         },
 

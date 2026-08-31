@@ -226,6 +226,7 @@ class UserController extends Controller
     public function pending(Request $request)
     {
         $users = User::where('status', User::STATUS_PENDING)
+            ->with(['artisanLevel', 'identityVerification'])
             ->latest()
             ->paginate(20);
 
