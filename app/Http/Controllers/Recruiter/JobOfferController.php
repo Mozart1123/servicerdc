@@ -71,7 +71,7 @@ class JobOfferController extends Controller
         })->with([
             'user:id,name,email,phone',
             'user.cv',
-            'jobOffer:id,title,location,contract_type,deadline',
+            'jobOffer:id,title,location,contract_type,deadline,employer_id,user_id',
         ])->orderByDesc('created_at');
 
         // Filter by status
