@@ -51,7 +51,7 @@
 
     <!-- Table Card -->
     <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden relative">
-        <div class="overflow-x-auto">
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
@@ -178,6 +178,112 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="md:hidden p-3 space-y-3">
+            @forelse($verifications as $v)
+            @php
+                $docTypeLabel = match($v->identity_document_type) {
+                    'national_id' => 'Carte Nationale d\'Identité',
+                    'passport' => 'Passeport',
+                    'driving_license' => 'Permis de conduire',
+                    default => 'Document'
+                };
+                $statusConfig = match($v->verification_status) {
+                    'approved' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'label' => 'Approuvée'],
+                    'pending'  => ['bg' => 'bg-amber-100', 'text' => 'text-amber-700', 'label' => 'En Attente'],
+                    'rejected' => ['bg' => 'bg-red-100', 'text' => 'text-red-700', 'label' => 'Rejetée'],
+                    default    => ['bg' => 'bg-slate-100', 'text' => 'text-slate-700', 'label' => ucfirst($v->verification_status)],
+                };
+            @endphp
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" x-data="{ showRejectModal: false }">
+                <div class="flex items-center gap-3">
+                    <img src="{{ $v->user->photo_url }}" class="w-12 h-12 rounded-xl object-cover border border-slate-100 shrink-0">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-black text-slate-900 truncate">{{ $v->user->name }}</p>
+                        <p class="text-[11px] text-slate-400 font-medium truncate">{{ $v->user->email }}</p>
+                        <p class="text-[10px] text-slate-400 font-medium">Inscrit le {{ $v->user->created_at->format('d/m/Y') }}</p>
+                    </div>
+                    <span class="shrink-0 px-2.5 py-1 {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }} text-[10px] font-bold rounded-full uppercase tracking-wider">
+                        {{ $statusConfig['label'] }}
+                    </span>
+                </div>
+
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-1 bg-slate-100 text-slate-700 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                        {{ $docTypeLabel }}
+                    </span>
+                    @if($v->verification_status === 'approved')
+                        <span class="text-[10px] text-slate-400 font-mono">Validée le {{ $v->verified_at ? $v->verified_at->format('d/m/Y H:i') : '-' }}</span>
+                    @elseif($v->verification_status === 'pending')
+                        <span class="text-[10px] text-slate-400 font-mono">Soumise le {{ $v->updated_at->format('d/m/Y H:i') }}</span>
+                    @elseif($v->verification_status === 'rejected' && $v->verification_rejection_reason)
+                        <span class="text-[10px] text-red-600 font-medium">Motif : {{ $v->verification_rejection_reason }}</span>
+                    @endif
+                </div>
+
+                <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <a href="{{ route('admin.verifications.download', ['id' => $v->id, 'file' => 'document']) }}" target="_blank" class="flex-1 min-w-[95px] px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold uppercase tracking-wide rounded-xl text-center flex items-center justify-center gap-1.5">
+                        <i class="fas fa-file-alt"></i> Document
+                    </a>
+
+                    @if($v->selfie_path)
+                        <a href="{{ route('admin.verifications.download', ['id' => $v->id, 'file' => 'selfie']) }}" target="_blank" class="flex-1 min-w-[95px] px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wide rounded-xl text-center flex items-center justify-center gap-1.5">
+                            <i class="fas fa-user-circle"></i> Selfie
+                        </a>
+                    @endif
+
+                    @if($v->verification_status === 'pending' || $v->verification_status === 'rejected')
+                        <form method="POST" action="{{ route('admin.verifications.approve', $v->id) }}" class="flex-1 min-w-[95px]">
+                            @csrf
+                            <button type="submit" onclick="return confirm('Confirmer l\'approbation de l\'identité de {{ addslashes($v->user->name) }} ?')" class="w-full px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wide rounded-xl">
+                                Approuver
+                            </button>
+                        </form>
+                    @endif
+
+                    @if($v->verification_status === 'pending' || $v->verification_status === 'approved')
+                        <button type="button" @click="showRejectModal = true" class="flex-1 min-w-[95px] px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wide rounded-xl">
+                            Rejeter
+                        </button>
+
+                        <!-- Rejection Modal (mobile card) -->
+                        <div x-show="showRejectModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" x-cloak>
+                            <div @click.outside="showRejectModal = false" class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-left">
+                                <h3 class="text-lg font-black text-slate-900 mb-2">Rejeter l'identité</h3>
+                                <p class="text-xs text-slate-500 mb-4">Sélectionnez le motif du refus transmis à {{ $v->user->name }}.</p>
+
+                                <form method="POST" action="{{ route('admin.verifications.reject', $v->id) }}" class="space-y-4">
+                                    @csrf
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1">Motif principal (requis)</label>
+                                        <select name="reason" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs font-medium focus:ring-4 focus:ring-red-100 focus:border-red-500">
+                                            <option value="" disabled selected>Choisir un motif...</option>
+                                            @foreach($rejectionReasons as $reason)
+                                                <option value="{{ $reason }}">{{ $reason }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1">Commentaire libre (optionnel)</label>
+                                        <textarea name="comment" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs font-medium focus:ring-4 focus:ring-red-100 focus:border-red-500" placeholder="Précisions supplémentaires..."></textarea>
+                                    </div>
+
+                                    <div class="flex gap-3">
+                                        <button type="button" @click="showRejectModal = false" class="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs uppercase tracking-wider">Annuler</button>
+                                        <button type="submit" class="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:bg-red-700 shadow-md">Confirmer le rejet</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @empty
+            <p class="text-center text-slate-400 text-sm font-medium py-12">Aucun document de vérification trouvé pour ce filtre.</p>
+            @endforelse
         </div>
 
         @if($verifications->hasPages())
