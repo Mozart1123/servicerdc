@@ -34,7 +34,22 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required', 'string', 'max:255',
+                function ($attribute, $value, $fail) use ($request) {
+                    // Only artisan/recruiter accounts risk being confused with another
+                    // professional/business of the same name — client and job_seeker
+                    // accounts are exempt from this check.
+                    if (in_array($request->input('user_type'), [User::TYPE_ARTISAN, User::TYPE_RECRUITER], true)) {
+                        $taken = User::whereIn('user_type', [User::TYPE_ARTISAN, User::TYPE_RECRUITER])
+                            ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower(trim($value))])
+                            ->exists();
+                        if ($taken) {
+                            $fail('Ce nom est déjà utilisé par un autre artisan ou recruteur sur la plateforme. Veuillez en choisir un autre.');
+                        }
+                    }
+                },
+            ],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],

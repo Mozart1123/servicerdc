@@ -188,6 +188,22 @@ class DashboardController extends Controller
             'profile_photo' => ['nullable', 'image', 'max:5120'],
         ];
 
+        // Only artisan/recruiter accounts risk being confused with another
+        // professional/business of the same name — client and job_seeker
+        // accounts are exempt. The user's own row is excluded so re-saving
+        // the profile without changing the name never triggers this.
+        if (in_array($user->user_type, [User::TYPE_ARTISAN, User::TYPE_RECRUITER], true)) {
+            $rules['name'][] = function ($attribute, $value, $fail) use ($user) {
+                $taken = User::whereIn('user_type', [User::TYPE_ARTISAN, User::TYPE_RECRUITER])
+                    ->where('id', '!=', $user->id)
+                    ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower(trim($value))])
+                    ->exists();
+                if ($taken) {
+                    $fail('Ce nom est déjà utilisé par un autre artisan ou recruteur sur la plateforme. Veuillez en choisir un autre.');
+                }
+            };
+        }
+
         // company_description is only allowed for recruiters
         if ($user->isRecruiter()) {
             $rules['company_description'] = ['nullable', 'string', 'max:600'];
