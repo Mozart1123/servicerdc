@@ -368,7 +368,7 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800 overflow-x-hidden">
+<body class="bg-gray-50 text-gray-800 overflow-x-hidden" x-data="{ mobileNavOpen: false }" @keydown.escape.window="mobileNavOpen = false">
     <!-- Écran de chargement -->
     <div id="loading-screen">
         <div class="loader-logo">
@@ -438,24 +438,24 @@
                         <!-- Boutons CTA et Auth -->
                         <div class="flex items-center space-x-2 sm:space-x-4">
                             <!-- Bouton Localisation -->
-                            <button id="geolocation-btn" class="hidden xl:flex items-center space-x-2 px-4 py-2 bg-rdc-blue/10 
-                                           text-rdc-blue rounded-lg hover:bg-rdc-blue/20 transition-all 
+                            <button id="geolocation-btn" class="js-geolocation-btn hidden xl:flex items-center space-x-2 px-4 py-2 bg-rdc-blue/10
+                                           text-rdc-blue rounded-lg hover:bg-rdc-blue/20 transition-all
                                            duration-300 animate-pulse-slow border border-rdc-blue/20"
                                 aria-label="Détecter ma position">
                                 <i class="fas fa-location-dot"></i>
-                                <span id="location-text">Me localiser</span>
+                                <span id="location-text" class="js-location-text">Me localiser</span>
                             </button>
 
-                            <!-- État Auth -->
+                            <!-- État Auth (desktop uniquement — mobile utilise le tiroir latéral) -->
                             @guest
-                                <div class="flex items-center space-x-2 sm:space-x-3">
-                                    <a href="{{ route('login') }}" class="px-3 sm:px-5 py-2 sm:py-2.5 text-rdc-blue text-sm sm:text-base font-semibold hover:text-rdc-blue-dark 
-                                                          transition-colors duration-300 border border-rdc-blue/30 
+                                <div class="hidden lg:flex items-center space-x-2 sm:space-x-3">
+                                    <a href="{{ route('login') }}" class="px-3 sm:px-5 py-2 sm:py-2.5 text-rdc-blue text-sm sm:text-base font-semibold hover:text-rdc-blue-dark
+                                                          transition-colors duration-300 border border-rdc-blue/30
                                                           rounded-lg hover:border-rdc-blue/50">
                                         Connexion
                                     </a>
-                                    <a href="{{ route('register') }}" class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark 
-                                                          text-white text-sm sm:text-base font-semibold rounded-lg hover:shadow-lg 
+                                    <a href="{{ route('register') }}" class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark
+                                                          text-white text-sm sm:text-base font-semibold rounded-lg hover:shadow-lg
                                                           transition-all duration-300 hover:scale-105">
                                         Inscription
                                     </a>
@@ -463,7 +463,7 @@
                             @endguest
 
                         @auth
-                            <div class="flex items-center space-x-4">
+                            <div class="hidden lg:flex items-center space-x-4">
                                 <!-- Notification Badge -->
                                 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
                                     <button @click="open = !open" class="p-2 text-gray-600 hover:text-rdc-blue transition-colors relative focus:outline-none">
@@ -569,42 +569,121 @@
                         @endauth
 
                         <!-- Menu Mobile Toggle -->
-                        <button id="mobile-menu-btn"
+                        <button @click="mobileNavOpen = true"
                             class="lg:hidden p-2 text-gray-700 hover:text-rdc-blue transition-colors"
-                            aria-label="Menu mobile">
+                            aria-label="Ouvrir le menu">
                             <i class="fas fa-bars text-2xl"></i>
                         </button>
                     </div>
                 </div>
-
-                <!-- Menu Mobile -->
-                <div id="mobile-menu" class="lg:hidden mt-6 py-6 border-t border-gray-200 hidden bg-white 
-                            rounded-lg shadow-xl animate-fade-in-up">
-                    <div class="flex flex-col space-y-4">
-                        <a href="#accueil" class="px-4 py-3 text-gray-700 hover:text-rdc-blue hover:bg-rdc-blue/5 
-                                  rounded-lg transition-colors duration-300 font-medium">
-                            <i class="fas fa-home mr-3"></i>Accueil
-                        </a>
-                        <a href="#services" class="px-4 py-3 text-gray-700 hover:text-rdc-blue hover:bg-rdc-blue/5 
-                                  rounded-lg transition-colors duration-300 font-medium">
-                            <i class="fas fa-tools mr-3"></i>Services
-                        </a>
-                        <a href="#emplois" class="px-4 py-3 text-gray-700 hover:text-rdc-blue hover:bg-rdc-blue/5 
-                                  rounded-lg transition-colors duration-300 font-medium">
-                            <i class="fas fa-briefcase mr-3"></i>Emplois
-                        </a>
-                        <a href="#fonctionnement" class="px-4 py-3 text-gray-700 hover:text-rdc-blue hover:bg-rdc-blue/5 
-                                  rounded-lg transition-colors duration-300 font-medium">
-                            <i class="fas fa-play-circle mr-3"></i>Fonctionnement
-                        </a>
-                        <a href="#temoignages" class="px-4 py-3 text-gray-700 hover:text-rdc-blue hover:bg-rdc-blue/5 
-                                  rounded-lg transition-colors duration-300 font-medium">
-                            <i class="fas fa-comment-dots mr-3"></i>Témoignages
-                        </a>
-                    </div>
-                </div>
             </div>
         </header>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div x-show="mobileNavOpen" x-transition.opacity
+             @click="mobileNavOpen = false"
+             class="fixed inset-0 bg-slate-900/50 z-[60] lg:hidden" style="display: none;"></div>
+
+        <!-- Mobile Sidebar Drawer -->
+        <aside :class="mobileNavOpen ? 'translate-x-0' : '-translate-x-full'"
+               class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white z-[70] transform lg:hidden transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+
+            <div class="px-6 py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
+                <a href="/" class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full overflow-hidden shadow-sm">
+                        <img src="/assets/img/logo.png?v=1.2" alt="Logo" class="w-full h-full object-contain">
+                    </div>
+                    <h1 class="text-lg font-bold text-gray-900">Pro<span class="text-rdc-blue">Connect</span></h1>
+                </a>
+                <button @click="mobileNavOpen = false" class="text-gray-400 hover:text-gray-600 p-1" aria-label="Fermer le menu">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-1">
+                @auth
+                    <div class="flex items-center gap-3 px-3 pb-4 mb-2 border-b border-gray-100">
+                        <img src="{{ auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}" class="w-11 h-11 rounded-full border-2 border-rdc-blue object-cover shrink-0">
+                        <div class="min-w-0">
+                            <p class="text-sm font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                        </div>
+                    </div>
+                @endauth
+
+                <a href="#accueil" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                    <i class="fas fa-home w-5 text-center text-gray-400"></i> Accueil
+                </a>
+                <a href="{{ route('public.services.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                    <i class="fas fa-tools w-5 text-center text-gray-400"></i> Services
+                </a>
+                <a href="{{ route('public.jobs.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                    <i class="fas fa-briefcase w-5 text-center text-gray-400"></i> Emplois
+                </a>
+                <a href="{{ route('public.artisans.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                    <i class="fas fa-user-gear w-5 text-center text-gray-400"></i> Artisans
+                </a>
+                <a href="#fonctionnement" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                    <i class="fas fa-play-circle w-5 text-center text-gray-400"></i> Fonctionnement
+                </a>
+                <a href="#temoignages" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                    <i class="fas fa-comment-dots w-5 text-center text-gray-400"></i> Témoignages
+                </a>
+
+                <button class="js-geolocation-btn w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors" aria-label="Détecter ma position">
+                    <i class="fas fa-location-dot w-5 text-center text-gray-400"></i> <span class="js-location-text">Me localiser</span>
+                </button>
+
+                @auth
+                    <div class="border-t border-gray-100 my-3"></div>
+
+                    <a href="{{ route(auth()->user()->dashboard_route) }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                        <i class="fas fa-gauge w-5 text-center text-gray-400"></i> Tableau de bord
+                    </a>
+                    <a href="{{ route('user.notifications.index') }}" @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                        <span class="flex items-center gap-3"><i class="fas fa-bell w-5 text-center text-gray-400"></i> Notifications</span>
+                        @if(auth()->user()->unreadNotifications->count() > 0)
+                            <span class="w-5 h-5 bg-rdc-red text-white text-[10px] font-black flex items-center justify-center rounded-full">{{ auth()->user()->unreadNotifications->count() > 9 ? '9+' : auth()->user()->unreadNotifications->count() }}</span>
+                        @endif
+                    </a>
+
+                    @if(auth()->user()->role === 'user')
+                        <a href="{{ route('user.profile') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                            <i class="fas fa-user w-5 text-center text-gray-400"></i> Mon profil
+                        </a>
+                        <a href="{{ route('user.applications.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                            <i class="fas fa-file-alt w-5 text-center text-gray-400"></i> Mes candidatures
+                        </a>
+                        <a href="{{ route('user.service-requests.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                            <i class="fas fa-clipboard-list w-5 text-center text-gray-400"></i> Mes demandes
+                        </a>
+                        <a href="{{ route('user.messages.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                            <i class="fas fa-envelope w-5 text-center text-gray-400"></i> Messages
+                        </a>
+                    @endif
+                @endauth
+            </nav>
+
+            <div class="p-4 border-t border-gray-100 shrink-0">
+                @auth
+                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </button>
+                    </form>
+                @else
+                    <div class="space-y-2">
+                        <a href="{{ route('register') }}" @click="mobileNavOpen = false" class="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white text-sm font-bold rounded-xl hover:shadow-lg transition-all">
+                            Créer un compte
+                        </a>
+                        <a href="{{ route('login') }}" @click="mobileNavOpen = false" class="flex items-center justify-center px-4 py-3 border border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-50 transition-all">
+                            Connexion
+                        </a>
+                    </div>
+                @endauth
+            </div>
+        </aside>
 
         <!-- Hero Section -->
         <section id="accueil" class="gradient-bg text-white overflow-hidden">
@@ -1573,28 +1652,8 @@
 
         // Initialisation de la page
         function initPage() {
-            // Menu mobile
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-
-            if (mobileMenuBtn && mobileMenu) {
-                mobileMenuBtn.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('hidden');
-                    mobileMenuBtn.innerHTML = mobileMenu.classList.contains('hidden')
-                        ? '<i class="fas fa-bars text-2xl"></i>'
-                        : '<i class="fas fa-times text-2xl"></i>';
-                });
-
-                // Fermer menu en cliquant sur un lien
-                mobileMenu.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        mobileMenu.classList.add('hidden');
-                        mobileMenuBtn.innerHTML = '<i class="fas fa-bars text-2xl"></i>';
-                    });
-                });
-            }
-
-
+            // Le menu mobile est désormais un tiroir latéral géré par Alpine.js
+            // (x-data="{ mobileNavOpen: false }" sur <body>) — plus de JS ici.
 
 
             // Recherche intelligente
@@ -1739,9 +1798,8 @@
                 }
             }
 
-            // Géolocalisation
-            const geolocationBtn = document.getElementById('geolocation-btn');
-            const locationText = document.getElementById('location-text');
+            // Géolocalisation — même comportement sur tous les boutons portant
+            // la classe .js-geolocation-btn (desktop ET tiroir mobile).
             const currentCity = document.getElementById('current-city');
             const currentAddress = document.getElementById('current-address');
 
@@ -1756,7 +1814,10 @@
                 { name: "Matadi", address: "Avenue Kasa-Vubu, Matadi", province: "Kongo-Central" }
             ];
 
-            if (geolocationBtn && locationText) {
+            document.querySelectorAll('.js-geolocation-btn').forEach(function (geolocationBtn) {
+                const locationText = geolocationBtn.querySelector('.js-location-text');
+                if (!locationText) return;
+
                 geolocationBtn.addEventListener('click', function () {
                     const originalText = locationText.innerHTML;
                     locationText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Localisation...';
@@ -1774,26 +1835,26 @@
                             try {
                                 const lat = position.coords.latitude;
                                 const lon = position.coords.longitude;
-                                
+
                                 // Appel à Nominatim (OpenStreetMap) pour le reverse geocoding
                                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
                                     headers: { 'Accept-Language': 'fr' }
                                 });
                                 const data = await response.json();
-                                
+
                                 // Extraction du nom de la ville/quartier
                                 const city = data.address.city || data.address.town || data.address.village || data.address.suburb || "Ville inconnue";
                                 const neighborhood = data.address.neighbourhood || data.address.suburb || "";
                                 const province = data.address.state || data.address.province || "";
-                                
+
                                 const fullAddress = neighborhood && neighborhood !== city ? `${neighborhood}, ${city}` : city;
-                                
+
                                 // Mise à jour de l'UI
                                 if (currentCity) currentCity.textContent = city;
                                 if (currentAddress) currentAddress.textContent = `${fullAddress} ${province ? '• ' + province : ''}`;
-                                
+
                                 locationText.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${city}`;
-                                
+
                                 showNotification(`Localisé à ${city}`, 'success');
                             } catch (error) {
                                 console.error('Erreur reverse geocoding:', error);
@@ -1823,7 +1884,7 @@
                         }, 8000);
                     }
                 });
-            }
+            });
 
             // Notifications
             function showNotification(message, type = 'info') {
@@ -1866,13 +1927,8 @@
                     e.preventDefault();
                     const targetElement = document.querySelector(href);
                     if (targetElement) {
-                        // Fermer menu mobile si ouvert
-                        if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                            mobileMenu.classList.add('hidden');
-                            if (mobileMenuBtn) {
-                                mobileMenuBtn.innerHTML = '<i class="fas fa-bars text-2xl"></i>';
-                            }
-                        }
+                        // Le tiroir mobile (Alpine.js) se ferme déjà via son propre
+                        // @click="mobileNavOpen = false" sur chaque lien.
 
                         // Animation scroll
                         window.scrollTo({

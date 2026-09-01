@@ -29,7 +29,7 @@
     </style>
     @stack('styles')
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased" x-data="{ mobileNavOpen: false }" @keydown.escape.window="mobileNavOpen = false">
 
     {{-- Header --}}
     <header class="fixed inset-x-0 top-0 z-50 bg-white shadow-md">
@@ -51,8 +51,8 @@
                     <a href="{{ route('public.artisans.index') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('public.artisans*') ? 'text-[#29B6D1] font-bold' : '' }}">Artisans</a>
                 </nav>
 
-                {{-- Auth Buttons --}}
-                <div class="flex items-center gap-3">
+                {{-- Auth Buttons (desktop only — mobile uses the drawer below) --}}
+                <div class="hidden md:flex items-center gap-3">
                     @auth
                         {{-- Cloche de notifications (tous les utilisateurs connectés) --}}
                         @php
@@ -129,9 +129,113 @@
                         <a href="{{ route('register') }}" class="px-4 py-2 bg-[#29B6D1] text-white text-sm font-bold rounded-xl hover:bg-[#1E9CB5] transition-all shadow-sm">S'inscrire</a>
                     @endauth
                 </div>
+
+                {{-- Mobile Menu Toggle --}}
+                <button @click="mobileNavOpen = true" class="md:hidden p-2 text-slate-600 hover:text-[#29B6D1] transition-colors" aria-label="Ouvrir le menu">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
             </div>
         </div>
     </header>
+
+    {{-- Mobile Sidebar Overlay --}}
+    <div x-show="mobileNavOpen" x-transition.opacity
+         @click="mobileNavOpen = false"
+         class="fixed inset-0 bg-slate-900/50 z-[60] md:hidden" style="display: none;"></div>
+
+    {{-- Mobile Sidebar Drawer --}}
+    <aside :class="mobileNavOpen ? 'translate-x-0' : '-translate-x-full'"
+           class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white z-[70] transform md:hidden transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+
+        <div class="px-6 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <a href="{{ route('home') }}" class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full overflow-hidden shadow-sm">
+                    <img src="/assets/img/logo.png" alt="ProConnect" class="w-full h-full object-contain">
+                </div>
+                <span class="text-lg font-bold text-slate-900">Pro<span class="text-[#29B6D1]">Connect</span></span>
+            </a>
+            <button @click="mobileNavOpen = false" class="text-slate-400 hover:text-slate-600 p-1" aria-label="Fermer le menu">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-1">
+            @auth
+                <div class="flex items-center gap-3 px-3 pb-4 mb-2 border-b border-slate-100">
+                    <img src="{{ auth()->user()->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}" class="w-11 h-11 rounded-full border-2 border-[#29B6D1] object-cover shrink-0">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-slate-900 truncate">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
+                    </div>
+                </div>
+            @endauth
+
+            <a href="{{ route('home') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                <i class="fas fa-home w-5 text-center text-slate-400"></i> Accueil
+            </a>
+            <a href="{{ route('public.services.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.services*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
+                <i class="fas fa-tools w-5 text-center {{ request()->routeIs('public.services*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Services
+            </a>
+            <a href="{{ route('public.jobs.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.jobs*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
+                <i class="fas fa-briefcase w-5 text-center {{ request()->routeIs('public.jobs*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Offres d'emploi
+            </a>
+            <a href="{{ route('public.artisans.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.artisans*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
+                <i class="fas fa-user-gear w-5 text-center {{ request()->routeIs('public.artisans*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Artisans
+            </a>
+
+            @auth
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <a href="{{ route(auth()->user()->dashboard_route) }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                    <i class="fas fa-gauge w-5 text-center text-slate-400"></i> Tableau de bord
+                </a>
+                @php
+                    $pubMobileUnreadCount = \App\Models\Notification::where('user_id', auth()->id())->where('is_read', false)->count();
+                @endphp
+                <a href="{{ route('user.notifications.index') }}" @click="mobileNavOpen = false" class="flex items-center justify-between px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                    <span class="flex items-center gap-3"><i class="fas fa-bell w-5 text-center text-slate-400"></i> Notifications</span>
+                    @if($pubMobileUnreadCount > 0)
+                        <span class="w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full">{{ $pubMobileUnreadCount > 9 ? '9+' : $pubMobileUnreadCount }}</span>
+                    @endif
+                </a>
+
+                @if(auth()->user()->role === 'user')
+                    <a href="{{ route('user.profile') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                        <i class="fas fa-user w-5 text-center text-slate-400"></i> Mon profil
+                    </a>
+                    <a href="{{ route('user.applications.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                        <i class="fas fa-file-alt w-5 text-center text-slate-400"></i> Mes candidatures
+                    </a>
+                    <a href="{{ route('user.service-requests.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                        <i class="fas fa-clipboard-list w-5 text-center text-slate-400"></i> Mes demandes
+                    </a>
+                    <a href="{{ route('user.messages.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                        <i class="fas fa-envelope w-5 text-center text-slate-400"></i> Messages
+                    </a>
+                @endif
+            @endauth
+        </nav>
+
+        <div class="p-4 border-t border-slate-100 shrink-0">
+            @auth
+                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
+                </form>
+            @else
+                <div class="space-y-2">
+                    <a href="{{ route('register') }}" @click="mobileNavOpen = false" class="flex items-center justify-center px-4 py-3 bg-[#29B6D1] text-white text-sm font-bold rounded-xl hover:bg-[#1E9CB5] transition-all shadow-sm">
+                        Créer un compte
+                    </a>
+                    <a href="{{ route('login') }}" @click="mobileNavOpen = false" class="flex items-center justify-center px-4 py-3 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all">
+                        Connexion
+                    </a>
+                </div>
+            @endauth
+        </div>
+    </aside>
 
     {{-- Flash Messages --}}
     @if(session('success') || session('error'))
