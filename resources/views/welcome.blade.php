@@ -919,8 +919,9 @@
                 <!-- Catégories Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-12">
                     @foreach($categories as $index => $category)
-                        <div class="group relative overflow-hidden bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer will-change-transform hover:-translate-y-1"
-                             data-aos="fade-up" data-aos-delay="{{ ($index % 6) * 100 }}">
+                        <a href="{{ route('public.categories.service-types', $category->id) }}"
+                           class="group relative overflow-hidden bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer will-change-transform hover:-translate-y-1"
+                           data-aos="fade-up" data-aos-delay="{{ ($index % 6) * 100 }}">
                             <div class="relative h-44 overflow-hidden">
                                 {{-- Photo ou fallback gradient --}}
                                 @if($category->image)
@@ -940,13 +941,13 @@
                                 </div>
                             </div>
                             <div class="px-4 py-3 flex items-center justify-between">
-                                <a href="{{ route('public.categories.service-types', $category->id) }}" class="text-rdc-blue text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                                <span class="text-rdc-blue text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
                                     Voir les services
                                     <i class="fas fa-arrow-right text-[10px]"></i>
-                                </a>
+                                </span>
                                 <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">{{ $category->services_count }} offres</span>
                             </div>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
 
