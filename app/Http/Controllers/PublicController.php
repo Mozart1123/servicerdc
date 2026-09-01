@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\JobCategory;
 use App\Models\JobOffer;
 use App\Models\Service;
 use App\Models\User;
@@ -79,14 +80,21 @@ class PublicController extends Controller
             $query->where('contract_type', $request->contract_type);
         }
 
+        if ($request->filled('job_category_id')) {
+            $query->where('job_category_id', $request->job_category_id);
+        }
+
         if ($request->filled('location')) {
             $query->where('location', 'like', '%' . $request->location . '%');
         }
 
         $jobs          = $query->with('user')->latest()->paginate(12)->appends($request->query());
         $contractTypes = JobOffer::where('status', 'active')->distinct()->pluck('contract_type')->filter()->values();
+        $jobCategories = JobCategory::whereHas('jobOffers', function ($q) {
+            $q->where('status', 'active');
+        })->orderBy('name')->get();
 
-        return view('public.jobs.index', compact('jobs', 'contractTypes'));
+        return view('public.jobs.index', compact('jobs', 'contractTypes', 'jobCategories'));
     }
 
     /**

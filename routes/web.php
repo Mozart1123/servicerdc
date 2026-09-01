@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\Admin\MissionController as AdminMissionController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\JobCategoryController as AdminJobCategoryController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\JobApplicationController as AdminJobApplicationController;
 use App\Http\Controllers\User\ServiceController as UserServiceController;
@@ -290,6 +291,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::resource('services', AdminServiceController::class);
         Route::resource('jobs', AdminJobController::class);
         Route::resource('categories', AdminCategoryController::class);
+        Route::resource('job-categories', AdminJobCategoryController::class);
 
         // Messages Supervision
         Route::prefix('messages')->name('messages.')->group(function (): void {

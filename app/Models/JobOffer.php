@@ -20,6 +20,7 @@ class JobOffer extends Model
         'cover_image',
         'location',
         'category',
+        'job_category_id',
         'contract_type',
         'salary_range',
         'description',
@@ -60,6 +61,18 @@ class JobOffer extends Model
     public function applications()
     {
         return $this->hasMany(JobApplication::class);
+    }
+
+    /**
+     * Get the structured job category this offer belongs to.
+     *
+     * Named `jobCategory` (not `category`) so it doesn't collide with the
+     * legacy `category` text column, which stays in place and in sync for
+     * backward compatibility with existing views/search/filters.
+     */
+    public function jobCategory()
+    {
+        return $this->belongsTo(JobCategory::class);
     }
 
     // ==========================================

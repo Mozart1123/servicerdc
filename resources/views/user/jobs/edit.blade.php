@@ -122,11 +122,11 @@
                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Catégorie / Secteur d'activité</label>
                 <div class="relative">
                     <i class="fas fa-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                    <select name="category" required 
+                    <select name="job_category_id" required
                             class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue appearance-none transition-all">
-                        @php $cats = ['Informatique', 'Santé', 'Éducation', 'Finance', 'Commerce', 'BTP', 'Transport', 'Hôtellerie', 'Autre']; @endphp
-                        @foreach($cats as $cat)
-                            <option value="{{ $cat }}" {{ old('category', $job->category) == $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                        <option value="">Sélectionner un secteur</option>
+                        @foreach($jobCategories as $jobCategory)
+                            <option value="{{ $jobCategory->id }}" {{ (int) old('job_category_id', $job->job_category_id) === $jobCategory->id ? 'selected' : '' }}>{{ $jobCategory->name }}</option>
                         @endforeach
                     </select>
                 </div>

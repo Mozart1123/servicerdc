@@ -997,10 +997,56 @@
                     </p>
                 </div>
 
+                <!-- Catégories d'emploi -->
+                @if($jobCategories->isNotEmpty())
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 mb-12">
+                        @foreach($jobCategories as $index => $jobCategory)
+                            <a href="{{ route('public.jobs.index', ['job_category_id' => $jobCategory->id]) }}"
+                               class="group relative overflow-hidden bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 will-change-transform hover:-translate-y-1"
+                               data-aos="fade-up" data-aos-delay="{{ ($index % 6) * 100 }}">
+                                <div class="relative h-28 overflow-hidden">
+                                    {{-- Photo ou fallback gradient --}}
+                                    @if($jobCategory->image)
+                                        <img src="{{ Storage::url($jobCategory->image) }}"
+                                             alt="{{ $jobCategory->name }}"
+                                             class="w-full h-full object-cover absolute inset-0">
+                                    @else
+                                        <div class="w-full h-full bg-gradient-to-br from-rdc-blue to-rdc-dark-blue flex items-center justify-center absolute inset-0">
+                                            <i class="{{ $jobCategory->icon ?? 'fas fa-briefcase' }} text-white text-2xl opacity-80"></i>
+                                        </div>
+                                    @endif
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                                </div>
+                                <div class="px-3 py-2.5">
+                                    <h4 class="text-slate-900 font-bold text-xs leading-tight truncate group-hover:text-rdc-blue transition-colors">{{ $jobCategory->name }}</h4>
+                                    @if($jobCategory->description)
+                                        <p class="text-slate-400 text-[10px] font-medium leading-snug mt-0.5 line-clamp-2">{{ $jobCategory->description }}</p>
+                                    @endif
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mt-1 inline-block">{{ $jobCategory->job_offers_count }} offre{{ $jobCategory->job_offers_count > 1 ? 's' : '' }}</span>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
                 <!-- Jobs Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12" id="jobs-container">
-                    <!-- Offres d'emploi chargées par JavaScript -->
-                </div>
+                @if($recentJobs->isEmpty())
+                    <div class="text-center py-16 mb-12" data-aos="fade-up">
+                        <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-briefcase text-3xl text-slate-300"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-500">Aucune offre d'emploi active pour le moment</h3>
+                        <p class="text-sm text-slate-400 mt-1">Revenez bientôt, de nouvelles offres sont publiées régulièrement.</p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12" id="jobs-container">
+                        @foreach($recentJobs as $index => $job)
+                            <div data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
+                                <x-job-card :job="$job" show-route="public.jobs.show" />
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
 
                 <!-- CTA Emplois -->
                 <div class="text-center" data-aos="fade-up" data-aos-delay="200">
@@ -1560,136 +1606,6 @@
 
 
 
-
-            // Données des emplois avec images Unsplash
-            const jobs = [
-                {
-                    title: "Électricien Résidentiel",
-                    company: "Kinshasa Électricité",
-                    location: "Kinshasa",
-                    type: "Temps plein",
-                    salary: "800-1200$",
-                    urgent: true,
-                    tags: ["Électricité", "CDI", "Expérience"],
-                    img: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&h=300&fit=crop"
-                },
-                {
-                    title: "Plombier Qualifié",
-                    company: "Service Plomberie Pro",
-                    location: "Lubumbashi",
-                    type: "Temps plein",
-                    salary: "700-1000$",
-                    urgent: false,
-                    tags: ["Plomberie", "CDD", "Formation"],
-                    img: "https://images.unsplash.com/photo-1505798577917-a65157d3320a?w=400&h=300&fit=crop"
-                },
-                {
-                    title: "Couturier sur Mesure",
-                    company: "Mode & Style RDC",
-                    location: "Kisangani",
-                    type: "Indépendant",
-                    salary: "À discuter",
-                    urgent: false,
-                    tags: ["Couture", "Freelance", "Créatif"],
-                    img: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=300&fit=crop"
-                },
-                {
-                    title: "Maçon Bâtiment",
-                    company: "Construction Congo",
-                    location: "Goma",
-                    type: "Contrat",
-                    salary: "600-900$",
-                    urgent: true,
-                    tags: ["Construction", "CDD", "Force physique"],
-                    img: "https://images.unsplash.com/photo-1541888081622-15cb3258c734?w=400&h=300&fit=crop"
-                },
-                {
-                    title: "Coiffeur Salon",
-                    company: "Beauté Noire",
-                    location: "Mbuji-Mayi",
-                    type: "Temps plein",
-                    salary: "500-800$",
-                    urgent: false,
-                    tags: ["Coiffure", "CDI", "Relation client"],
-                    img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop"
-                },
-                {
-                    title: "Mécanicien Automobile",
-                    company: "Auto Service RDC",
-                    location: "Bukavu",
-                    type: "Temps plein",
-                    salary: "750-1100$",
-                    urgent: false,
-                    tags: ["Mécanique", "CDI", "Technicien"],
-                    img: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400&h=300&fit=crop"
-                }
-            ];
-
-            // Remplir les emplois
-            const jobsContainer = document.getElementById('jobs-container');
-            if (jobsContainer) {
-                jobs.forEach((job, index) => {
-                    const jobElement = document.createElement('div');
-                    jobElement.className = 'group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden relative cursor-pointer hover:-translate-y-1';
-                    jobElement.setAttribute('data-aos', 'fade-up');
-                    jobElement.setAttribute('data-aos-delay', (index % 3) * 100);
-
-                    const urgentBadge = job.urgent ?
-                        `<div class="absolute top-4 right-4 z-10 px-3 py-1 bg-gradient-to-r from-rdc-red to-red-500 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg animate-pulse">
-                            <i class="fas fa-bolt mr-1"></i>URGENT
-                        </div>` : '';
-
-                    const tagsHtml = job.tags.map(tag =>
-                        `<span class="px-2.5 py-1 bg-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider rounded-lg">${tag}</span>`
-                    ).join('');
-
-                    jobElement.innerHTML = `
-                        ${urgentBadge}
-                        <div class="relative h-40 overflow-hidden">
-                            <img src="${job.img}" alt="${job.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <h3 class="text-xl font-bold text-white mb-1 drop-shadow-md leading-tight group-hover:text-rdc-blue transition-colors">${job.title}</h3>
-                                <div class="flex items-center text-white/90 text-sm">
-                                    <i class="fas fa-building text-rdc-blue mr-2"></i>
-                                    <span class="font-medium drop-shadow">${job.company}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="p-6 flex flex-col flex-1">
-                            <div class="flex items-center text-slate-500 text-sm mb-4">
-                                <i class="fas fa-map-marker-alt text-rdc-red mr-2"></i>
-                                <span class="font-bold">${job.location}</span>
-                            </div>
-                            
-                            <div class="flex flex-wrap gap-2 mb-6">
-                                ${tagsHtml}
-                            </div>
-                            
-                            <div class="flex justify-between items-center mt-auto pt-4 border-t border-slate-100 mb-6">
-                                <span class="px-3 py-1 bg-rdc-blue/10 text-rdc-blue text-xs font-black uppercase tracking-wider rounded-lg">
-                                    ${job.type}
-                                </span>
-                                <span class="text-lg font-black text-slate-900">${job.salary}</span>
-                            </div>
-                            
-                            <a href="{{ route('public.jobs.index') }}" class="w-full group/btn py-3.5 bg-slate-50 hover:bg-gradient-to-r hover:from-rdc-blue hover:to-rdc-blue-dark 
-                                          text-slate-700 hover:text-white font-bold rounded-xl border border-slate-200 hover:border-transparent
-                                          transition-all duration-300
-                                          flex items-center justify-center space-x-2">
-                                <i class="fas fa-paper-plane group-hover/btn:rotate-12 transition-transform"></i>
-                                <span>Voir les détails</span>
-                            </a>
-                        </div>
-                        
-                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-rdc-blue to-rdc-yellow transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-
-                    `;
-
-                    jobsContainer.appendChild(jobElement);
-                });
-            }
 
             // Recherche intelligente
             const searchInput = document.getElementById('search-input');

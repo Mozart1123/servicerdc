@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\JobApplication;
+use App\Models\JobCategory;
 use App\Models\JobOffer;
 use App\Models\Message;
 use App\Models\Notification;
@@ -158,7 +159,8 @@ class JobController extends Controller
      */
     public function create(): View
     {
-        return view('user.jobs.create');
+        $jobCategories = JobCategory::orderBy('name')->get();
+        return view('user.jobs.create', compact('jobCategories'));
     }
 
     /**
@@ -170,7 +172,8 @@ class JobController extends Controller
         if (Auth::id() !== $job->user_id && Auth::id() !== $job->employer_id) {
             abort(403);
         }
-        return view('user.jobs.edit', compact('job'));
+        $jobCategories = JobCategory::orderBy('name')->get();
+        return view('user.jobs.edit', compact('job', 'jobCategories'));
     }
 
     /**
@@ -179,16 +182,16 @@ class JobController extends Controller
     public function storeOffer(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title'         => ['required', 'string', 'max:255'],
-            'company_name'  => ['required', 'string', 'max:255'],
-            'category'      => ['required', 'string', 'max:100'],
-            'location'      => ['required', 'string', 'max:100'],
-            'contract_type' => ['required', 'string', 'max:50'],
-            'description'   => ['required', 'string'],
-            'requirements'  => ['nullable', 'string'],
-            'company_logo'  => ['nullable', 'image', 'max:5120'],
-            'cover_image'   => ['nullable', 'image', 'max:5120'],
-            'is_urgent'     => ['nullable', 'boolean'],
+            'title'            => ['required', 'string', 'max:255'],
+            'company_name'     => ['required', 'string', 'max:255'],
+            'job_category_id'  => ['required', 'integer', 'exists:job_categories,id'],
+            'location'         => ['required', 'string', 'max:100'],
+            'contract_type'    => ['required', 'string', 'max:50'],
+            'description'      => ['required', 'string'],
+            'requirements'     => ['nullable', 'string'],
+            'company_logo'     => ['nullable', 'image', 'max:5120'],
+            'cover_image'      => ['nullable', 'image', 'max:5120'],
+            'is_urgent'        => ['nullable', 'boolean'],
         ]);
 
         try {
@@ -200,6 +203,9 @@ class JobController extends Controller
                              ->withInput();
             }
 
+            // Derive the legacy `category` text from the chosen structured category
+            // so every existing view/search/filter reading `$job->category` keeps working.
+            $validated['category']    = JobCategory::findOrFail($validated['job_category_id'])->name;
             $validated['user_id']     = $user->id;
             $validated['employer_id'] = $user->id;
             $validated['status']      = 'active';
@@ -247,22 +253,25 @@ class JobController extends Controller
         }
 
         $validated = $request->validate([
-            'title'         => ['required', 'string', 'max:255'],
-            'company_name'  => ['required', 'string', 'max:255'],
-            'category'      => ['required', 'string', 'max:100'],
-            'location'      => ['required', 'string', 'max:100'],
-            'contract_type' => ['required', 'string', 'max:50'],
-            'status'        => ['required', 'in:active,closed'],
-            'description'   => ['required', 'string'],
-            'requirements'  => ['nullable', 'string'],
-            'salary_range'  => ['nullable', 'string', 'max:100'],
-            'deadline'      => ['nullable', 'date'],
-            'company_logo'  => ['nullable', 'image', 'max:5120'],
-            'cover_image'   => ['nullable', 'image', 'max:5120'],
-            'is_urgent'     => ['nullable', 'boolean'],
+            'title'           => ['required', 'string', 'max:255'],
+            'company_name'    => ['required', 'string', 'max:255'],
+            'job_category_id' => ['required', 'integer', 'exists:job_categories,id'],
+            'location'        => ['required', 'string', 'max:100'],
+            'contract_type'   => ['required', 'string', 'max:50'],
+            'status'          => ['required', 'in:active,closed'],
+            'description'     => ['required', 'string'],
+            'requirements'    => ['nullable', 'string'],
+            'salary_range'    => ['nullable', 'string', 'max:100'],
+            'deadline'        => ['nullable', 'date'],
+            'company_logo'    => ['nullable', 'image', 'max:5120'],
+            'cover_image'     => ['nullable', 'image', 'max:5120'],
+            'is_urgent'       => ['nullable', 'boolean'],
         ]);
 
         try {
+            // Derive the legacy `category` text from the chosen structured category
+            // so every existing view/search/filter reading `$job->category` keeps working.
+            $validated['category']  = JobCategory::findOrFail($validated['job_category_id'])->name;
             $validated['is_urgent'] = $request->boolean('is_urgent') && Auth::user()->isPremiumRecruiter();
 
             if ($request->hasFile('company_logo')) {

@@ -113,18 +113,12 @@
                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Catégorie / Secteur d'activité</label>
                 <div class="relative">
                     <i class="fas fa-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                    <select name="category" required 
+                    <select name="job_category_id" required
                             class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue appearance-none transition-all">
                         <option value="">Sélectionner un secteur</option>
-                        <option value="Informatique" {{ old('category') == 'Informatique' ? 'selected' : '' }}>Informatique & Technologie</option>
-                        <option value="Santé" {{ old('category') == 'Santé' ? 'selected' : '' }}>Santé & Médical</option>
-                        <option value="Éducation" {{ old('category') == 'Éducation' ? 'selected' : '' }}>Éducation</option>
-                        <option value="Finance" {{ old('category') == 'Finance' ? 'selected' : '' }}>Finance & Comptabilité</option>
-                        <option value="Commerce" {{ old('category') == 'Commerce' ? 'selected' : '' }}>Vente & Commerce</option>
-                        <option value="BTP" {{ old('category') == 'BTP' ? 'selected' : '' }}>BTP & Construction</option>
-                        <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>Transport & Logistique</option>
-                        <option value="Hôtellerie" {{ old('category') == 'Hôtellerie' ? 'selected' : '' }}>Hôtellerie & Restauration</option>
-                        <option value="Autre" {{ old('category') == 'Autre' ? 'selected' : '' }}>Autre secteur</option>
+                        @foreach($jobCategories as $jobCategory)
+                            <option value="{{ $jobCategory->id }}" {{ (int) old('job_category_id') === $jobCategory->id ? 'selected' : '' }}>{{ $jobCategory->name }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>

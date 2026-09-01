@@ -14,11 +14,19 @@
 
     {{-- Filters --}}
     <form method="GET" action="{{ route('public.jobs.index') }}" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-8">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Titre, entreprise..."
                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none transition-all">
+            </div>
+            <div>
+                <select name="job_category_id" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none transition-all">
+                    <option value="">Secteur / Catégorie</option>
+                    @foreach($jobCategories as $jobCategory)
+                        <option value="{{ $jobCategory->id }}" {{ (string) request('job_category_id') === (string) $jobCategory->id ? 'selected' : '' }}>{{ $jobCategory->name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div>
                 <select name="contract_type" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none transition-all">
@@ -36,7 +44,7 @@
                 </button>
             </div>
         </div>
-        @if(request()->hasAny(['search', 'contract_type', 'location']))
+        @if(request()->hasAny(['search', 'contract_type', 'job_category_id', 'location']))
             <div class="mt-3 flex items-center gap-3">
                 <a href="{{ route('public.jobs.index') }}" class="text-xs text-slate-400 hover:text-slate-600 font-medium transition-colors">
                     <i class="fas fa-times mr-1"></i>Réinitialiser les filtres

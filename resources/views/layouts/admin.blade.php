@@ -129,7 +129,7 @@
                 </x-admin-dropdown-nav>
                 
                 <!-- [MODÉRATION & RESSOURCES] -->
-                <x-admin-dropdown-nav icon="fas fa-shield-halved" label="Modération & Opérations" :activePrefixes="['admin.moderation', 'admin.categories', 'admin.jobs']"
+                <x-admin-dropdown-nav icon="fas fa-shield-halved" label="Modération & Opérations" :activePrefixes="['admin.moderation', 'admin.categories', 'admin.job-categories', 'admin.jobs']"
                     x-data="{ 
                         servicesCount: 0, 
                         reviewsCount: 0,
@@ -151,6 +151,7 @@
                     <x-admin-dropdown-item route="admin.moderation.services" label="Services signalés" ::badge="servicesCount > 0 ? servicesCount : null" badgeColor="bg-amber-500" />
                     <x-admin-dropdown-item route="admin.moderation.reviews" label="Évaluations à modérer" ::badge="reviewsCount > 0 ? reviewsCount : null" badgeColor="bg-blue-500" />
                     <x-admin-dropdown-item route="admin.categories.index" label="Catégories système" />
+                    <x-admin-dropdown-item route="admin.job-categories.index" label="Catégories d'emploi" />
                     <x-admin-dropdown-item route="admin.jobs.index" label="Offres d'emploi" ::badge="jobsCount > 0 ? jobsCount : null" />
                 </x-admin-dropdown-nav>
 
