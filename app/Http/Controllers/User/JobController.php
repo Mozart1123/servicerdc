@@ -60,6 +60,10 @@ class JobController extends Controller
             return redirect()->route('user.applications.index')->with('info', 'Vous avez déjà postulé à cette offre.');
         }
 
+        if ($job->is_expired) {
+            return redirect()->route('public.jobs.show', $job->id)->with('error', 'Les candidatures pour cette offre sont clôturées, la date limite est dépassée.');
+        }
+
         return view('user.jobs.apply', compact('job', 'user'));
     }
 
@@ -69,6 +73,10 @@ class JobController extends Controller
 
         if (JobApplication::where('job_offer_id', $job->id)->where('user_id', $user->id)->exists()) {
             return back()->with('error', 'Vous avez déjà postulé à cette offre.');
+        }
+
+        if ($job->is_expired) {
+            return redirect()->route('public.jobs.show', $job->id)->with('error', 'Les candidatures pour cette offre sont clôturées, la date limite est dépassée.');
         }
 
         $validated = $request->validate([
@@ -187,11 +195,16 @@ class JobController extends Controller
             'job_category_id'  => ['required', 'integer', 'exists:job_categories,id'],
             'location'         => ['required', 'string', 'max:100'],
             'contract_type'    => ['required', 'string', 'max:50'],
+            'salary_range'     => ['nullable', 'string', 'max:100'],
+            'start_date'       => ['nullable', 'date'],
+            'deadline'         => ['nullable', 'date', 'after_or_equal:start_date'],
             'description'      => ['required', 'string'],
             'requirements'     => ['nullable', 'string'],
             'company_logo'     => ['nullable', 'image', 'max:5120'],
             'cover_image'      => ['nullable', 'image', 'max:5120'],
             'is_urgent'        => ['nullable', 'boolean'],
+        ], [
+            'deadline.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
         ]);
 
         try {
@@ -262,10 +275,13 @@ class JobController extends Controller
             'description'     => ['required', 'string'],
             'requirements'    => ['nullable', 'string'],
             'salary_range'    => ['nullable', 'string', 'max:100'],
-            'deadline'        => ['nullable', 'date'],
+            'start_date'      => ['nullable', 'date'],
+            'deadline'        => ['nullable', 'date', 'after_or_equal:start_date'],
             'company_logo'    => ['nullable', 'image', 'max:5120'],
             'cover_image'     => ['nullable', 'image', 'max:5120'],
             'is_urgent'       => ['nullable', 'boolean'],
+        ], [
+            'deadline.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
         ]);
 
         try {

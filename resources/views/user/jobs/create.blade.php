@@ -74,12 +74,12 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Localisation</label>
                     <div class="relative">
                         <i class="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                        <input type="text" name="location" value="{{ old('location') }}" required 
+                        <input type="text" name="location" value="{{ old('location') }}" required
                                class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue transition-all"
                                placeholder="ex: Kinshasa, Gombe">
                     </div>
@@ -89,7 +89,7 @@
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Type de contrat</label>
                     <div class="relative">
                         <i class="fas fa-file-contract absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                        <select name="contract_type" required 
+                        <select name="contract_type" required
                                 class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue appearance-none transition-all">
                             <option value="CDI" {{ old('contract_type') == 'CDI' ? 'selected' : '' }}>CDI</option>
                             <option value="CDD" {{ old('contract_type') == 'CDD' ? 'selected' : '' }}>CDD</option>
@@ -100,12 +100,23 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date limite (Optionnel)</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de début (Optionnel)</label>
                     <div class="relative">
-                        <i class="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                        <input type="date" name="deadline" value="{{ old('deadline') }}" 
+                        <i class="fas fa-calendar-day absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                        <input type="date" name="start_date" value="{{ old('start_date') }}"
                                class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue transition-all">
                     </div>
+                    @error('start_date') <p class="text-[10px] text-rdc-red font-bold ml-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de fin / limite de candidature (Optionnel)</label>
+                    <div class="relative">
+                        <i class="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                        <input type="date" name="deadline" value="{{ old('deadline') }}"
+                               class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue transition-all">
+                    </div>
+                    @error('deadline') <p class="text-[10px] text-rdc-red font-bold ml-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 

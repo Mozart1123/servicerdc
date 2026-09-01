@@ -78,7 +78,7 @@
 
                 {{-- Stats mini-cards --}}
                 <div class="border-y border-slate-100 py-5 sm:py-8">
-                    <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-5 sm:mb-6">
+                    <div class="grid grid-cols-2 {{ $job->start_date ? 'sm:grid-cols-4' : 'sm:grid-cols-3' }} gap-2 sm:gap-4 mb-5 sm:mb-6">
                         <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-100">
                             <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Salaire</p>
                             <p class="font-black text-[#16a3b0] text-sm sm:text-lg truncate">{{ $job->salary_range ?? 'À négocier' }}</p>
@@ -87,9 +87,15 @@
                             <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Candidats</p>
                             <p class="font-black text-slate-800 text-sm sm:text-lg">{{ $job->applications->count() }}</p>
                         </div>
-                        <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-100">
-                            <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Limite</p>
-                            <p class="font-black text-slate-800 text-sm sm:text-lg">
+                        @if($job->start_date)
+                            <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-100">
+                                <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Début</p>
+                                <p class="font-black text-slate-800 text-sm sm:text-lg">{{ $job->start_date->format('d M Y') }}</p>
+                            </div>
+                        @endif
+                        <div class="p-3 sm:p-4 {{ $job->is_expired ? 'bg-amber-50 border-amber-100' : 'bg-slate-50/50 border-slate-100' }} rounded-xl sm:rounded-2xl border">
+                            <p class="text-[9px] sm:text-[10px] font-black {{ $job->is_expired ? 'text-amber-500' : 'text-slate-400' }} uppercase tracking-widest mb-1">Limite</p>
+                            <p class="font-black text-sm sm:text-lg {{ $job->is_expired ? 'text-amber-600' : 'text-slate-800' }}">
                                 {{ $job->deadline ? $job->deadline->format('d M Y') : 'Ouverte' }}
                             </p>
                         </div>
@@ -120,6 +126,11 @@
                                     Voir →
                                 </a>
                             </div>
+                        @elseif($job->is_expired)
+                            <div class="flex items-center justify-center gap-3 w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-sm uppercase tracking-[0.15em]">
+                                <i class="fas fa-lock"></i>
+                                Candidatures clôturées
+                            </div>
                         @else
                             <a href="{{ route('public.jobs.apply', $job->id) }}"
                                class="flex items-center justify-center gap-3 w-full py-4 bg-[#16a3b0] hover:bg-[#128a96] text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-[#16a3b0]/20">
@@ -127,6 +138,11 @@
                                 Postuler maintenant
                             </a>
                         @endif
+                    @elseif($job->is_expired)
+                        <div class="flex items-center justify-center gap-3 w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-sm uppercase tracking-[0.15em]">
+                            <i class="fas fa-lock"></i>
+                            Candidatures clôturées
+                        </div>
                     @else
                         <div class="space-y-3">
                             <a href="{{ route('login', ['intended' => route('public.jobs.apply', $job->id)]) }}"
@@ -223,6 +239,14 @@
                                         Mes candidatures
                                     </a>
                                 </div>
+                            @elseif($job->is_expired)
+                                <div class="flex items-center gap-4 p-4 sm:p-5 bg-slate-100 rounded-2xl">
+                                    <i class="fas fa-lock text-slate-400 text-xl shrink-0"></i>
+                                    <div class="flex-1">
+                                        <p class="font-black text-slate-600 text-sm">Candidatures clôturées</p>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">La date limite de candidature est dépassée</p>
+                                    </div>
+                                </div>
                             @else
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div class="flex-1">
@@ -236,6 +260,14 @@
                                     </a>
                                 </div>
                             @endif
+                        @elseif($job->is_expired)
+                            <div class="flex items-center gap-4 p-4 sm:p-5 bg-slate-100 rounded-2xl">
+                                <i class="fas fa-lock text-slate-400 text-xl shrink-0"></i>
+                                <div class="flex-1">
+                                    <p class="font-black text-slate-600 text-sm">Candidatures clôturées</p>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">La date limite de candidature est dépassée</p>
+                                </div>
+                            </div>
                         @else
                             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                 <div class="flex-1">

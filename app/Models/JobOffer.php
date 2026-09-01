@@ -26,13 +26,15 @@ class JobOffer extends Model
         'description',
         'requirements',
         'status',
+        'start_date',
         'deadline',
         'is_urgent',
     ];
 
     protected $casts = [
-        'deadline'  => 'date',
-        'is_urgent' => 'boolean',
+        'start_date' => 'date',
+        'deadline'   => 'date',
+        'is_urgent'  => 'boolean',
     ];
 
     // ==========================================
@@ -73,6 +75,20 @@ class JobOffer extends Model
     public function jobCategory()
     {
         return $this->belongsTo(JobCategory::class);
+    }
+
+    // ==========================================
+    // Accessors
+    // ==========================================
+
+    /**
+     * Whether the application deadline has passed. Purely a display/logic
+     * indicator — an expired offer is never modified or deleted by this;
+     * only the recruiter can remove it, or push the deadline back.
+     */
+    public function getIsExpiredAttribute(): bool
+    {
+        return $this->deadline !== null && $this->deadline->isPast();
     }
 
     // ==========================================

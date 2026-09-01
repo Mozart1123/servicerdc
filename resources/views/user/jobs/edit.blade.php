@@ -14,10 +14,17 @@
         <p class="text-sm text-slate-400 font-medium">Mettez à jour les informations de votre offre d'emploi.</p>
     </div>
 
+    @if($job->is_expired)
+        <div class="mb-6 px-5 py-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 font-medium text-sm flex items-center gap-3">
+            <i class="fas fa-lock text-amber-500"></i>
+            Cette offre a dépassé sa date limite de candidature (<strong>{{ $job->deadline->format('d/m/Y') }}</strong>) — les candidatures sont clôturées. Repoussez la date de fin ci-dessous pour rouvrir les candidatures.
+        </div>
+    @endif
+
     <form action="{{ route('user.jobs.update', $job->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
-        
+
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8 space-y-6">
             {{-- Section 1: Informations de base --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -69,12 +76,12 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Localisation</label>
                     <div class="relative">
                         <i class="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                        <input type="text" name="location" value="{{ old('location', $job->location) }}" required 
+                        <input type="text" name="location" value="{{ old('location', $job->location) }}" required
                                class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue transition-all"
                                placeholder="ex: Kinshasa, Gombe">
                     </div>
@@ -84,7 +91,7 @@
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Type de contrat</label>
                     <div class="relative">
                         <i class="fas fa-file-contract absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                        <select name="contract_type" required 
+                        <select name="contract_type" required
                                 class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue appearance-none transition-all">
                             <option value="CDI" {{ old('contract_type', $job->contract_type) == 'CDI' ? 'selected' : '' }}>CDI</option>
                             <option value="CDD" {{ old('contract_type', $job->contract_type) == 'CDD' ? 'selected' : '' }}>CDD</option>
@@ -95,12 +102,23 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date limite</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de début (Optionnel)</label>
                     <div class="relative">
-                        <i class="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                        <input type="date" name="deadline" value="{{ old('deadline', $job->deadline ? $job->deadline->format('Y-m-d') : '') }}" 
+                        <i class="fas fa-calendar-day absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                        <input type="date" name="start_date" value="{{ old('start_date', $job->start_date ? $job->start_date->format('Y-m-d') : '') }}"
                                class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue transition-all">
                     </div>
+                    @error('start_date') <p class="text-[10px] text-rdc-red font-bold ml-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de fin / limite de candidature (Optionnel)</label>
+                    <div class="relative">
+                        <i class="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                        <input type="date" name="deadline" value="{{ old('deadline', $job->deadline ? $job->deadline->format('Y-m-d') : '') }}"
+                               class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-rdc-blue/20 focus:bg-white focus:border-rdc-blue transition-all">
+                    </div>
+                    @error('deadline') <p class="text-[10px] text-rdc-red font-bold ml-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 

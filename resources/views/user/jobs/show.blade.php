@@ -78,7 +78,7 @@
 
                     {{-- Stats + Bouton rapide --}}
                     <div class="border-y border-slate-100 py-6 sm:py-8">
-                        <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-5 sm:mb-6">
+                        <div class="grid grid-cols-2 {{ $job->start_date ? 'sm:grid-cols-4' : 'sm:grid-cols-3' }} gap-2 sm:gap-4 mb-5 sm:mb-6">
                             <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-50">
                                 <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Salaire</p>
                                 <p class="font-heading font-black text-rdc-blue text-sm sm:text-lg truncate">{{ $job->salary_range ?? 'À négocier' }}</p>
@@ -87,9 +87,15 @@
                                 <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Candidats</p>
                                 <p class="font-heading font-black text-slate-800 text-sm sm:text-lg">{{ $job->applications->count() }}</p>
                             </div>
-                            <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-50">
-                                <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Limite</p>
-                                <p class="font-heading font-black text-slate-800 text-sm sm:text-lg">{{ $job->deadline ? $job->deadline->format('d M Y') : 'Ouverte' }}</p>
+                            @if($job->start_date)
+                                <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-50">
+                                    <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Début</p>
+                                    <p class="font-heading font-black text-slate-800 text-sm sm:text-lg">{{ $job->start_date->format('d M Y') }}</p>
+                                </div>
+                            @endif
+                            <div class="p-3 sm:p-4 {{ $job->is_expired ? 'bg-amber-50 border-amber-100' : 'bg-slate-50/50 border-slate-50' }} rounded-xl sm:rounded-2xl border">
+                                <p class="text-[9px] sm:text-[10px] font-black {{ $job->is_expired ? 'text-amber-500' : 'text-slate-400' }} uppercase tracking-widest mb-1">Limite</p>
+                                <p class="font-heading font-black text-sm sm:text-lg {{ $job->is_expired ? 'text-amber-600' : 'text-slate-800' }}">{{ $job->deadline ? $job->deadline->format('d M Y') : 'Ouverte' }}</p>
                             </div>
                         </div>
 
@@ -115,6 +121,11 @@
                                 <a href="{{ route('user.applications.index') }}" class="text-[10px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest transition whitespace-nowrap shrink-0">
                                     Voir →
                                 </a>
+                            </div>
+                        @elseif($job->is_expired)
+                            <div class="flex items-center justify-center gap-3 w-full py-3.5 sm:py-4 bg-slate-100 text-slate-500 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm uppercase tracking-[0.15em]">
+                                <i class="fas fa-lock"></i>
+                                Candidatures clôturées
                             </div>
                         @else
                             <a href="{{ route('user.jobs.apply.form', $job->id) }}"
@@ -210,6 +221,14 @@
                                         Mes candidatures
                                     </a>
                                     @endif
+                                </div>
+                            @elseif($job->is_expired)
+                                <div class="flex items-center gap-4 p-4 sm:p-5 bg-slate-100 rounded-xl sm:rounded-2xl">
+                                    <i class="fas fa-lock text-slate-400 text-xl shrink-0"></i>
+                                    <div class="flex-1">
+                                        <p class="font-black text-slate-600 text-sm">Candidatures clôturées</p>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">La date limite de candidature est dépassée</p>
+                                    </div>
                                 </div>
                             @else
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">

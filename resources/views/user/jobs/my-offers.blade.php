@@ -88,7 +88,9 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                @if($job->status === 'active')
+                                @if($job->is_expired)
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-amber-100"><i class="fas fa-lock text-[9px]"></i>Expirée</span>
+                                @elseif($job->status === 'active')
                                     <span class="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-green-100">Actif</span>
                                 @else
                                     <span class="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black rounded-full uppercase tracking-widest border border-slate-200">Fermé</span>
@@ -167,7 +169,9 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center justify-between gap-2">
                                 <p class="font-black text-slate-900 text-[15px] truncate">{{ $job->title }}</p>
-                                @if($job->status === 'active')
+                                @if($job->is_expired)
+                                    <span class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-amber-100"><i class="fas fa-lock text-[9px]"></i>Expirée</span>
+                                @elseif($job->status === 'active')
                                     <span class="shrink-0 px-2.5 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-green-100">Actif</span>
                                 @else
                                     <span class="shrink-0 px-2.5 py-1 bg-slate-100 text-slate-500 text-[10px] font-black rounded-full uppercase tracking-widest border border-slate-200">Fermé</span>
