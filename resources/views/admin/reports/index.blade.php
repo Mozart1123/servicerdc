@@ -109,32 +109,37 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full table-fixed sm:table-auto text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">ID</th>
+                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">ID</th>
                         <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type / Période</th>
-                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Généré le</th>
-                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Par</th>
+                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Généré le</th>
+                        <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Par</th>
                         <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse($reports as $report)
                     <tr class="hover:bg-slate-50/50 transition-colors group">
-                        <td class="px-8 py-4 text-xs font-black text-slate-400">#{{ $report->id }}</td>
+                        <td class="px-8 py-4 text-xs font-black text-slate-400 hidden lg:table-cell">#{{ $report->id }}</td>
                         <td class="px-8 py-4">
                             <span class="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-600 uppercase">{{ $report->type }}</span>
+                            <p class="text-[10px] text-slate-400 font-bold mt-1 lg:hidden">#{{ $report->id }}</p>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5 sm:hidden">{{ $report->created_at->format('d/m/Y H:i') }}</p>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5 md:hidden">{{ $report->generator->name ?? 'Système' }}</p>
                         </td>
-                        <td class="px-8 py-4 text-xs font-bold text-slate-600">{{ $report->created_at->format('d/m/Y H:i') }}</td>
-                        <td class="px-8 py-4 text-xs font-bold text-slate-900">{{ $report->generator->name ?? 'Système' }}</td>
-                        <td class="px-8 py-4 text-right flex items-center justify-end gap-2">
-                            <a href="{{ route('admin.reports.download', $report->id) }}" class="w-8 h-8 flex items-center justify-center bg-blue-50 text-rdc-blue rounded-lg hover:bg-rdc-blue hover:text-white transition-all">
-                                <i class="fas fa-download text-[10px]"></i>
-                            </a>
-                            <button @click="confirmDelete({{ $report->id }})" class="w-8 h-8 flex items-center justify-center bg-red-50 text-rdc-red rounded-lg hover:bg-rdc-red hover:text-white transition-all">
-                                <i class="fas fa-trash-can text-[10px]"></i>
-                            </button>
+                        <td class="px-8 py-4 text-xs font-bold text-slate-600 hidden sm:table-cell">{{ $report->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-8 py-4 text-xs font-bold text-slate-900 hidden md:table-cell">{{ $report->generator->name ?? 'Système' }}</td>
+                        <td class="px-8 py-4 text-right">
+                            <div class="flex flex-wrap items-center justify-end gap-2">
+                                <a href="{{ route('admin.reports.download', $report->id) }}" class="w-8 h-8 flex items-center justify-center bg-blue-50 text-rdc-blue rounded-lg hover:bg-rdc-blue hover:text-white transition-all">
+                                    <i class="fas fa-download text-[10px]"></i>
+                                </a>
+                                <button @click="confirmDelete({{ $report->id }})" class="w-8 h-8 flex items-center justify-center bg-red-50 text-rdc-red rounded-lg hover:bg-rdc-red hover:text-white transition-all">
+                                    <i class="fas fa-trash-can text-[10px]"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     @empty

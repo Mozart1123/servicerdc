@@ -73,7 +73,7 @@
 
         <!-- Scaled Responsive Table Container -->
         <div class="relative min-h-[400px] overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[650px] sm:min-w-0">
+            <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
                         <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>

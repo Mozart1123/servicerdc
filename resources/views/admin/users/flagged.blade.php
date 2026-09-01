@@ -15,7 +15,7 @@
 
         <!-- Scaled Responsive Table Container -->
         <div class="relative min-h-[400px] overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[600px] sm:min-w-0">
+            <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
                         <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
@@ -45,9 +45,9 @@
                                 <span class="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-red-100 text-rdc-red text-[8px] sm:text-[9px] font-black uppercase rounded-lg sm:rounded-xl tracking-wider border border-red-200 inline-block">Suspension</span>
                             </td>
                             <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
-                                <div class="flex items-center justify-end gap-2 sm:gap-3">
-                                    <button @click="reactivate(user)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-emerald-600 active:scale-95 transition-all">Réactiver</button>
-                                    <button @click="confirmDelete(user.id)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl bg-white border border-slate-200 text-rdc-red active:scale-95 transition-all hover:bg-red-50" title="Supprimer définitivement">
+                                <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+                                    <button @click="reactivate(user)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-emerald-500 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-emerald-600 active:scale-95 transition-all whitespace-nowrap">Réactiver</button>
+                                    <button @click="confirmDelete(user.id)" class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl bg-white border border-slate-200 text-rdc-red active:scale-95 transition-all hover:bg-red-50 shrink-0" title="Supprimer définitivement">
                                         <i class="fas fa-trash-alt text-xs sm:text-sm"></i>
                                     </button>
                                 </div>

@@ -45,31 +45,36 @@
             </div>
         @else
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <table class="w-full table-fixed lg:table-auto text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                         <tr>
-                            <th class="px-6 py-3">#</th>
-                            <th class="px-6 py-3">Artisan</th>
+                            <th class="px-6 py-3 hidden lg:table-cell">#</th>
+                            <th class="px-6 py-3 w-2/5 sm:w-auto">Artisan</th>
                             <th class="px-6 py-3">Montant demandé</th>
-                            <th class="px-6 py-3">Solde dispo artisan</th>
-                            <th class="px-6 py-3">Numéro Mobile Money</th>
-                            <th class="px-6 py-3">Date</th>
-                            <th class="px-6 py-3">Missions</th>
+                            <th class="px-6 py-3 hidden lg:table-cell">Solde dispo artisan</th>
+                            <th class="px-6 py-3 hidden md:table-cell">Numéro Mobile Money</th>
+                            <th class="px-6 py-3 hidden sm:table-cell">Date</th>
+                            <th class="px-6 py-3 hidden lg:table-cell">Missions</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($pendingRequests as $req)
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-amber-50/30 transition-colors">
-                            <td class="px-6 py-4 font-bold text-gray-900">#{{ $req->id }}</td>
+                            <td class="px-6 py-4 font-bold text-gray-900 hidden lg:table-cell">#{{ $req->id }}</td>
                             <td class="px-6 py-4">
-                                <div class="font-bold text-gray-900 dark:text-white">{{ $req->artisan?->name }}</div>
+                                <div class="font-bold text-gray-900 dark:text-white">
+                                    <span class="text-gray-400 font-normal lg:hidden">#{{ $req->id }}</span>
+                                    {{ $req->artisan?->name }}
+                                </div>
                                 <div class="text-xs text-gray-400">{{ $req->artisan?->email }}</div>
+                                <div class="text-xs text-gray-500 font-mono mt-0.5 md:hidden">{{ $req->mobile_money_number }}</div>
+                                <div class="text-xs text-gray-400 mt-0.5 sm:hidden">{{ $req->created_at->format('d/m/Y H:i') }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="font-black text-base text-gray-900">{{ number_format((float)$req->amount, 2) }} $</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 hidden lg:table-cell">
                                 @php $diff = $req->artisan_available_balance - (float)$req->amount; @endphp
                                 <span class="font-bold {{ $req->artisan_available_balance >= (float)$req->amount ? 'text-emerald-600' : 'text-red-500' }}">
                                     {{ number_format($req->artisan_available_balance, 2) }} $
@@ -78,23 +83,23 @@
                                     <span class="block text-[10px] text-red-400 font-bold mt-0.5">⚠ Solde insuffisant</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 font-mono text-sm font-bold text-gray-700">{{ $req->mobile_money_number }}</td>
-                            <td class="px-6 py-4 text-xs text-gray-400">{{ $req->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 font-mono text-sm font-bold text-gray-700 hidden md:table-cell">{{ $req->mobile_money_number }}</td>
+                            <td class="px-6 py-4 text-xs text-gray-400 hidden sm:table-cell">{{ $req->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="px-6 py-4 hidden lg:table-cell">
                                 <a href="{{ route('admin.finances.payout-requests.missions', $req->artisan_id) }}"
                                    target="_blank"
-                                   class="inline-flex items-center gap-1 text-xs font-bold text-rdc-blue hover:underline">
+                                   class="inline-flex items-center gap-1 text-xs font-bold text-rdc-blue hover:underline whitespace-nowrap">
                                     <i class="fa-solid fa-list-check"></i>
                                     {{ $req->pending_missions_count }} mission(s)
                                 </a>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
+                                <div class="flex flex-wrap items-center justify-end gap-2">
                                     {{-- Bouton Approuver --}}
                                     <button
                                         type="button"
                                         @click="openApprove({{ $req->id }}, '{{ $req->artisan?->name }}', '{{ number_format((float)$req->amount, 2) }}', '{{ $req->mobile_money_number }}')"
-                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors"
+                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors whitespace-nowrap"
                                     >
                                         <i class="fa-solid fa-check"></i> Approuver
                                     </button>
@@ -103,7 +108,7 @@
                                     <button
                                         type="button"
                                         @click="openReject({{ $req->id }}, '{{ $req->artisan?->name }}')"
-                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold rounded-lg transition-colors"
+                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold rounded-lg transition-colors whitespace-nowrap"
                                     >
                                         <i class="fa-solid fa-times"></i> Rejeter
                                     </button>
@@ -131,27 +136,32 @@
             <p class="text-center text-gray-400 font-semibold text-sm py-10">Aucun historique.</p>
         @else
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <table class="w-full table-fixed lg:table-auto text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                         <tr>
-                            <th class="px-6 py-3">#</th>
-                            <th class="px-6 py-3">Artisan</th>
+                            <th class="px-6 py-3 hidden lg:table-cell">#</th>
+                            <th class="px-6 py-3 w-2/5 sm:w-auto">Artisan</th>
                             <th class="px-6 py-3">Montant</th>
-                            <th class="px-6 py-3">Numéro</th>
+                            <th class="px-6 py-3 hidden lg:table-cell">Numéro</th>
                             <th class="px-6 py-3">Statut</th>
-                            <th class="px-6 py-3">Traité par</th>
-                            <th class="px-6 py-3">Date traitement</th>
+                            <th class="px-6 py-3 hidden md:table-cell">Traité par</th>
+                            <th class="px-6 py-3 hidden md:table-cell">Date traitement</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($processedRequests as $req)
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-6 py-3 font-bold">#{{ $req->id }}</td>
+                            <td class="px-6 py-3 font-bold hidden lg:table-cell">#{{ $req->id }}</td>
                             <td class="px-6 py-3">
-                                <div class="font-semibold text-gray-900 dark:text-white">{{ $req->artisan?->name }}</div>
+                                <div class="font-semibold text-gray-900 dark:text-white">
+                                    <span class="text-gray-400 font-normal lg:hidden">#{{ $req->id }}</span>
+                                    {{ $req->artisan?->name }}
+                                </div>
+                                <div class="text-xs text-gray-500 font-mono mt-0.5 lg:hidden">{{ $req->mobile_money_number }}</div>
+                                <div class="text-xs text-gray-400 mt-0.5 md:hidden">{{ $req->processor?->name ?? '—' }} · {{ $req->processed_at?->format('d/m/Y H:i') ?? '—' }}</div>
                             </td>
                             <td class="px-6 py-3 font-bold text-gray-900">{{ number_format((float)$req->amount, 2) }} $</td>
-                            <td class="px-6 py-3 font-mono text-xs">{{ $req->mobile_money_number }}</td>
+                            <td class="px-6 py-3 font-mono text-xs hidden lg:table-cell">{{ $req->mobile_money_number }}</td>
                             <td class="px-6 py-3">
                                 @if($req->status === 'approved')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
@@ -166,8 +176,8 @@
                                     @endif
                                 @endif
                             </td>
-                            <td class="px-6 py-3 text-xs text-gray-400">{{ $req->processor?->name ?? '—' }}</td>
-                            <td class="px-6 py-3 text-xs text-gray-400">
+                            <td class="px-6 py-3 text-xs text-gray-400 hidden md:table-cell">{{ $req->processor?->name ?? '—' }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-400 hidden md:table-cell">
                                 {{ $req->processed_at?->format('d/m/Y H:i') ?? '—' }}
                             </td>
                         </tr>

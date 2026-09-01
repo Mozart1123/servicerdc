@@ -25,33 +25,35 @@
 
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <table class="w-full table-fixed sm:table-auto text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                     <tr>
                         <th scope="col" class="px-6 py-3">Référence</th>
                         <th scope="col" class="px-6 py-3">Montant</th>
-                        <th scope="col" class="px-6 py-3">Fournisseur & Numéro</th>
-                        <th scope="col" class="px-6 py-3">Date</th>
+                        <th scope="col" class="px-6 py-3 hidden min-[480px]:table-cell">Fournisseur & Numéro</th>
+                        <th scope="col" class="px-6 py-3 hidden sm:table-cell">Date</th>
                         <th scope="col" class="px-6 py-3">Statut</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($withdrawals as $withdrawal)
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                 {{ $withdrawal->reference_id }}
                                 @if($withdrawal->kpay_reference)
                                     <div class="text-xs text-gray-400 mt-1" title="K-PAY Reference">K-PAY: {{ $withdrawal->kpay_reference }}</div>
                                 @endif
+                                <div class="text-xs text-gray-500 mt-1 min-[480px]:hidden">{{ $withdrawal->provider }} · {{ $withdrawal->phone_number }}</div>
+                                <div class="text-xs text-gray-400 mt-0.5 sm:hidden">{{ $withdrawal->created_at->format('d/m/Y H:i') }}</div>
                             </td>
                             <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">
                                 {{ number_format($withdrawal->amount, 2) }} $
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 hidden min-[480px]:table-cell">
                                 <div class="font-medium text-gray-900 dark:text-white">{{ $withdrawal->provider }}</div>
                                 <div class="text-xs text-gray-500">{{ $withdrawal->phone_number }}</div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 hidden sm:table-cell">
                                 {{ $withdrawal->created_at->format('d/m/Y H:i') }}
                             </td>
                             <td class="px-6 py-4">

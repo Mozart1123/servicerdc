@@ -94,16 +94,16 @@
     <!-- Missions Table -->
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="w-full table-fixed xl:table-auto text-left">
                 <thead class="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400 tracking-widest">
                     <tr>
-                        <th class="px-6 py-4">Mission</th>
-                        <th class="px-6 py-4">Client</th>
-                        <th class="px-6 py-4">Artisan</th>
+                        <th class="px-6 py-4 w-2/5 sm:w-auto">Mission</th>
+                        <th class="px-6 py-4 hidden sm:table-cell">Client</th>
+                        <th class="px-6 py-4 hidden md:table-cell">Artisan</th>
                         <th class="px-6 py-4">Statut</th>
-                        <th class="px-6 py-4">Début</th>
-                        <th class="px-6 py-4">Fin</th>
-                        <th class="px-6 py-4">Avis</th>
+                        <th class="px-6 py-4 hidden lg:table-cell">Début</th>
+                        <th class="px-6 py-4 hidden lg:table-cell">Fin</th>
+                        <th class="px-6 py-4 hidden xl:table-cell">Avis</th>
                         <th class="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -117,31 +117,33 @@
                         <td class="px-6 py-4">
                             <p class="font-bold text-sm text-slate-900">{{ \Str::limit($mission->title, 30) }}</p>
                             <p class="text-[10px] text-slate-400 font-bold">#{{ str_pad($mission->id, 5, '0', STR_PAD_LEFT) }}</p>
+                            <p class="text-[10px] text-slate-400 font-bold sm:hidden mt-0.5">Client : {{ $mission->client->name ?? '—' }}</p>
+                            <p class="text-[10px] text-slate-400 font-bold md:hidden mt-0.5">Artisan : {{ $mission->artisan->name ?? '—' }}</p>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 hidden sm:table-cell">
                             <div class="flex items-center gap-2">
-                                <img src="{{ $mission->client->photo_url }}" class="w-8 h-8 rounded-lg object-cover border border-slate-100" alt="">
+                                <img src="{{ $mission->client->photo_url }}" class="w-8 h-8 rounded-lg object-cover border border-slate-100 shrink-0" alt="">
                                 <span class="text-xs font-bold text-slate-700">{{ $mission->client->name ?? '—' }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 hidden md:table-cell">
                             <div class="flex items-center gap-2">
-                                <img src="{{ $mission->artisan->photo_url }}" class="w-8 h-8 rounded-lg object-cover border border-slate-100" alt="">
+                                <img src="{{ $mission->artisan->photo_url }}" class="w-8 h-8 rounded-lg object-cover border border-slate-100 shrink-0" alt="">
                                 <span class="text-xs font-bold text-slate-700">{{ $mission->artisan->name ?? '—' }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2.5 py-1 bg-{{ $c }}-50 text-{{ $c }}-600 text-[10px] font-black uppercase rounded-full border border-{{ $c }}-200">
+                            <span class="px-2.5 py-1 bg-{{ $c }}-50 text-{{ $c }}-600 text-[10px] font-black uppercase rounded-full border border-{{ $c }}-200 whitespace-nowrap">
                                 {{ $mission->status_label }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-xs text-slate-500 font-medium">
+                        <td class="px-6 py-4 text-xs text-slate-500 font-medium hidden lg:table-cell">
                             {{ $mission->start_date ? $mission->start_date->format('d/m/Y') : '—' }}
                         </td>
-                        <td class="px-6 py-4 text-xs text-slate-500 font-medium">
+                        <td class="px-6 py-4 text-xs text-slate-500 font-medium hidden lg:table-cell">
                             {{ $mission->end_date ? $mission->end_date->format('d/m/Y') : '—' }}
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 hidden xl:table-cell">
                             @if($mission->rating)
                             <div class="flex items-center gap-1">
                                 @for($i = 1; $i <= 5; $i++)
@@ -157,7 +159,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <a href="{{ route('admin.missions.show', $mission->id) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-50 text-slate-600 text-[10px] font-black uppercase rounded-lg hover:bg-rdc-blue hover:text-white transition">
+                            <a href="{{ route('admin.missions.show', $mission->id) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-50 text-slate-600 text-[10px] font-black uppercase rounded-lg hover:bg-rdc-blue hover:text-white transition whitespace-nowrap">
                                 <i class="fas fa-eye"></i> Voir
                             </a>
                         </td>

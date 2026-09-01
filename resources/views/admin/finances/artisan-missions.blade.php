@@ -34,15 +34,15 @@
     {{-- Table des missions --}}
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <table class="w-full table-fixed lg:table-auto text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                     <tr>
-                        <th class="px-6 py-3">Mission</th>
-                        <th class="px-6 py-3">Client</th>
-                        <th class="px-6 py-3">Montant brut</th>
-                        <th class="px-6 py-3">Commission ProConnect</th>
+                        <th class="px-6 py-3 w-2/5 lg:w-auto">Mission</th>
+                        <th class="px-6 py-3 hidden lg:table-cell">Client</th>
+                        <th class="px-6 py-3 hidden md:table-cell">Montant brut</th>
+                        <th class="px-6 py-3 hidden lg:table-cell">Commission ProConnect</th>
                         <th class="px-6 py-3 text-emerald-700">Net artisan</th>
-                        <th class="px-6 py-3">Complétée le</th>
+                        <th class="px-6 py-3 hidden sm:table-cell">Complétée le</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,14 +50,16 @@
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                         <td class="px-6 py-4 font-bold text-gray-900">
                             {{ $mission->title ?? 'Mission #' . $mission->id }}
+                            <p class="text-xs font-normal text-gray-400 lg:hidden mt-0.5">{{ $mission->client?->name ?? '—' }}</p>
+                            <p class="text-xs font-normal text-gray-400 sm:hidden mt-0.5">{{ $mission->updated_at->format('d/m/Y') }}</p>
                         </td>
-                        <td class="px-6 py-4 text-gray-600">{{ $mission->client?->name ?? '—' }}</td>
-                        <td class="px-6 py-4 font-bold text-gray-900">{{ number_format((float)$mission->amount, 2) }} $</td>
-                        <td class="px-6 py-4 text-red-500 font-bold">— {{ number_format((float)$mission->commission_amount, 2) }} $</td>
+                        <td class="px-6 py-4 text-gray-600 hidden lg:table-cell">{{ $mission->client?->name ?? '—' }}</td>
+                        <td class="px-6 py-4 font-bold text-gray-900 hidden md:table-cell">{{ number_format((float)$mission->amount, 2) }} $</td>
+                        <td class="px-6 py-4 text-red-500 font-bold hidden lg:table-cell">— {{ number_format((float)$mission->commission_amount, 2) }} $</td>
                         <td class="px-6 py-4 font-black text-emerald-600">
                             {{ number_format((float)$mission->amount - (float)$mission->commission_amount, 2) }} $
                         </td>
-                        <td class="px-6 py-4 text-xs text-gray-400">{{ $mission->updated_at->format('d/m/Y') }}</td>
+                        <td class="px-6 py-4 text-xs text-gray-400 hidden sm:table-cell">{{ $mission->updated_at->format('d/m/Y') }}</td>
                     </tr>
                     @empty
                     <tr>
@@ -67,9 +69,10 @@
                 </tbody>
                 <tfoot>
                     <tr class="bg-gray-50 dark:bg-gray-700 font-black">
-                        <td colspan="4" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wide">Total net dû à l'artisan</td>
+                        <td colspan="1" class="lg:hidden px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wide">Total net dû</td>
+                        <td colspan="4" class="hidden lg:table-cell px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wide">Total net dû à l'artisan</td>
                         <td class="px-6 py-4 text-emerald-600 text-base">{{ number_format($netBalance, 2) }} $</td>
-                        <td></td>
+                        <td class="hidden sm:table-cell"></td>
                     </tr>
                 </tfoot>
             </table>
