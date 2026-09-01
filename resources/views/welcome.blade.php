@@ -1027,24 +1027,13 @@
                             </a>
                         @endforeach
                     </div>
-                @endif
-
-                <!-- Jobs Grid -->
-                @if($recentJobs->isEmpty())
+                @else
                     <div class="text-center py-16 mb-12" data-aos="fade-up">
                         <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-briefcase text-3xl text-slate-300"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-500">Aucune offre d'emploi active pour le moment</h3>
-                        <p class="text-sm text-slate-400 mt-1">Revenez bientôt, de nouvelles offres sont publiées régulièrement.</p>
-                    </div>
-                @else
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12" id="jobs-container">
-                        @foreach($recentJobs as $index => $job)
-                            <div data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
-                                <x-job-card :job="$job" show-route="public.jobs.show" />
-                            </div>
-                        @endforeach
+                        <h3 class="text-lg font-bold text-slate-500">Aucune catégorie d'emploi disponible pour le moment</h3>
+                        <p class="text-sm text-slate-400 mt-1">Revenez bientôt, de nouveaux secteurs seront publiés régulièrement.</p>
                     </div>
                 @endif
 

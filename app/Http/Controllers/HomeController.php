@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\JobCategory;
-use App\Models\JobOffer;
 use App\Models\NewsletterSubscriber;
 use App\Models\Service;
 use App\Models\Category;
@@ -21,7 +20,6 @@ class HomeController extends Controller
      */
     public function index(): View
     {
-        $recentJobs = JobOffer::where('status', 'active')->latest()->take(6)->get();
         $categories = Category::withCount(['services' => function ($q) {
             $q->where('status', 'active');
         }])->orderBy('created_at')->get();
@@ -29,7 +27,7 @@ class HomeController extends Controller
             $q->where('status', 'active');
         }])->orderBy('name')->get();
 
-        return view('welcome', compact('recentJobs', 'categories', 'jobCategories'));
+        return view('welcome', compact('categories', 'jobCategories'));
     }
 
     public function about(): View
