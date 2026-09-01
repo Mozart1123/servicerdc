@@ -73,14 +73,14 @@
 
         <!-- Scaled Responsive Table Container -->
         <div class="relative min-h-[400px] overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full table-fixed sm:table-auto text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
-                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</th>
+                        <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest w-[38%] sm:w-auto">Utilisateur</th>
+                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest w-[20%] sm:w-auto">Type</th>
                         <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest hidden min-[480px]:table-cell">Envoi</th>
-                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Statut</th>
-                        <th class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-[15%] sm:w-auto">Statut</th>
+                        <th class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right w-[27%] sm:w-auto">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -110,7 +110,7 @@
                                 }" class="inline-block w-2.5 h-2.5 rounded-full"></span>
                             </td>
                             <td class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-right">
-                                <button @click="openViewer(doc)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-slate-900 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-blue-500/10">Examiner</button>
+                                <button @click="openViewer(doc)" class="px-3 sm:px-6 py-2 sm:py-2.5 bg-slate-900 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg sm:rounded-xl hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-blue-500/10 whitespace-nowrap">Examiner</button>
                             </td>
                         </tr>
                     </template>

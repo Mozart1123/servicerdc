@@ -15,12 +15,12 @@
 
         <!-- Scaled Responsive Table Container -->
         <div class="relative min-h-[400px] overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full table-fixed sm:table-auto text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Utilisateur</th>
-                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Infraction</th>
-                        <th class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions HQ</th>
+                        <th class="pl-4 pr-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest w-[42%] sm:w-auto">Utilisateur</th>
+                        <th class="px-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-[25%] sm:w-auto">Infraction</th>
+                        <th class="pr-4 pl-2 sm:px-8 py-4 sm:py-6 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right w-[33%] sm:w-auto">Actions HQ</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
