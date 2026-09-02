@@ -66,13 +66,13 @@
             <table class="w-full text-left table-fixed lg:table-auto border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
-                        <th class="w-[22%] lg:w-auto pl-4 pr-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-nowrap">Référence</th>
-                        <th class="w-[30%] lg:w-auto px-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Client / Artisan</th>
-                        <th class="w-[18%] lg:w-auto px-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Montant</th>
-                        <th class="hidden lg:table-cell px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Type</th>
-                        <th class="hidden lg:table-cell px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Date paiement</th>
-                        <th class="hidden lg:table-cell px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Fin abonnement</th>
-                        <th class="w-[20%] lg:w-auto pr-4 pl-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Statut</th>
+                        <th class="w-[22%] lg:w-auto pl-4 pr-2 sm:px-4 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-nowrap">Référence</th>
+                        <th class="w-[30%] lg:w-auto px-2 sm:px-4 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Client / Artisan</th>
+                        <th class="w-[18%] lg:w-auto px-2 sm:px-4 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Montant</th>
+                        <th class="hidden lg:table-cell lg:w-[10%] px-3 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Type</th>
+                        <th class="hidden lg:table-cell lg:w-[13%] px-3 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Paiement</th>
+                        <th class="hidden lg:table-cell lg:w-[12%] px-3 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Fin abo.</th>
+                        <th class="w-[20%] lg:w-auto pr-4 pl-2 sm:px-4 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Statut</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -93,13 +93,13 @@
                             };
                         @endphp
                         <tr class="hover:bg-slate-50/40 transition-colors">
-                            <td class="pl-4 pr-2 sm:px-8 py-5 text-xs font-bold text-slate-500 truncate">{{ $transaction->reference_id ?? ('#TRX-' . $transaction->id) }}</td>
-                            <td class="px-2 sm:px-8 py-5 text-xs font-black text-slate-900 truncate">{{ $transaction->user?->name ?? 'N/A' }}</td>
-                            <td class="px-2 sm:px-8 py-5 text-xs font-black text-slate-900 text-center whitespace-nowrap">{{ number_format((float) $transaction->amount, 2) }} {{ $transaction->currency }}</td>
-                            <td class="hidden lg:table-cell px-8 py-5 text-xs font-bold text-slate-500 text-center">{{ $typeLabel }}</td>
-                            <td class="hidden lg:table-cell px-8 py-5 text-xs font-bold text-slate-500 text-center whitespace-nowrap">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="hidden lg:table-cell px-8 py-5 text-xs font-bold text-slate-500 text-center whitespace-nowrap">{{ $transaction->subscription_end?->format('d/m/Y') ?? '—' }}</td>
-                            <td class="pr-4 pl-2 sm:px-8 py-5 text-right">
+                            <td class="pl-4 pr-2 sm:px-4 py-5 text-xs font-bold text-slate-500 truncate" title="{{ $transaction->reference_id }}">{{ $transaction->reference_id ?? ('#TRX-' . $transaction->id) }}</td>
+                            <td class="px-2 sm:px-4 py-5 text-xs font-black text-slate-900 truncate">{{ $transaction->user?->name ?? 'N/A' }}</td>
+                            <td class="px-2 sm:px-4 py-5 text-xs font-black text-slate-900 text-center whitespace-nowrap">{{ number_format((float) $transaction->amount, 2) }} {{ $transaction->currency }}</td>
+                            <td class="hidden lg:table-cell px-3 py-5 text-xs font-bold text-slate-500 text-center truncate">{{ $typeLabel }}</td>
+                            <td class="hidden lg:table-cell px-3 py-5 text-xs font-bold text-slate-500 text-center whitespace-nowrap" title="{{ $transaction->created_at->format('d/m/Y H:i') }}">{{ $transaction->created_at->format('d/m/y') }}</td>
+                            <td class="hidden lg:table-cell px-3 py-5 text-xs font-bold text-slate-500 text-center whitespace-nowrap">{{ $transaction->subscription_end?->format('d/m/y') ?? '—' }}</td>
+                            <td class="pr-4 pl-2 sm:px-4 py-5 text-right">
                                 <span class="px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-full {{ $statusMeta[1] }}">{{ $statusMeta[0] }}</span>
                             </td>
                         </tr>
