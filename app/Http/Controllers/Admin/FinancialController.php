@@ -130,7 +130,18 @@ class FinancialController extends Controller
                 'externalId' => $referenceId,
             ]);
 
-            $withdrawal->kpay_reference = $response['paymentId'] ?? null;
+            // /payments/withdraw is a sibling of /payments/init (same request
+            // shape: amount/provider/phoneNumber/externalId), whose response
+            // is read via ['reference'] everywhere else in this codebase
+            // (PaymentController, SubscriptionController) — that's proven to
+            // work. This previously only checked ['paymentId'], a key with
+            // no working precedent anywhere, which silently left
+            // kpay_reference null on every withdrawal (confirmed: K-PAY's
+            // own dashboard showed a completed payout with a real reference
+            // for one that stayed null here) — and with no kpay_reference,
+            // kpay:reconcile has nothing to check. Try 'reference' first,
+            // keep 'paymentId' as a defensive fallback either way.
+            $withdrawal->kpay_reference = $response['reference'] ?? $response['paymentId'] ?? null;
             $withdrawal->save();
 
             return redirect()->route('admin.finances.withdrawals')->with('success', 'Retrait initié avec succès. En attente de confirmation.');
