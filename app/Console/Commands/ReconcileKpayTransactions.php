@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Withdrawal;
 use App\Services\KpayService;
 use Illuminate\Support\Facades\Log;
 
@@ -41,7 +42,6 @@ class ReconcileKpayTransactions extends Command
 
         if ($transactions->isEmpty()) {
             $this->info('No pending transactions to reconcile.');
-            return;
         }
 
         foreach ($transactions as $transaction) {
@@ -67,6 +67,43 @@ class ReconcileKpayTransactions extends Command
             } catch (\Exception $e) {
                 Log::error("Failed to reconcile transaction {$transaction->reference_id}: " . $e->getMessage());
                 $this->error("Error checking {$transaction->reference_id}: " . $e->getMessage());
+            }
+        }
+
+        // Withdrawals go through the same asynchronous K-PAY flow (initiate ->
+        // pending -> webhook confirms COMPLETED/FAILED later) but previously
+        // had no fallback if that webhook was missed — unlike Transaction
+        // above. Same 5-minute-pending + kpay_reference gate, same status
+        // mapping as KpayWebhookController::processWebhook()'s withdrawal
+        // branch.
+        $withdrawals = Withdrawal::where('status', 'pending')
+            ->whereNotNull('kpay_reference')
+            ->where('created_at', '<', now()->subMinutes(5))
+            ->get();
+
+        if ($withdrawals->isEmpty()) {
+            $this->info('No pending withdrawals to reconcile.');
+        }
+
+        foreach ($withdrawals as $withdrawal) {
+            try {
+                $response = $kpayService->getTransactionStatus($withdrawal->kpay_reference);
+                $status = $response['status'] ?? null;
+
+                if ($status === 'COMPLETED') {
+                    $withdrawal->status = 'completed';
+                    $withdrawal->save();
+                    $this->info("Withdrawal {$withdrawal->reference_id} marked as completed.");
+                } elseif (in_array($status, ['FAILED', 'CANCELLED'])) {
+                    $withdrawal->status = 'failed';
+                    $withdrawal->save();
+                    $this->info("Withdrawal {$withdrawal->reference_id} marked as failed.");
+                } else {
+                    $this->info("Withdrawal {$withdrawal->reference_id} is still pending.");
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to reconcile withdrawal {$withdrawal->reference_id}: " . $e->getMessage());
+                $this->error("Error checking withdrawal {$withdrawal->reference_id}: " . $e->getMessage());
             }
         }
 

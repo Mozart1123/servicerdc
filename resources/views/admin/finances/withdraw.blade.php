@@ -46,7 +46,8 @@
         <div class="p-8 sm:p-10">
             <form action="{{ route('admin.finances.withdraw.process') }}" method="POST" class="space-y-6">
                 @csrf
-                
+                <input type="hidden" name="currency" value="{{ $wallet['currency'] ?? 'USD' }}">
+
                 <div class="space-y-2">
                     <label for="amount" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant à retirer ({{ $wallet['currency'] ?? 'USD' }})</label>
                     <div class="relative group">

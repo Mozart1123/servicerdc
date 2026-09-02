@@ -8,6 +8,7 @@ class Withdrawal extends Model
 {
     protected $fillable = [
         'amount',
+        'currency',
         'provider',
         'phone_number',
         'status',

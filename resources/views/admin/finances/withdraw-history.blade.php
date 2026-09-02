@@ -47,7 +47,7 @@
                                 <div class="text-xs text-gray-400 mt-0.5 sm:hidden">{{ $withdrawal->created_at->format('d/m/Y H:i') }}</div>
                             </td>
                             <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">
-                                {{ number_format($withdrawal->amount, 2) }} $
+                                {{ number_format($withdrawal->amount, 2) }} {{ $withdrawal->currency ?? 'USD' }}
                             </td>
                             <td class="px-6 py-4 hidden min-[480px]:table-cell">
                                 <div class="font-medium text-gray-900 dark:text-white">{{ $withdrawal->provider }}</div>

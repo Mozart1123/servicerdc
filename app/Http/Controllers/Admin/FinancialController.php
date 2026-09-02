@@ -106,9 +106,15 @@ class FinancialController extends Controller
 
         $referenceId = 'WD-' . Str::uuid()->toString();
 
-        // Save local withdrawal record as pending
+        // Save local withdrawal record as pending.
+        // Currency comes from the hidden field the withdraw form stamps with
+        // whichever K-PAY wallet was actually shown/selected on that page
+        // (see withdraw() — the wallet with the highest balance, not
+        // necessarily USD) so the history page can display the real
+        // currency instead of a hard-coded "$".
         $withdrawal = Withdrawal::create([
             'amount' => $request->amount,
+            'currency' => $request->input('currency', 'USD'),
             'provider' => $request->provider,
             'phone_number' => $request->phone_number,
             'status' => 'pending',
