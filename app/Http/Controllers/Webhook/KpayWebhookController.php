@@ -252,21 +252,58 @@ class KpayWebhookController extends Controller
      */
     protected function fulfillSubscription(Transaction $transaction, ?string $kpayRef): void
     {
-        $subscription = \App\Models\Subscription::firstOrNew([
-            'user_id'              => $transaction->user_id,
-            'subscription_plan_id' => $transaction->item_id,
-        ]);
+        // Locate the exact subscription row this payment was initiated for —
+        // SubscriptionController::subscribe() creates a 'pending' row up
+        // front and stamps transaction_ref with the same reference used on
+        // the Transaction, so this is unambiguous (unlike matching on
+        // user_id + subscription_plan_id, which could hit an old
+        // cancelled/expired row for the same plan if the user subscribed to
+        // it before). Fall back to that older lookup for any transaction
+        // that predates this or came through a different initiation path.
+        $subscription = \App\Models\Subscription::where('transaction_ref', $transaction->reference_id)->first()
+            ?? \App\Models\Subscription::firstOrNew([
+                'user_id'              => $transaction->user_id,
+                'subscription_plan_id' => $transaction->item_id,
+            ]);
+
+        // Must be read BEFORE we touch the status below — otherwise this
+        // always evaluates true (we're about to set status to 'active'
+        // ourselves) and a brand-new subscription's null ends_at gets
+        // treated as "extend from ends_at", crashing on ->copy().
+        $wasActive = $subscription->isActive();
 
         $subscription->status          = 'active';
         $subscription->paid_at         = now();
         $subscription->amount_paid     = $transaction->amount;
         $subscription->transaction_ref = $kpayRef ?? $transaction->reference_id;
 
-        $startsAt                  = $subscription->isActive() ? $subscription->ends_at : now();
+        $startsAt                  = ($wasActive && $subscription->ends_at) ? $subscription->ends_at : now();
         $subscription->starts_at   = $startsAt;
         $duration                  = $subscription->billing_cycle === 'yearly' ? 12 : 1;
         $subscription->ends_at     = $startsAt->copy()->addMonths($duration);
         $subscription->save();
+
+        $planName = $subscription->subscriptionPlan->name ?? 'Abonnement';
+
+        // Notify the artisan/recruiter that their payment went through and
+        // their subscription is now active.
+        Notification::create([
+            'user_id'      => $transaction->user_id,
+            'type'         => 'subscription_activated',
+            'related_type' => 'subscription',
+            'related_id'   => $subscription->id,
+            'title'        => 'Paiement confirmé — Abonnement activé !',
+            'message'      => "Votre paiement de {$transaction->amount} {$transaction->currency} a été confirmé. Votre abonnement {$planName} est maintenant actif.",
+            'data'         => [
+                'transaction_ref' => $transaction->reference_id,
+                'amount'          => $transaction->amount,
+                'currency'        => $transaction->currency,
+                'plan_id'         => $subscription->subscription_plan_id,
+                'plan_name'       => $planName,
+            ],
+            'is_read'      => false,
+            'action_url'   => '/user/subscription',
+        ]);
 
         // Notify admins
         $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
@@ -277,12 +314,13 @@ class KpayWebhookController extends Controller
                 'related_type' => 'subscription',
                 'related_id'   => $subscription->id,
                 'title'        => 'Nouvel abonnement payé',
-                'message'      => "Le client {$transaction->user->name} a payé son abonnement ({$transaction->amount} {$transaction->currency}).",
+                'message'      => "{$transaction->user->name} a payé son abonnement {$planName} ({$transaction->amount} {$transaction->currency}).",
                 'data'         => [
                     'transaction_ref' => $transaction->reference_id,
                     'amount'          => $transaction->amount,
                     'currency'        => $transaction->currency,
-                    'plan_id'         => $transaction->item_id,
+                    'plan_id'         => $subscription->subscription_plan_id,
+                    'plan_name'       => $planName,
                 ],
                 'is_read'      => false,
                 'action_url'   => '/admin/finances/transactions',
