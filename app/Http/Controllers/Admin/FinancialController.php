@@ -73,7 +73,19 @@ class FinancialController extends Controller
         $wallet = ['balance' => 0, 'available' => 0, 'currency' => 'USD'];
         try {
             $wallets = $this->kpayService->getBalance();
-            $walletData = $wallets[0] ?? [];
+            if (!is_array($wallets)) {
+                $wallets = [];
+            }
+
+            // K-PAY manages a separate balance per currency (XAF, UGX, CDF, ...).
+            // Pick whichever wallet actually holds money instead of always the
+            // first one the API happens to list — a $wallets[0] sitting at 0
+            // silently capped the withdrawal form's amount field at max="0",
+            // making the form refuse any amount without an error message.
+            $walletData = collect($wallets)
+                ->sortByDesc(fn ($w) => $w['availableBalance'] ?? $w['balance'] ?? 0)
+                ->first() ?? [];
+
             if (!empty($walletData)) {
                 $wallet['balance'] = $walletData['balance'] ?? 0;
                 $wallet['available'] = $walletData['availableBalance'] ?? 0;

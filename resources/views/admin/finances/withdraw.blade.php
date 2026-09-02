@@ -48,12 +48,12 @@
                 @csrf
                 
                 <div class="space-y-2">
-                    <label for="amount" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant à retirer (USD)</label>
+                    <label for="amount" class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant à retirer ({{ $wallet['currency'] ?? 'USD' }})</label>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                            <span class="text-slate-400 font-black group-focus-within:text-rdc-blue transition-colors">$</span>
+                            <span class="text-slate-400 font-black text-xs group-focus-within:text-rdc-blue transition-colors">{{ $wallet['currency'] ?? 'USD' }}</span>
                         </div>
-                        <input type="number" step="0.01" min="1" max="{{ $wallet['available'] ?? 99999 }}" name="amount" id="amount" required class="w-full pl-10 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 focus:bg-white transition-all outline-none" placeholder="0.00">
+                        <input type="number" step="0.01" min="1" max="{{ $wallet['available'] ?? 99999 }}" name="amount" id="amount" required class="w-full pl-16 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 focus:bg-white transition-all outline-none" placeholder="0.00">
                     </div>
                     @error('amount')
                         <p class="text-rdc-red text-[10px] font-bold uppercase tracking-tight mt-1">{{ $message }}</p>
