@@ -62,8 +62,8 @@
             </button>
         </div>
         
-        <div class="overflow-x-hidden">
-            <table class="w-full text-left table-fixed lg:table-auto border-collapse">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left table-auto border-collapse">
                 <thead>
                     <tr class="bg-slate-50/50">
                         <th class="w-[22%] sm:w-auto pl-4 pr-2 sm:px-8 py-6 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest text-nowrap">Référence</th>
