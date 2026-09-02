@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\JobCategoryController as AdminJobCategoryController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\JobApplicationController as AdminJobApplicationController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\User\ServiceController as UserServiceController;
 use App\Http\Controllers\User\JobController as UserJobController;
 use App\Http\Controllers\User\ServiceRequestController as UserServiceRequestController;
@@ -309,6 +310,8 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
         Route::get('/profile', [AdminDashboardController::class, 'profile'])->name('profile');
         Route::put('/profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
+
+        Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
         // Service Requests Management
         Route::prefix('service-requests')->name('service-requests.')->group(function (): void {
             Route::get('/', [UserServiceRequestController::class, 'adminIndex'])->name('index');
@@ -371,9 +374,6 @@ Route::middleware(['auth', 'role:admin,super_admin'])
 
             Route::get('/transactions', [AdminFinancialController::class, 'transactions'])->name('transactions');
             Route::get('/transactions/export', [AdminFinancialController::class, 'exportTransactions'])->name('transactions.export');
-            
-            Route::get('/commissions', [AdminFinancialController::class, 'commissions'])->name('commissions');
-            Route::post('/commissions', [AdminFinancialController::class, 'updateCommission'])->name('commissions.update');
 
             Route::get('/invoicing', [AdminFinancialController::class, 'invoicing'])->name('invoicing');
             Route::get('/invoicing/export', [AdminFinancialController::class, 'exportInvoices'])->name('invoicing.export');

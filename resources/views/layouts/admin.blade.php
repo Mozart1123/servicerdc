@@ -160,7 +160,6 @@
                     <x-admin-dropdown-item route="admin.finances.dashboard" label="Tableau de bord financier" />
                     <x-admin-dropdown-item route="admin.finances.transactions" label="Transactions" />
                     <x-admin-dropdown-item route="admin.finances.withdrawals" label="Retraits" />
-                    <x-admin-dropdown-item route="admin.finances.commissions" label="Commissions" />
                     <x-admin-dropdown-item route="admin.finances.invoicing" label="Facturation" />
                 </x-admin-dropdown-nav>
 
@@ -302,27 +301,30 @@
 
                         <div class="max-h-80 overflow-y-auto divide-y divide-slate-100">
                             @forelse($adminRecentNotifications as $notif)
-                                <div class="p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors {{ !$notif->is_read ? 'bg-sky-50/40' : '' }}">
-                                    <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 text-xs mt-0.5">
-                                        <i class="fas {{ $notif->is_read ? 'fa-bell-slash' : 'fa-bell' }}"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs font-bold text-slate-800 leading-snug">
-                                            {{ $notif->title ?? ($notif->data['title'] ?? 'Notification') }}
-                                        </p>
-                                        <p class="text-xs text-slate-500 leading-snug mt-1">
-                                            {{ $notif->message ?? ($notif->data['message'] ?? '') }}
-                                        </p>
-                                        <div class="flex items-center justify-between mt-2 text-[10px] text-slate-400">
-                                            <span>{{ $notif->created_at ? $notif->created_at->diffForHumans() : '' }}</span>
-                                            @if(!$notif->is_read)
-                                                <form method="POST" action="{{ route('user.notifications.read', $notif->id) }}" class="m-0">
-                                                    @csrf
-                                                    <button type="submit" class="font-bold text-rdc-blue hover:underline">Marquer lu</button>
-                                                </form>
-                                            @endif
+                                <div class="flex items-start gap-3 hover:bg-slate-50 transition-colors {{ !$notif->is_read ? 'bg-sky-50/40' : '' }}">
+                                    <a href="{{ $notif->action_url ?: route('admin.notifications.index') }}"
+                                       class="flex-1 min-w-0 flex items-start gap-3 p-4">
+                                        <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                            <i class="fas {{ $notif->is_read ? 'fa-bell-slash' : 'fa-bell' }}"></i>
                                         </div>
-                                    </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-bold text-slate-800 leading-snug">
+                                                {{ $notif->title ?? ($notif->data['title'] ?? 'Notification') }}
+                                            </p>
+                                            <p class="text-xs text-slate-500 leading-snug mt-1">
+                                                {{ $notif->message ?? ($notif->data['message'] ?? '') }}
+                                            </p>
+                                            <div class="text-[10px] text-slate-400 mt-2">
+                                                {{ $notif->created_at ? $notif->created_at->diffForHumans() : '' }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                    @if(!$notif->is_read)
+                                        <form method="POST" action="{{ route('user.notifications.read', $notif->id) }}" class="m-0 shrink-0 pt-4 pr-4">
+                                            @csrf
+                                            <button type="submit" class="text-[10px] font-bold text-rdc-blue hover:underline whitespace-nowrap">Marquer lu</button>
+                                        </form>
+                                    @endif
                                 </div>
                             @empty
                                 <div class="p-8 text-center text-slate-400">
@@ -333,7 +335,7 @@
                         </div>
 
                         <div class="p-3 border-t border-slate-100 bg-slate-50/50 text-center">
-                            <a href="{{ route('user.notifications.index') }}" class="text-xs font-bold text-rdc-blue hover:underline inline-flex items-center gap-1">
+                            <a href="{{ route('admin.notifications.index') }}" class="text-xs font-bold text-rdc-blue hover:underline inline-flex items-center gap-1">
                                 Voir toutes les notifications <i class="fas fa-arrow-right text-[10px]"></i>
                             </a>
                         </div>

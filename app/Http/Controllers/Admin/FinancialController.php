@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\Mission;
-use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\Subscription;
 use App\Models\Withdrawal;
@@ -128,26 +127,39 @@ class FinancialController extends Controller
     public function transactions(Request $request)
     {
         $status = $request->get('status');
-        $query = Mission::with(['client', 'artisan']);
-        
+        $query = Transaction::with('user');
+
         if ($status) {
             $query->where('status', $status);
         }
 
         $transactions = $query->latest()->get();
-        return view('admin.finances.transactions', compact('transactions'));
+        $this->attachSubscriptionEndDates($transactions);
+
+        // HUD cards: real data over the last 30 days (was hard-coded before).
+        // "Volume Total" is scoped to USD transactions only — Transaction
+        // records mix currencies (USD, CDF, ...) depending on the K-PAY
+        // provider used, and summing across currencies would be meaningless.
+        $since        = now()->subDays(30);
+        $totalVolume  = Transaction::where('status', 'succeeded')->where('currency', 'USD')->where('created_at', '>=', $since)->sum('amount');
+        $totalCount   = Transaction::where('created_at', '>=', $since)->count();
+        $successCount = Transaction::where('status', 'succeeded')->where('created_at', '>=', $since)->count();
+        $successRate  = $totalCount > 0 ? round(($successCount / $totalCount) * 100, 1) : 0;
+
+        return view('admin.finances.transactions', compact('transactions', 'totalVolume', 'successRate'));
     }
 
     public function exportTransactions(Request $request)
     {
         $status = $request->get('status');
-        $query = Mission::with(['client', 'artisan']);
-        
+        $query = Transaction::with('user');
+
         if ($status) {
             $query->where('status', $status);
         }
 
         $transactions = $query->latest()->get();
+        $this->attachSubscriptionEndDates($transactions);
         $filename = 'transactions_export_' . date('Y-m-d') . '.csv';
 
         $headers = [
@@ -157,16 +169,18 @@ class FinancialController extends Controller
 
         $callback = function () use ($transactions) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Référence', 'Date', 'Client', 'Artisan', 'Montant', 'Statut']);
+            fputcsv($file, ['Référence', 'Date', 'Client / Artisan', 'Type', 'Montant', 'Devise', 'Fin abonnement', 'Statut']);
 
             foreach ($transactions as $trx) {
                 fputcsv($file, [
-                    '#TRX-' . $trx->id,
+                    $trx->reference_id ?? ('#TRX-' . $trx->id),
                     $trx->created_at->format('Y-m-d H:i'),
-                    $trx->client?->name ?? 'N/A',
-                    $trx->artisan?->name ?? 'N/A',
-                    $trx->amount . '$',
-                    $trx->status_label
+                    $trx->user?->name ?? 'N/A',
+                    $trx->type,
+                    $trx->amount,
+                    $trx->currency,
+                    $trx->subscription_end?->format('Y-m-d') ?? '',
+                    $trx->status,
                 ]);
             }
             fclose($file);
@@ -175,28 +189,32 @@ class FinancialController extends Controller
         return new StreamedResponse($callback, 200, $headers);
     }
 
-    public function commissions()
+    /**
+     * For every subscription-type transaction in the collection, resolve and
+     * attach the related Subscription's end date as a $transaction->subscription_end
+     * dynamic property — batched into a single query rather than one per row.
+     *
+     * A Transaction has no direct subscription_id, so the match is made via
+     * Subscription.transaction_ref, which gets stamped with either the K-PAY
+     * reference or our own reference_id depending on when it was set
+     * (see KpayWebhookController::fulfillSubscription()) — both are checked.
+     */
+    private function attachSubscriptionEndDates($transactions): void
     {
-        $commissionRate = Setting::where('key', 'commission_rate')->first()?->value ?? 15;
-        return view('admin.finances.commissions', compact('commissionRate'));
-    }
+        $subRefs = $transactions->where('type', 'subscription')
+            ->flatMap(fn ($t) => array_filter([$t->kpay_reference, $t->reference_id]))
+            ->unique()
+            ->values();
 
-    public function updateCommission(Request $request)
-    {
-        $request->validate([
-            'rate' => 'required|numeric|min:0|max:100',
-        ]);
+        $subscriptionsByRef = $subRefs->isEmpty()
+            ? collect()
+            : Subscription::whereIn('transaction_ref', $subRefs)->get()->keyBy('transaction_ref');
 
-        Setting::updateOrCreate(
-            ['key' => 'commission_rate'],
-            ['value' => $request->rate]
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Taux de commission mis à jour avec succès.',
-            'new_rate' => $request->rate
-        ]);
+        $transactions->each(function ($t) use ($subscriptionsByRef) {
+            $t->subscription_end = $t->type === 'subscription'
+                ? ($subscriptionsByRef->get($t->kpay_reference) ?? $subscriptionsByRef->get($t->reference_id))?->ends_at
+                : null;
+        });
     }
 
     public function invoicing()
