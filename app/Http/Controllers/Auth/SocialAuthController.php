@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -102,8 +103,19 @@ class SocialAuthController extends Controller
      */
     public function storeUserType(Request $request)
     {
+        // Même règle que RegisteredUserController::store() : "recruiter" n'est
+        // un choix valide que si la partie recrutement est active (voir
+        // config/features.php) — sinon quelqu'un passant par Google pourrait
+        // encore devenir recruteur alors que cette option est censée être
+        // masquée partout ailleurs.
         $request->validate([
-            'user_type' => ['required', 'string', 'in:client,artisan,recruiter'],
+            'user_type' => [
+                'required',
+                'string',
+                config('features.recruitment_enabled')
+                    ? 'in:client,artisan,recruiter'
+                    : 'in:client,artisan',
+            ],
         ], [
             'user_type.required' => 'Veuillez sélectionner un type de profil.',
             'user_type.in'       => 'Type de profil invalide.',
@@ -114,6 +126,46 @@ class SocialAuthController extends Controller
         $user->update([
             'user_type' => $request->user_type,
         ]);
+
+        // Même règle que RegisteredUserController::store() : un compte
+        // artisan/recruteur doit être approuvé par un administrateur avant de
+        // pouvoir se reconnecter (voir AuthenticatedSessionController::store(),
+        // qui bloque tout futur login tant que status === STATUS_PENDING).
+        // Sans ceci, un compte créé via Google contournait entièrement cette
+        // vérification — son status restait "active" (valeur par défaut du
+        // modèle) au lieu de "pending", ce qui lui aurait donné un accès
+        // permanent sans validation, contrairement à l'inscription classique.
+        //
+        // La session en cours reste active (comme après une inscription
+        // classique) pour que la personne puisse tout de suite compléter sa
+        // vérification d'identité ; c'est seulement sa PROCHAINE connexion
+        // qui sera bloquée en attente d'approbation admin.
+        if ($user->isArtisan() || $user->isRecruiter()) {
+            $user->forceFill(['status' => User::STATUS_PENDING])->save();
+
+            $typeLabel  = $user->isArtisan() ? 'artisan' : 'recruteur';
+            $adminUsers = User::whereIn('role', ['admin', 'super_admin'])->get();
+            foreach ($adminUsers as $admin) {
+                Notification::create([
+                    'user_id'      => $admin->id,
+                    'type'         => 'new_account_pending',
+                    'related_type' => 'user',
+                    'related_id'   => $user->id,
+                    'title'        => 'Nouveau compte ' . $typeLabel . ' à approuver',
+                    'message'      => "{$user->name} vient de créer un compte {$typeLabel} (via Google). Veuillez vérifier et approuver son profil.",
+                    'action_url'   => route('admin.users-mgmt.pending'),
+                    'is_read'      => false,
+                ]);
+            }
+
+            if ($user->isArtisan()) {
+                return redirect()->route('user.artisan.level')
+                    ->with('welcome_verification', 'Bienvenue ! Complétez votre vérification d\'identité pour gagner la confiance des clients.');
+            }
+
+            return redirect()->route('user.identity-verification.show')
+                ->with('welcome_verification', 'Bienvenue ! Complétez votre vérification d\'identité pour gagner la confiance des candidats et clients.');
+        }
 
         return redirect()->route('dashboard')->with('success', 'Votre profil a été configuré avec succès. Bienvenue sur ProConnect !');
     }

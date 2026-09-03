@@ -154,7 +154,8 @@
             <div class="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
         </button>
 
-        {{-- SOCIAL LOGIN TEMPORAIREMENT DÉSACTIVÉ — réactiver lors de la prochaine mise à jour
+        {{-- Facebook reste désactivé (identifiants OAuth non configurés) —
+             seul Google est réactivé pour le moment. --}}
         <div class="relative py-2">
             <div class="absolute inset-0 flex items-center">
                 <div class="w-full border-t border-slate-200"></div>
@@ -164,17 +165,10 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-            <a href="{{ url('auth/google') }}" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                <span class="text-xs font-semibold text-slate-600 group-hover:text-slate-900">Google</span>
-            </a>
-            <a href="{{ url('auth/facebook') }}" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
-                <i class="fab fa-facebook text-[#1877F2] text-lg group-hover:scale-110 transition-transform"></i>
-                <span class="text-xs font-semibold text-slate-600 group-hover:text-slate-900">Facebook</span>
-            </a>
-        </div>
-        --}}
+        <a href="{{ url('auth/google') }}" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all group shadow-sm hover:shadow-md">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+            <span class="text-xs font-semibold text-slate-600 group-hover:text-slate-900">S'inscrire avec Google</span>
+        </a>
     </form>
 
     <div class="mt-6 text-center text-[13px] sm:text-sm text-slate-500">

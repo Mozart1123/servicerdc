@@ -99,17 +99,20 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update')->middleware('throttle:5,1');
 
-    // Social Authentication — TEMPORAIREMENT DÉSACTIVÉ (réactiver lors de la prochaine mise à jour)
-    // Route::get('/auth/{provider}', [App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToProvider'])->name('social.redirect');
-    // Route::get('/auth/{provider}/callback', [App\Http\Controllers\Auth\SocialAuthController::class, 'handleProviderCallback'])->name('social.callback');
+    // Social Authentication — Google uniquement pour le moment (Facebook reste
+    // désactivé : ses identifiants OAuth ne sont pas encore configurés). Le
+    // {provider} est contraint à "google" pour éviter qu'une URL /auth/facebook
+    // tapée à la main ne déclenche un flux Socialite non configuré.
+    Route::get('/auth/{provider}', [App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToProvider'])->name('social.redirect')->where('provider', 'google');
+    Route::get('/auth/{provider}/callback', [App\Http\Controllers\Auth\SocialAuthController::class, 'handleProviderCallback'])->name('social.callback')->where('provider', 'google');
 });
 
 // Auth & Logout Routes
 Route::middleware('auth')->group(function (): void {
     Route::match(['get', 'post'], '/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-    // Sélection du type de profil (connexion sociale) — TEMPORAIREMENT DÉSACTIVÉ
-    // Route::get('/auth/select-user-type', [App\Http\Controllers\Auth\SocialAuthController::class, 'showSelectUserType'])->name('auth.select-user-type');
-    // Route::post('/auth/select-user-type', [App\Http\Controllers\Auth\SocialAuthController::class, 'storeUserType'])->name('auth.select-user-type.store');
+    // Sélection du type de profil (connexion sociale)
+    Route::get('/auth/select-user-type', [App\Http\Controllers\Auth\SocialAuthController::class, 'showSelectUserType'])->name('auth.select-user-type');
+    Route::post('/auth/select-user-type', [App\Http\Controllers\Auth\SocialAuthController::class, 'storeUserType'])->name('auth.select-user-type.store');
 });
 
 Route::middleware('auth')->group(function (): void {
