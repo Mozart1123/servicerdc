@@ -413,12 +413,14 @@
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Services
                         </a>
-                        <a href="{{ route('public.jobs.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
-                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
-                                  after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
-                            Emplois
-                        </a>
-                        <a href="{{ route('public.artisans.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
+                        @if(config('features.recruitment_enabled'))
+                            <a href="{{ route('public.jobs.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
+                                      relative after:absolute after:bottom-0 after:left-0 after:h-0.5
+                                      after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
+                                Emplois
+                            </a>
+                        @endif
+                        <a href="{{ route('public.artisans.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
                                   relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Artisans
@@ -544,9 +546,11 @@
                                                 <a href="{{ route('user.profile') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
                                                     <i class="fas fa-user w-5 text-center"></i> Mon profil
                                                 </a>
-                                                <a href="{{ route('user.applications.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
-                                                    <i class="fas fa-file-alt w-5 text-center"></i> Mes candidatures
-                                                </a>
+                                                @if(config('features.recruitment_enabled'))
+                                                    <a href="{{ route('user.applications.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
+                                                        <i class="fas fa-file-alt w-5 text-center"></i> Mes candidatures
+                                                    </a>
+                                                @endif
                                                 <a href="{{ route('user.service-requests.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-rdc-blue rounded-lg transition-colors">
                                                     <i class="fas fa-clipboard-list w-5 text-center"></i> Mes demandes
                                                 </a>
@@ -617,9 +621,11 @@
                 <a href="{{ route('public.services.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
                     <i class="fas fa-tools w-5 text-center text-gray-400"></i> Services
                 </a>
-                <a href="{{ route('public.jobs.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
-                    <i class="fas fa-briefcase w-5 text-center text-gray-400"></i> Emplois
-                </a>
+                @if(config('features.recruitment_enabled'))
+                    <a href="{{ route('public.jobs.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                        <i class="fas fa-briefcase w-5 text-center text-gray-400"></i> Emplois
+                    </a>
+                @endif
                 <a href="{{ route('public.artisans.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
                     <i class="fas fa-user-gear w-5 text-center text-gray-400"></i> Artisans
                 </a>
@@ -651,9 +657,11 @@
                         <a href="{{ route('user.profile') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
                             <i class="fas fa-user w-5 text-center text-gray-400"></i> Mon profil
                         </a>
-                        <a href="{{ route('user.applications.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
-                            <i class="fas fa-file-alt w-5 text-center text-gray-400"></i> Mes candidatures
-                        </a>
+                        @if(config('features.recruitment_enabled'))
+                            <a href="{{ route('user.applications.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                                <i class="fas fa-file-alt w-5 text-center text-gray-400"></i> Mes candidatures
+                            </a>
+                        @endif
                         <a href="{{ route('user.service-requests.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
                             <i class="fas fa-clipboard-list w-5 text-center text-gray-400"></i> Mes demandes
                         </a>
@@ -728,10 +736,12 @@
                                         class="search-type-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide transition-all bg-white/10 text-blue-100 hover:bg-white/20">
                                     Artisan
                                 </button>
-                                <button type="button" data-search-type="job"
-                                        class="search-type-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide transition-all bg-white/10 text-blue-100 hover:bg-white/20">
-                                    Emploi
-                                </button>
+                                @if(config('features.recruitment_enabled'))
+                                    <button type="button" data-search-type="job"
+                                            class="search-type-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold uppercase tracking-wide transition-all bg-white/10 text-blue-100 hover:bg-white/20">
+                                        Emploi
+                                    </button>
+                                @endif
                             </div>
                             <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <div class="flex-1 relative">
@@ -775,11 +785,13 @@
                                         data-search-type="service" data-search-query="Couturier">
                                     Couturier
                                 </button>
-                                <button type="button" class="quick-search-btn px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full
-                                               text-sm transition-colors duration-300 text-blue-100"
-                                        data-search-type="job" data-search-query="CDI Kinshasa">
-                                    CDI Kinshasa
-                                </button>
+                                @if(config('features.recruitment_enabled'))
+                                    <button type="button" class="quick-search-btn px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full
+                                                   text-sm transition-colors duration-300 text-blue-100"
+                                            data-search-type="job" data-search-query="CDI Kinshasa">
+                                        CDI Kinshasa
+                                    </button>
+                                @endif
                             </div>
                         </div>
 
@@ -1057,12 +1069,13 @@
             </div>
         </section>
 
+        @if(config('features.recruitment_enabled'))
         <!-- Section Emplois -->
         <section id="emplois" class="py-20 bg-gradient-to-b from-gray-50 to-white">
             <div class="container mx-auto px-4">
                 <!-- En-tête section -->
                 <div class="text-center mb-16" data-aos="fade-up">
-                    <span class="inline-block px-6 py-2 bg-rdc-yellow/10 text-rdc-dark-blue 
+                    <span class="inline-block px-6 py-2 bg-rdc-yellow/10 text-rdc-dark-blue
                                   rounded-full font-semibold mb-4">
                         <i class="fas fa-briefcase mr-2"></i>Opportunités d'emploi
                     </span>
@@ -1119,13 +1132,13 @@
 
                 <!-- CTA Emplois -->
                 <div class="text-center" data-aos="fade-up" data-aos-delay="200">
-                    <a href="{{ route('user.jobs.index') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r 
-                              from-rdc-blue to-rdc-blue-dark text-white font-bold 
-                              rounded-xl hover:shadow-2xl transition-all duration-300 
+                    <a href="{{ route('user.jobs.index') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r
+                              from-rdc-blue to-rdc-blue-dark text-white font-bold
+                              rounded-xl hover:shadow-2xl transition-all duration-300
                               hover:scale-105 group">
                         <i class="fas fa-search mr-3 group-hover:rotate-12 transition-transform"></i>
                         Voir toutes les offres d'emploi
-                        <i class="fas fa-arrow-right ml-3 group-hover:translate-x-2 
+                        <i class="fas fa-arrow-right ml-3 group-hover:translate-x-2
                                    transition-transform"></i>
                     </a>
                     <p class="text-gray-500 text-sm mt-4">
@@ -1135,6 +1148,22 @@
                 </div>
             </div>
         </section>
+        @else
+        <!-- Section Emplois — bientôt disponible -->
+        <section class="py-20 bg-gradient-to-b from-gray-50 to-white">
+            <div class="container mx-auto px-4">
+                <div class="max-w-2xl mx-auto text-center bg-white border border-slate-100 rounded-[2rem] shadow-sm px-8 py-16" data-aos="fade-up">
+                    <div class="w-20 h-20 bg-rdc-yellow/10 text-rdc-dark-blue rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Les offres d'emploi arrivent bientôt</h2>
+                    <p class="text-gray-500 leading-relaxed">
+                        Cette section revient très prochainement. En attendant, découvrez nos artisans et services disponibles dès maintenant.
+                    </p>
+                </div>
+            </div>
+        </section>
+        @endif
 
         <!-- Section Fonctionnement -->
         <section id="fonctionnement" class="py-20 bg-white">
@@ -1491,6 +1520,7 @@
                         </ul>
                     </div>
 
+                    @if(config('features.recruitment_enabled'))
                     <!-- Liens Emplois -->
                     <div>
                         <h3 class="text-lg font-bold mb-6 text-white flex items-center">
@@ -1498,33 +1528,34 @@
                             Emplois
                         </h3>
                         <ul class="space-y-3">
-                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Offres d'emploi
                                 </a></li>
-                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Postuler en ligne
                                 </a></li>
-                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     CV en ligne
                                 </a></li>
-                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Conseils carrière
                                 </a></li>
-                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow 
+                            <li><a href="{{ route('public.jobs.index') }}" class="text-gray-400 hover:text-rdc-yellow
                                                    transition-colors duration-300 flex items-center">
                                     <i class="fas fa-chevron-right text-xs mr-2"></i>
                                     Alertes emploi
                                 </a></li>
                         </ul>
                     </div>
+                    @endif
 
                     <!-- Contact & Newsletter -->
                     <div>

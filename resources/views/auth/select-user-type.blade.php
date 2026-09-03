@@ -34,8 +34,8 @@
         @csrf
 
         <!-- User Type Selection Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            
+        <div class="grid grid-cols-1 {{ config('features.recruitment_enabled') ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }} gap-4">
+
             <!-- Client Option -->
             <label class="relative cursor-pointer group">
                 <input type="radio" name="user_type" value="client" class="peer sr-only" required {{ old('user_type') == 'client' ? 'checked' : '' }}>
@@ -64,19 +64,21 @@
                 </div>
             </label>
 
-            <!-- Recruiter Option -->
-            <label class="relative cursor-pointer group">
-                <input type="radio" name="user_type" value="recruiter" class="peer sr-only" {{ old('user_type') == 'recruiter' ? 'checked' : '' }}>
-                <div class="p-5 rounded-2xl border-2 border-slate-100 bg-slate-50/70 text-center transition-all peer-checked:border-rdc-red peer-checked:bg-rdc-red/10 group-hover:bg-white group-hover:shadow-md flex flex-col items-center justify-center space-y-3">
-                    <div class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 peer-checked:bg-rdc-red peer-checked:text-white transition-colors">
-                        <i class="fas fa-building text-xl"></i>
+            @if(config('features.recruitment_enabled'))
+                <!-- Recruiter Option -->
+                <label class="relative cursor-pointer group">
+                    <input type="radio" name="user_type" value="recruiter" class="peer sr-only" {{ old('user_type') == 'recruiter' ? 'checked' : '' }}>
+                    <div class="p-5 rounded-2xl border-2 border-slate-100 bg-slate-50/70 text-center transition-all peer-checked:border-rdc-red peer-checked:bg-rdc-red/10 group-hover:bg-white group-hover:shadow-md flex flex-col items-center justify-center space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 peer-checked:bg-rdc-red peer-checked:text-white transition-colors">
+                            <i class="fas fa-building text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="block text-sm font-bold text-slate-700 peer-checked:text-rdc-red uppercase tracking-wider">Recruteur</span>
+                            <span class="block text-[10px] text-slate-400 mt-0.5">Publier des offres d'emploi et recruter</span>
+                        </div>
                     </div>
-                    <div>
-                        <span class="block text-sm font-bold text-slate-700 peer-checked:text-rdc-red uppercase tracking-wider">Recruteur</span>
-                        <span class="block text-[10px] text-slate-400 mt-0.5">Publier des offres d'emploi et recruter</span>
-                    </div>
-                </div>
-            </label>
+                </label>
+            @endif
 
         </div>
 

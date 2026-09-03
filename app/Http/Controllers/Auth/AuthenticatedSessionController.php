@@ -70,6 +70,20 @@ class AuthenticatedSessionController extends Controller
                 ])->onlyInput('email');
             }
 
+            // Recruitment feature toggle — existing recruiter accounts are
+            // blocked at login (not modified/deleted) while the feature is
+            // switched off. Checked directly against TYPE_RECRUITER (not
+            // isRecruiter(), which also covers job_seeker in this codebase).
+            if ($user->user_type === User::TYPE_RECRUITER && !config('features.recruitment_enabled')) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'email' => 'La fonctionnalité de recrutement est temporairement suspendue. Nous vous informerons dès sa réactivation.',
+                ])->onlyInput('email');
+            }
+
             // Artisans/recruteurs restent en attente de validation admin tant
             // que leur compte n'a pas été approuvé depuis /admin/users-mgmt/pending
             // — sans ce contrôle, se reconnecter suffisait à contourner

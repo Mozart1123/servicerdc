@@ -63,9 +63,11 @@ Route::get('/how-it-works', [HomeController::class, 'howItWorks'])->name('how-it
 // Public Catalog Routes
 Route::get('/public/services', [PublicController::class, 'services'])->name('public.services.index');
 Route::get('/public/services/{id}', [PublicController::class, 'serviceShow'])->name('public.services.show');
-Route::get('/public/jobs', [PublicController::class, 'jobs'])->name('public.jobs.index');
-Route::get('/public/jobs/{id}', [PublicController::class, 'jobShow'])->name('public.jobs.show');
-Route::get('/public/jobs/{id}/apply', [PublicController::class, 'jobApplyRedirect'])->name('public.jobs.apply');
+Route::middleware('ensure.recruitment')->group(function (): void {
+    Route::get('/public/jobs', [PublicController::class, 'jobs'])->name('public.jobs.index');
+    Route::get('/public/jobs/{id}', [PublicController::class, 'jobShow'])->name('public.jobs.show');
+    Route::get('/public/jobs/{id}/apply', [PublicController::class, 'jobApplyRedirect'])->name('public.jobs.apply');
+});
 Route::get('/public/artisans', [PublicController::class, 'artisans'])->name('public.artisans.index');
 Route::get('/public/artisans/{id}', [PublicController::class, 'artisanShow'])->name('public.artisans.show');
 
@@ -164,15 +166,17 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/services', [UserServiceController::class, 'index'])->name('services.index');
         Route::get('/services/{id}', [UserServiceController::class, 'show'])->name('services.show');
 
-        // Jobs Catalog
-        Route::get('/jobs', [UserJobController::class, 'index'])->name('jobs.index');
-        Route::get('/job-offers/{id}/apply', [UserJobController::class, 'showApplyForm'])->name('jobs.apply.form');
-        Route::get('/jobs/{id}', [UserJobController::class, 'show'])->name('jobs.show');
-        Route::post('/jobs/{job}/apply', [UserJobController::class, 'apply'])->name('jobs.apply');
-        
-        // Client: My Applications & Service Requests
-        Route::get('/my-applications', [UserJobController::class, 'myApplications'])->name('applications.index');
-        Route::delete('/applications/{applicationId}', [UserJobController::class, 'withdrawApplication'])->name('applications.withdraw');
+        // Jobs Catalog + My Applications — gated behind the recruitment feature toggle
+        Route::middleware('ensure.recruitment')->group(function (): void {
+            Route::get('/jobs', [UserJobController::class, 'index'])->name('jobs.index');
+            Route::get('/job-offers/{id}/apply', [UserJobController::class, 'showApplyForm'])->name('jobs.apply.form');
+            Route::get('/jobs/{id}', [UserJobController::class, 'show'])->name('jobs.show');
+            Route::post('/jobs/{job}/apply', [UserJobController::class, 'apply'])->name('jobs.apply');
+            Route::get('/my-applications', [UserJobController::class, 'myApplications'])->name('applications.index');
+            Route::delete('/applications/{applicationId}', [UserJobController::class, 'withdrawApplication'])->name('applications.withdraw');
+        });
+
+        // Client: Service Requests
         Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
         Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
         Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
@@ -183,17 +187,19 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         // Service Requests
         // (Handled above, client-facing vs artisan-facing separated)
         
-        // CV Management (Job seeker/client)
-        Route::get('/cv', [\App\Http\Controllers\User\CvController::class, 'index'])->name('cv.index');
-        Route::get('/cv/create', [\App\Http\Controllers\User\CvController::class, 'create'])->name('cv.create');
-        Route::post('/cv', [\App\Http\Controllers\User\CvController::class, 'store'])->name('cv.store');
-        Route::put('/cv', [\App\Http\Controllers\User\CvController::class, 'update'])->name('cv.update');
-        Route::delete('/cv', [\App\Http\Controllers\User\CvController::class, 'destroy'])->name('cv.destroy');
-        Route::post('/cv/file-upload', [\App\Http\Controllers\User\CvController::class, 'fileUpload'])->name('cv.file.upload');
-        Route::get('/cv/{cv}/download', [\App\Http\Controllers\User\CvController::class, 'download'])->name('cv.download');
-        Route::get('/job-applications/{id}/download-cv', [UserJobController::class, 'downloadApplicationCv'])->name('applications.download-cv');
+        // CV Management (Job seeker/client) — gated behind the recruitment feature toggle
+        Route::middleware('ensure.recruitment')->group(function (): void {
+            Route::get('/cv', [\App\Http\Controllers\User\CvController::class, 'index'])->name('cv.index');
+            Route::get('/cv/create', [\App\Http\Controllers\User\CvController::class, 'create'])->name('cv.create');
+            Route::post('/cv', [\App\Http\Controllers\User\CvController::class, 'store'])->name('cv.store');
+            Route::put('/cv', [\App\Http\Controllers\User\CvController::class, 'update'])->name('cv.update');
+            Route::delete('/cv', [\App\Http\Controllers\User\CvController::class, 'destroy'])->name('cv.destroy');
+            Route::post('/cv/file-upload', [\App\Http\Controllers\User\CvController::class, 'fileUpload'])->name('cv.file.upload');
+            Route::get('/cv/{cv}/download', [\App\Http\Controllers\User\CvController::class, 'download'])->name('cv.download');
+            Route::get('/job-applications/{id}/download-cv', [UserJobController::class, 'downloadApplicationCv'])->name('applications.download-cv');
+        });
 
-        Route::middleware([PreventClientDashboardAccess::class])->group(function (): void {
+        Route::middleware([PreventClientDashboardAccess::class, 'ensure.recruitment'])->group(function (): void {
             // Jobs — recruiter publishes offers
             Route::get('/my-job-offers', [UserJobController::class, 'myJobOffers'])->name('jobs.my-offers');
             Route::get('/job-offers/create', [UserJobController::class, 'create'])->name('jobs.create');
@@ -214,7 +220,9 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/artisans/{artisan}', [UserServiceController::class, 'artisanProfile'])->name('artisans.show');
 
         // Recruiter public profile
-        Route::get('/recruiters/{id}', [RecruiterProfileController::class, 'show'])->name('recruiters.show');
+        Route::middleware('ensure.recruitment')->group(function (): void {
+            Route::get('/recruiters/{id}', [RecruiterProfileController::class, 'show'])->name('recruiters.show');
+        });
 
         // Notifications
         Route::get('/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');
@@ -237,10 +245,12 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::post('/services/{service}/image', [UserPhotoController::class, 'updateServiceImage'])->name('services.image');
         Route::post('/services/{service}/gallery', [UserPhotoController::class, 'updateServiceGallery'])->name('services.gallery');
         Route::delete('/services/{service}/gallery/{index}', [UserPhotoController::class, 'deleteGalleryImage'])->name('services.gallery.delete');
-        Route::post('/jobs/{job}/logo', [UserPhotoController::class, 'updateJobLogo'])->name('jobs.logo');
-        Route::post('/jobs/{job}/cover', [UserPhotoController::class, 'updateJobCover'])->name('jobs.cover');
-        Route::post('/cv/photo', [UserPhotoController::class, 'updateCvPhoto'])->name('cv.photo');
-        Route::post('/cv/file', [UserPhotoController::class, 'uploadCvFile'])->name('cv.file');
+        Route::middleware('ensure.recruitment')->group(function (): void {
+            Route::post('/jobs/{job}/logo', [UserPhotoController::class, 'updateJobLogo'])->name('jobs.logo');
+            Route::post('/jobs/{job}/cover', [UserPhotoController::class, 'updateJobCover'])->name('jobs.cover');
+            Route::post('/cv/photo', [UserPhotoController::class, 'updateCvPhoto'])->name('cv.photo');
+            Route::post('/cv/file', [UserPhotoController::class, 'uploadCvFile'])->name('cv.file');
+        });
 
         // Subscriptions
         Route::get('/subscription', [UserSubscriptionController::class, 'index'])->name('subscription.index');

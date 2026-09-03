@@ -107,7 +107,7 @@
         <!-- User Type Selection -->
         <div class="space-y-3">
             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Je suis un(e)...</label>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid {{ config('features.recruitment_enabled') ? 'grid-cols-3' : 'grid-cols-2' }} gap-2">
                 <label class="relative cursor-pointer group">
                     <input type="radio" name="user_type" value="client" class="peer sr-only" required {{ old('user_type') == 'client' ? 'checked' : '' }}>
                     <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 text-center transition-all peer-checked:border-rdc-blue peer-checked:bg-rdc-blue/10 group-hover:bg-white group-hover:shadow-sm">
@@ -122,13 +122,15 @@
                         <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-yellow uppercase tracking-tighter">Artisan</span>
                     </div>
                 </label>
-                <label class="relative cursor-pointer group">
-                    <input type="radio" name="user_type" value="recruiter" class="peer sr-only" {{ old('user_type') == 'recruiter' ? 'checked' : '' }}>
-                    <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 text-center transition-all peer-checked:border-rdc-red peer-checked:bg-rdc-red/10 group-hover:bg-white group-hover:shadow-sm">
-                        <i class="fas fa-building mb-1 text-sm block text-slate-400 peer-checked:text-rdc-red"></i>
-                        <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-red uppercase tracking-tighter">Recruteur</span>
-                    </div>
-                </label>
+                @if(config('features.recruitment_enabled'))
+                    <label class="relative cursor-pointer group">
+                        <input type="radio" name="user_type" value="recruiter" class="peer sr-only" {{ old('user_type') == 'recruiter' ? 'checked' : '' }}>
+                        <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 text-center transition-all peer-checked:border-rdc-red peer-checked:bg-rdc-red/10 group-hover:bg-white group-hover:shadow-sm">
+                            <i class="fas fa-building mb-1 text-sm block text-slate-400 peer-checked:text-rdc-red"></i>
+                            <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-red uppercase tracking-tighter">Recruteur</span>
+                        </div>
+                    </label>
+                @endif
             </div>
         </div>
 

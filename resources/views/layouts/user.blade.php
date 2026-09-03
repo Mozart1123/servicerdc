@@ -129,18 +129,20 @@
                             Services
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('user.jobs.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.jobs.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-briefcase text-lg {{ request()->routeIs('user.jobs.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Emplois
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('user.applications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.applications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <i class="fas fa-history text-lg {{ request()->routeIs('user.applications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
-                            Mes Candidatures
-                        </a>
-                    </li>
+                    @if(config('features.recruitment_enabled'))
+                        <li>
+                            <a href="{{ route('user.jobs.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.jobs.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                                <i class="fas fa-briefcase text-lg {{ request()->routeIs('user.jobs.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                                Emplois
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('user.applications.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.applications.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                                <i class="fas fa-history text-lg {{ request()->routeIs('user.applications.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                                Mes Candidatures
+                            </a>
+                        </li>
+                    @endif
                     <li>
                         <a href="{{ route('user.service-requests.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.service-requests.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-concierge-bell text-lg {{ request()->routeIs('user.service-requests.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>

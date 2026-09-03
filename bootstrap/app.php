@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.role'                 => \App\Http\Middleware\ApiRoleMiddleware::class,
             'prevent.client.dashboard' => \App\Http\Middleware\PreventClientDashboardAccess::class,
             'ensure.user_type'         => \App\Http\Middleware\EnsureUserTypeIsSelected::class,
+            'ensure.recruitment'       => \App\Http\Middleware\EnsureRecruitmentEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

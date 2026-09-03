@@ -47,7 +47,9 @@
                 {{-- Nav Links --}}
                 <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
                     <a href="{{ route('public.services.index') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('public.services*') ? 'text-[#29B6D1] font-bold' : '' }}">Services</a>
-                    <a href="{{ route('public.jobs.index') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('public.jobs*') ? 'text-[#29B6D1] font-bold' : '' }}">Offres d'emploi</a>
+                    @if(config('features.recruitment_enabled'))
+                        <a href="{{ route('public.jobs.index') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('public.jobs*') ? 'text-[#29B6D1] font-bold' : '' }}">Offres d'emploi</a>
+                    @endif
                     <a href="{{ route('public.artisans.index') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('public.artisans*') ? 'text-[#29B6D1] font-bold' : '' }}">Artisans</a>
                 </nav>
 
@@ -103,9 +105,11 @@
                                         <a href="{{ route('user.profile') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
                                             <i class="fas fa-user w-5 text-center"></i> Mon profil
                                         </a>
-                                        <a href="{{ route('user.applications.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
-                                            <i class="fas fa-file-alt w-5 text-center"></i> Mes candidatures
-                                        </a>
+                                        @if(config('features.recruitment_enabled'))
+                                            <a href="{{ route('user.applications.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
+                                                <i class="fas fa-file-alt w-5 text-center"></i> Mes candidatures
+                                            </a>
+                                        @endif
                                         <a href="{{ route('user.service-requests.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1] rounded-lg transition-colors">
                                             <i class="fas fa-clipboard-list w-5 text-center"></i> Mes demandes
                                         </a>
@@ -176,9 +180,11 @@
             <a href="{{ route('public.services.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.services*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
                 <i class="fas fa-tools w-5 text-center {{ request()->routeIs('public.services*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Services
             </a>
-            <a href="{{ route('public.jobs.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.jobs*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
-                <i class="fas fa-briefcase w-5 text-center {{ request()->routeIs('public.jobs*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Offres d'emploi
-            </a>
+            @if(config('features.recruitment_enabled'))
+                <a href="{{ route('public.jobs.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.jobs*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
+                    <i class="fas fa-briefcase w-5 text-center {{ request()->routeIs('public.jobs*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Offres d'emploi
+                </a>
+            @endif
             <a href="{{ route('public.artisans.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.artisans*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
                 <i class="fas fa-user-gear w-5 text-center {{ request()->routeIs('public.artisans*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Artisans
             </a>
@@ -203,9 +209,11 @@
                     <a href="{{ route('user.profile') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
                         <i class="fas fa-user w-5 text-center text-slate-400"></i> Mon profil
                     </a>
-                    <a href="{{ route('user.applications.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
-                        <i class="fas fa-file-alt w-5 text-center text-slate-400"></i> Mes candidatures
-                    </a>
+                    @if(config('features.recruitment_enabled'))
+                        <a href="{{ route('user.applications.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
+                            <i class="fas fa-file-alt w-5 text-center text-slate-400"></i> Mes candidatures
+                        </a>
+                    @endif
                     <a href="{{ route('user.service-requests.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:text-[#29B6D1] transition-colors">
                         <i class="fas fa-clipboard-list w-5 text-center text-slate-400"></i> Mes demandes
                     </a>
@@ -270,7 +278,9 @@
                     <h4 class="font-bold text-sm uppercase tracking-widest mb-4 text-slate-300">Explorer</h4>
                     <ul class="space-y-2 text-sm text-slate-400">
                         <li><a href="{{ route('public.services.index') }}" class="hover:text-white transition-colors">Services</a></li>
-                        <li><a href="{{ route('public.jobs.index') }}" class="hover:text-white transition-colors">Offres d'emploi</a></li>
+                        @if(config('features.recruitment_enabled'))
+                            <li><a href="{{ route('public.jobs.index') }}" class="hover:text-white transition-colors">Offres d'emploi</a></li>
+                        @endif
                         <li><a href="{{ route('public.artisans.index') }}" class="hover:text-white transition-colors">Annuaire des artisans</a></li>
                     </ul>
                 </div>

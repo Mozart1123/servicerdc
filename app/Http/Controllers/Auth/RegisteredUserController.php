@@ -70,6 +70,17 @@ class RegisteredUserController extends Controller
             'terms.accepted' => 'Vous devez accepter les conditions d\'utilisation.',
         ]);
 
+        // Recruitment feature toggle — reject even a direct request forcing
+        // user_type=recruiter while the feature is switched off. Checked
+        // directly against TYPE_RECRUITER (not the isRecruiter() helper,
+        // which also covers job_seeker in this codebase) so job seekers
+        // remain unaffected.
+        if ($request->input('user_type') === User::TYPE_RECRUITER && !config('features.recruitment_enabled')) {
+            return back()
+                ->withErrors(['user_type' => "L'inscription en tant que recruteur n'est pas disponible pour le moment."])
+                ->withInput();
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
