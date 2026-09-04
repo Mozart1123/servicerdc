@@ -444,10 +444,10 @@
 
                         <!-- Boutons CTA et Auth -->
                         <div class="flex items-center space-x-2 sm:space-x-4">
-                            <!-- Bouton Localisation -->
-                            <button id="geolocation-btn" class="js-geolocation-btn hidden xl:flex items-center space-x-2 px-4 py-2 bg-rdc-blue/10
-                                           text-rdc-blue rounded-lg hover:bg-rdc-blue/20 transition-all
-                                           duration-300 animate-pulse-slow border border-rdc-blue/20"
+                            <!-- Bouton Localisation — même gabarit que les boutons Connexion/Inscription -->
+                            <button id="geolocation-btn" class="js-geolocation-btn hidden xl:flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 ml-2 bg-rdc-blue/10
+                                           text-rdc-blue text-sm sm:text-base font-semibold rounded-lg hover:bg-rdc-blue/20 transition-all
+                                           duration-300 animate-pulse-slow border border-rdc-blue/30 hover:border-rdc-blue/50 whitespace-nowrap"
                                 aria-label="Détecter ma position">
                                 <i class="fas fa-location-dot"></i>
                                 <span id="location-text" class="js-location-text">Me localiser</span>

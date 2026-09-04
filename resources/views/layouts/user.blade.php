@@ -571,6 +571,106 @@
         }, 5000);
     })();
     </script>
+
+    @if(!auth()->user()->city)
+    {{-- ═══ Invite à activer la localisation — s'affiche une fois par session
+         tant que l'utilisateur (client, artisan ou recruteur) n'a pas encore
+         de ville enregistrée. ═══ --}}
+    <div id="location-prompt-overlay"
+         style="position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;padding:16px;">
+        <div style="background:#fff;border-radius:24px;max-width:420px;width:100%;padding:32px;box-shadow:0 25px 60px rgba(0,0,0,.25);text-align:center;">
+            <div style="width:56px;height:56px;border-radius:16px;background:rgba(41,182,209,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                <i class="fas fa-location-dot" style="color:#29B6D1;font-size:22px;"></i>
+            </div>
+            <h3 style="font-weight:800;font-size:18px;color:#0f172a;margin:0 0 8px;">Activer ta localisation ?</h3>
+            <p style="font-size:13px;color:#64748b;margin:0 0 24px;line-height:1.5;">
+                Ça nous aide à te proposer des artisans{{ config('features.recruitment_enabled') ? ' et des offres' : '' }} près de chez toi.
+            </p>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <button id="location-prompt-accept" style="background:linear-gradient(90deg,#29B6D1,#1E9CB5);color:#fff;font-weight:700;font-size:14px;border:none;border-radius:12px;padding:13px;cursor:pointer;">
+                    <i class="fas fa-location-crosshairs" style="margin-right:8px;"></i><span id="location-prompt-accept-text">Activer ma localisation</span>
+                </button>
+                <button id="location-prompt-dismiss" style="background:#f1f5f9;color:#475569;font-weight:700;font-size:14px;border:none;border-radius:12px;padding:13px;cursor:pointer;">
+                    Plus tard
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function () {
+        'use strict';
+
+        if (sessionStorage.getItem('location_prompt_dismissed') === '1') return;
+
+        const overlay     = document.getElementById('location-prompt-overlay');
+        const acceptBtn   = document.getElementById('location-prompt-accept');
+        const acceptText  = document.getElementById('location-prompt-accept-text');
+        const dismissBtn  = document.getElementById('location-prompt-dismiss');
+        const CSRF        = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+        const ROUTE_SAVE  = '{{ route("user.detect-location") }}';
+
+        // Laisse la page se charger avant d'afficher l'invite.
+        setTimeout(() => { overlay.style.display = 'flex'; }, 1200);
+
+        function dismiss() {
+            sessionStorage.setItem('location_prompt_dismissed', '1');
+            overlay.style.display = 'none';
+        }
+
+        dismissBtn.addEventListener('click', dismiss);
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) dismiss();
+        });
+
+        acceptBtn.addEventListener('click', function () {
+            if (!navigator.geolocation) {
+                dismiss();
+                return;
+            }
+
+            acceptText.textContent = 'Localisation...';
+            acceptBtn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                async function (position) {
+                    try {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+                            headers: { 'Accept-Language': 'fr' }
+                        });
+                        const data = await res.json();
+                        const city     = data.address.city || data.address.town || data.address.village || data.address.suburb || null;
+                        const province = data.address.state || data.address.province || null;
+
+                        if (city) {
+                            await fetch(ROUTE_SAVE, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ city: city, province: province })
+                            });
+                        }
+                    } catch (e) {
+                        // Échec silencieux — la localisation n'est pas indispensable.
+                    } finally {
+                        dismiss();
+                    }
+                },
+                function () {
+                    // Permission refusée ou erreur — on ferme sans insister,
+                    // l'invite réapparaîtra à la prochaine session.
+                    dismiss();
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        });
+    })();
+    </script>
+    @endif
 </body>
 
 </html>

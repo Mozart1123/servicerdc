@@ -165,6 +165,9 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/profile/edit', [UserDashboardController::class, 'profile'])->name('profile.edit');
         Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
 
+        // Détection de localisation (invite après connexion — voir layouts/user.blade.php)
+        Route::post('/detect-location', [UserDashboardController::class, 'detectLocation'])->name('detect-location');
+
         // Service Catalog (Logged-in view, though we will add public routes too)
         Route::get('/services', [UserServiceController::class, 'index'])->name('services.index');
         Route::get('/services/{id}', [UserServiceController::class, 'show'])->name('services.show');

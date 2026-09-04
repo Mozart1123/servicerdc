@@ -14,6 +14,7 @@ use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -229,6 +230,23 @@ class DashboardController extends Controller
         }
 
         return redirect()->back()->with('success', 'Profil mis à jour avec succès.');
+    }
+
+    /**
+     * Save the city/province detected via the browser's geolocation API,
+     * shown as a one-time prompt right after login (see layouts/user.blade.php).
+     * Only fills in the location — never overwrites any other profile field.
+     */
+    public function detectLocation(Request $request): JsonResponse
+    {
+        $request->validate([
+            'city'     => ['required', 'string', 'max:255'],
+            'province' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        Auth::user()->update($request->only(['city', 'province']));
+
+        return response()->json(['status' => 'ok']);
     }
 
     // ==========================================
