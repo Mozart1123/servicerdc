@@ -387,7 +387,7 @@
         <!-- Header & Navigation -->
         <header class="fixed inset-x-0 top-0 z-50 bg-white shadow-lg will-change-transform">
             <div class="flag-stripe"></div>
-            <div class="container mx-auto px-4 py-4">
+            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 xl:px-8 py-4">
                 <div class="flex justify-between items-center">
                     <!-- Logo -->
                     <a href="/" class="flex items-center space-x-2 sm:space-x-3 group shrink-0 lg:mr-8">
@@ -402,40 +402,40 @@
                     </a>
 
                     <!-- Navigation Desktop -->
-                    <nav class="hidden lg:flex space-x-8 items-center">
-                        <a href="#accueil" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
-                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
+                    <nav class="hidden xl:flex items-center gap-x-4 2xl:gap-x-7">
+                        <a href="#accueil" class="text-gray-700 hover:text-rdc-blue font-medium text-sm 2xl:text-base whitespace-nowrap transition-colors duration-300
+                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Accueil
                         </a>
-                        <a href="{{ route('public.services.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
-                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
+                        <a href="{{ route('public.services.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium text-sm 2xl:text-base whitespace-nowrap transition-colors duration-300
+                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Services
                         </a>
                         @if(config('features.recruitment_enabled'))
-                            <a href="{{ route('public.jobs.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
+                            <a href="{{ route('public.jobs.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium text-sm 2xl:text-base whitespace-nowrap transition-colors duration-300
                                       relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                       after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                                 Emplois
                             </a>
                         @endif
-                        <a href="{{ route('public.artisans.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
-                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
+                        <a href="{{ route('public.artisans.index') }}" class="text-gray-700 hover:text-rdc-blue font-medium text-sm 2xl:text-base whitespace-nowrap transition-colors duration-300
+                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Artisans
                         </a>
-                        <a href="#fonctionnement" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
-                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
+                        <a href="#fonctionnement" class="text-gray-700 hover:text-rdc-blue font-medium text-sm 2xl:text-base whitespace-nowrap transition-colors duration-300
+                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Fonctionnement
                         </a>
-                        <a href="#temoignages" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
+                        <a href="#temoignages" class="text-gray-700 hover:text-rdc-blue font-medium text-sm 2xl:text-base whitespace-nowrap transition-colors duration-300
                                   relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Témoignages
                         </a>
-                        <a href="{{ route('contact') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
+                        <a href="{{ route('contact') }}" class="text-gray-700 hover:text-rdc-blue font-medium text-sm 2xl:text-base whitespace-nowrap transition-colors duration-300
                                   relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Contact
@@ -445,8 +445,8 @@
                         <!-- Boutons CTA et Auth -->
                         <div class="flex items-center space-x-2 sm:space-x-4">
                             <!-- Bouton Localisation — même gabarit que les boutons Connexion/Inscription -->
-                            <button id="geolocation-btn" class="js-geolocation-btn hidden xl:flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 ml-2 bg-rdc-blue/10
-                                           text-rdc-blue text-sm sm:text-base font-semibold rounded-lg hover:bg-rdc-blue/20 transition-all
+                            <button id="geolocation-btn" class="js-geolocation-btn hidden xl:flex items-center gap-2 px-3 2xl:px-5 py-2 2xl:py-2.5 ml-2 bg-rdc-blue/10
+                                           text-rdc-blue text-sm 2xl:text-base font-semibold rounded-lg hover:bg-rdc-blue/20 transition-all
                                            duration-300 animate-pulse-slow border border-rdc-blue/30 hover:border-rdc-blue/50 whitespace-nowrap"
                                 aria-label="Détecter ma position">
                                 <i class="fas fa-location-dot"></i>
@@ -455,22 +455,22 @@
 
                             <!-- État Auth (desktop uniquement — mobile utilise le tiroir latéral) -->
                             @guest
-                                <div class="hidden lg:flex items-center space-x-2 sm:space-x-3">
-                                    <a href="{{ route('login') }}" class="px-3 sm:px-5 py-2 sm:py-2.5 text-rdc-blue text-sm sm:text-base font-semibold hover:text-rdc-blue-dark
+                                <div class="hidden xl:flex items-center gap-x-2 2xl:gap-x-3">
+                                    <a href="{{ route('login') }}" class="px-3 2xl:px-5 py-2 2xl:py-2.5 text-rdc-blue text-sm 2xl:text-base font-semibold hover:text-rdc-blue-dark
                                                           transition-colors duration-300 border border-rdc-blue/30
-                                                          rounded-lg hover:border-rdc-blue/50">
+                                                          rounded-lg hover:border-rdc-blue/50 whitespace-nowrap">
                                         Connexion
                                     </a>
-                                    <a href="{{ route('register') }}" class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark
-                                                          text-white text-sm sm:text-base font-semibold rounded-lg hover:shadow-lg
-                                                          transition-all duration-300 hover:scale-105">
+                                    <a href="{{ route('register') }}" class="px-4 2xl:px-6 py-2 2xl:py-2.5 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark
+                                                          text-white text-sm 2xl:text-base font-semibold rounded-lg hover:shadow-lg
+                                                          transition-all duration-300 hover:scale-105 whitespace-nowrap">
                                         Inscription
                                     </a>
                                 </div>
                             @endguest
 
                         @auth
-                            <div class="hidden lg:flex items-center space-x-4">
+                            <div class="hidden xl:flex items-center gap-x-3 2xl:gap-x-4">
                                 <!-- Notification Badge -->
                                 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
                                     <button @click="open = !open" class="p-2 text-gray-600 hover:text-rdc-blue transition-colors relative focus:outline-none">
@@ -579,7 +579,7 @@
 
                         <!-- Menu Mobile Toggle -->
                         <button @click="mobileNavOpen = true"
-                            class="lg:hidden p-2 text-gray-700 hover:text-rdc-blue transition-colors"
+                            class="xl:hidden p-2 text-gray-700 hover:text-rdc-blue transition-colors"
                             aria-label="Ouvrir le menu">
                             <i class="fas fa-bars text-2xl"></i>
                         </button>
@@ -591,11 +591,11 @@
         <!-- Mobile Sidebar Overlay -->
         <div x-show="mobileNavOpen" x-transition.opacity
              @click="mobileNavOpen = false"
-             class="fixed inset-0 bg-slate-900/50 z-[60] lg:hidden" style="display: none;"></div>
+             class="fixed inset-0 bg-slate-900/50 z-[60] xl:hidden" style="display: none;"></div>
 
         <!-- Mobile Sidebar Drawer -->
         <aside :class="mobileNavOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white z-[70] transform lg:hidden transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+               class="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white z-[70] transform xl:hidden transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
 
             <div class="px-6 py-6 border-b border-gray-100 flex items-center justify-between shrink-0">
                 <a href="/" class="flex items-center gap-3">
