@@ -51,6 +51,7 @@
                         <a href="{{ route('public.jobs.index') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('public.jobs*') ? 'text-[#29B6D1] font-bold' : '' }}">Offres d'emploi</a>
                     @endif
                     <a href="{{ route('public.artisans.index') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('public.artisans*') ? 'text-[#29B6D1] font-bold' : '' }}">Artisans</a>
+                    <a href="{{ route('contact') }}" class="hover:text-[#29B6D1] transition-colors {{ request()->routeIs('contact') ? 'text-[#29B6D1] font-bold' : '' }}">Contact</a>
                 </nav>
 
                 {{-- Auth Buttons (desktop only — mobile uses the drawer below) --}}
@@ -188,6 +189,9 @@
             <a href="{{ route('public.artisans.index') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('public.artisans*') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
                 <i class="fas fa-user-gear w-5 text-center {{ request()->routeIs('public.artisans*') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Artisans
             </a>
+            <a href="{{ route('contact') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors {{ request()->routeIs('contact') ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-700 hover:bg-slate-50 hover:text-[#29B6D1]' }}">
+                <i class="fas fa-headset w-5 text-center {{ request()->routeIs('contact') ? 'text-[#29B6D1]' : 'text-slate-400' }}"></i> Contact / Support
+            </a>
 
             @auth
                 <div class="border-t border-slate-100 my-3"></div>
@@ -282,6 +286,7 @@
                             <li><a href="{{ route('public.jobs.index') }}" class="hover:text-white transition-colors">Offres d'emploi</a></li>
                         @endif
                         <li><a href="{{ route('public.artisans.index') }}" class="hover:text-white transition-colors">Annuaire des artisans</a></li>
+                        <li><a href="{{ route('contact') }}" class="hover:text-white transition-colors">Contact / Support</a></li>
                     </ul>
                 </div>
                 <div>

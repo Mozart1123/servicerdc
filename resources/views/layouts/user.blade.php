@@ -319,6 +319,12 @@
                     Retour accueil
                 </a>
 
+                <a href="{{ route('contact') }}"
+                    class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-rdc-blue transition-all group">
+                    <i class="fas fa-headset text-lg text-slate-300 group-hover:text-rdc-blue"></i>
+                    Contact / Support
+                </a>
+
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"

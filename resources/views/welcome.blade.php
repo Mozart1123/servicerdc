@@ -430,10 +430,15 @@
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Fonctionnement
                         </a>
-                        <a href="#temoignages" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300 
-                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5 
+                        <a href="#temoignages" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
+                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5
                                   after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
                             Témoignages
+                        </a>
+                        <a href="{{ route('contact') }}" class="text-gray-700 hover:text-rdc-blue font-medium transition-colors duration-300
+                                  relative after:absolute after:bottom-0 after:left-0 after:h-0.5
+                                  after:w-0 after:bg-rdc-blue after:transition-all hover:after:w-full">
+                            Contact
                         </a>
                     </nav>
 
@@ -634,6 +639,9 @@
                 </a>
                 <a href="#temoignages" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
                     <i class="fas fa-comment-dots w-5 text-center text-gray-400"></i> Témoignages
+                </a>
+                <a href="{{ route('contact') }}" @click="mobileNavOpen = false" class="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors">
+                    <i class="fas fa-headset w-5 text-center text-gray-400"></i> Contact / Support
                 </a>
 
                 <button class="js-geolocation-btn w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 font-medium hover:bg-rdc-blue/5 hover:text-rdc-blue transition-colors" aria-label="Détecter ma position">
