@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\JobCategory;
 use App\Models\JobOffer;
+use App\Models\Review;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\ServiceType;
@@ -176,7 +177,11 @@ class PublicController extends Controller
         $artisan  = User::where('user_type', 'artisan')->with(['services', 'artisanLevel'])->findOrFail($id);
         $services = $artisan->services()->where('status', 'active')->latest()->get();
 
-        return view('public.artisans.show', compact('artisan', 'services'));
+        // Reviews approuvés uniquement — affichés dans l'onglet "Avis" du profil public.
+        $reviews      = Review::forArtisan($artisan->id)->approved()->with('client')->latest()->take(10)->get();
+        $reviewsCount = Review::forArtisan($artisan->id)->approved()->count();
+
+        return view('public.artisans.show', compact('artisan', 'services', 'reviews', 'reviewsCount'));
     }
 
     /**
