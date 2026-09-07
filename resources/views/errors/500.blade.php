@@ -9,5 +9,5 @@
 
 @section('actions')
     <a href="{{ url('/') }}" class="btn"><i class="fas fa-house"></i> Retour à l'accueil</a>
-    <a href="mailto:{{ config('mail.from.address') }}" class="btn btn-secondary">Contacter le support</a>
+    <a href="{{ route('contact') }}" class="btn btn-secondary">Contacter le support</a>
 @endsection
