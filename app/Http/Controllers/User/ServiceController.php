@@ -86,6 +86,14 @@ class ServiceController extends Controller
 
     /**
      * Store a new service (supports multiple sub-service types at once).
+     *
+     * IMPORTANT — chaque type de service sélectionné crée sa PROPRE offre avec
+     * son propre titre, son propre prix, sa propre description et ses propres
+     * photos (champs "titles[id]", "prices[id]", "descriptions[id]" et
+     * "images_by_type[id][]", indexés par service_type_id). Avant, un seul
+     * titre et un seul jeu de photos étaient partagés par toutes les offres
+     * créées en une fois, ce qui faisait que plusieurs services publiés
+     * ensemble se retrouvaient avec un titre et des photos identiques.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -103,18 +111,14 @@ class ServiceController extends Controller
         $currentServicesCount = $user->services()->active()->count();
         $slotsRemaining = $maxServices - $currentServicesCount;
 
-        $validated = $request->validate([
-            'title'                => ['required', 'string', 'max:255'],
+        $base = $request->validate([
             'category_id'          => ['required', 'exists:categories,id'],
             'service_type_ids'     => ['nullable', 'array'],
             'service_type_ids.*'   => ['nullable', 'exists:service_types,id'],
-            'description'          => ['nullable', 'string'],
-            'price'                => ['required', 'numeric', 'min:0'],
             'location'             => ['required', 'string', 'max:255'],
-            'images.*'             => ['nullable', 'image'],
         ]);
 
-        $serviceTypeIds = $validated['service_type_ids'] ?? [];
+        $serviceTypeIds = $base['service_type_ids'] ?? [];
         // Normalize: if none checked, treat as single offer with no type
         $offersToCreate = empty($serviceTypeIds) ? [null] : $serviceTypeIds;
         $offersCount    = count($offersToCreate);
@@ -128,37 +132,64 @@ class ServiceController extends Controller
                 ->withInput();
         }
 
-        // Upload images once (shared across all created services)
-        $gallery = [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $file) {
-                $gallery[] = $file->store('service-gallery', 'public');
+        // Règles de validation propres à chaque offre : un jeu de champs
+        // "génériques" quand aucun type n'est coché (une seule offre), ou un
+        // jeu de champs par type sélectionné (titles.{id}, prices.{id}, ...).
+        $rules = [];
+        if (empty($serviceTypeIds)) {
+            $rules['title']       = ['required', 'string', 'max:255'];
+            $rules['price']       = ['required', 'numeric', 'min:0'];
+            $rules['description'] = ['nullable', 'string'];
+            $rules['images']      = ['nullable', 'array', 'max:5'];
+            $rules['images.*']    = ['nullable', 'image', 'max:5120'];
+        } else {
+            foreach ($serviceTypeIds as $id) {
+                $rules["titles.$id"]           = ['required', 'string', 'max:255'];
+                $rules["prices.$id"]           = ['required', 'numeric', 'min:0'];
+                $rules["descriptions.$id"]     = ['nullable', 'string'];
+                $rules["images_by_type.$id"]   = ['nullable', 'array', 'max:5'];
+                $rules["images_by_type.$id.*"] = ['nullable', 'image', 'max:5120'];
             }
         }
+        $request->validate($rules);
 
         $createdServices = [];
         foreach ($offersToCreate as $serviceTypeId) {
-            // If a service type is provided, use its title as the service title
-            $serviceTitle = $validated['title'];
-            if ($serviceTypeId) {
+            if ($serviceTypeId === null) {
+                // Une seule offre, sans type précis — champs génériques.
+                $serviceTitle       = $request->input('title');
+                $servicePrice       = $request->input('price');
+                $serviceDescription = $request->input('description');
+                $files              = $request->file('images', []) ?? [];
+            } else {
+                // Une offre par type coché — chacune avec ses propres valeurs.
                 $st = \App\Models\ServiceType::find($serviceTypeId);
-                if ($st && empty(trim($validated['title']))) {
-                    $serviceTitle = $st->title;
+                $typedTitle   = trim((string) $request->input("titles.$serviceTypeId", ''));
+                $serviceTitle = $typedTitle !== '' ? $typedTitle : ($st->title ?? 'Service');
+                $servicePrice       = $request->input("prices.$serviceTypeId");
+                $serviceDescription = $request->input("descriptions.$serviceTypeId");
+                $files              = $request->file("images_by_type.$serviceTypeId", []) ?? [];
+            }
+
+            $gallery = [];
+            foreach ($files as $file) {
+                if ($file && $file->isValid()) {
+                    $gallery[] = $file->store('service-gallery', 'public');
                 }
             }
 
             $service = Service::create([
                 'artisan_id'      => $user->id,
-                'category_id'     => $validated['category_id'],
+                'category_id'     => $base['category_id'],
                 'service_type_id' => $serviceTypeId,
                 'provider_name'   => $user->name,
                 'profession'      => $user->profession ?? 'Artisan',
-                'city'            => $validated['location'],
+                'city'            => $base['location'],
                 'phone_number'    => $user->phone ?? '—',
                 'title'           => $serviceTitle,
-                'description'     => $validated['description'] ?? null,
-                'price'           => $validated['price'],
-                'location'        => $validated['location'],
+                'description'     => $serviceDescription,
+                'price'           => $servicePrice,
+                'location'        => $base['location'],
                 'service_image'   => $gallery[0] ?? null,
                 'gallery_images'  => $gallery,
                 'images'          => $gallery,
