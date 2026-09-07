@@ -228,11 +228,31 @@
 
         {{-- Tab : Réalisations --}}
         <div x-show="tab === 'realisations'" style="display: none;">
-            <h2 class="text-lg font-bold text-slate-900 mb-5">Mes réalisations</h2>
-            <div class="bg-white rounded-2xl border border-slate-100 p-10 text-center">
-                <i class="fas fa-images text-3xl text-slate-200 mb-3"></i>
-                <p class="text-sm text-slate-400 font-medium">Aucune réalisation pour l'instant.</p>
-            </div>
+            <h2 class="text-lg font-bold text-slate-900 mb-5">
+                Réalisations
+                <span class="text-sm font-semibold text-slate-400 ml-2">({{ $realisations->count() }})</span>
+            </h2>
+
+            @if($realisations->isEmpty())
+                <div class="bg-white rounded-2xl border border-slate-100 p-10 text-center">
+                    <i class="fas fa-images text-3xl text-slate-200 mb-3"></i>
+                    <p class="text-sm text-slate-400 font-medium">Aucune réalisation pour l'instant.</p>
+                </div>
+            @else
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                    @foreach($realisations as $realisation)
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                            <div class="aspect-square bg-slate-100">
+                                <img src="{{ $realisation->image_url }}" alt="{{ $realisation->caption ?? 'Réalisation de ' . $artisan->name }}"
+                                     class="w-full h-full object-cover">
+                            </div>
+                            @if($realisation->caption)
+                                <p class="px-3 py-2 text-xs font-semibold text-slate-600 truncate">{{ $realisation->caption }}</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         {{-- Tab : Avis --}}

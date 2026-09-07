@@ -199,6 +199,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('user.realisations.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.realisations.index') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-images text-lg {{ request()->routeIs('user.realisations.index') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Mes Réalisations
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('user.artisan.service-requests.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.service-requests.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-inbox text-lg {{ request()->routeIs('user.artisan.service-requests.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
                             Demandes reçues

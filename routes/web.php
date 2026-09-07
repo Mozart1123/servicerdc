@@ -137,6 +137,11 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::get('/my-services', [UserServiceController::class, 'myServices'])->name('services.my');
             Route::post('/services/{id}/remove-image', [UserServiceController::class, 'removeImage'])->name('services.remove-image');
 
+            // Réalisations (galerie de photos affichée sur le profil public de l'artisan)
+            Route::get('/realisations', [\App\Http\Controllers\User\RealisationController::class, 'index'])->name('realisations.index');
+            Route::post('/realisations', [\App\Http\Controllers\User\RealisationController::class, 'store'])->name('realisations.store');
+            Route::delete('/realisations/{realisation}', [\App\Http\Controllers\User\RealisationController::class, 'destroy'])->name('realisations.destroy');
+
             // Missions
             Route::get('/missions', [UserDashboardController::class, 'missions'])->name('missions.index');
             Route::get('/missions/{id}', [UserDashboardController::class, 'missionDetail'])->name('missions.show');

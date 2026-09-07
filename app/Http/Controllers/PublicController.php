@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ArtisanFavorite;
+use App\Models\ArtisanRealisation;
 use App\Models\Category;
 use App\Models\JobCategory;
 use App\Models\JobOffer;
@@ -188,7 +189,10 @@ class PublicController extends Controller
             ? ArtisanFavorite::where('user_id', Auth::id())->where('artisan_id', $artisan->id)->exists()
             : false;
 
-        return view('public.artisans.show', compact('artisan', 'services', 'reviews', 'reviewsCount', 'isFavorited'));
+        // Photos de réalisations publiées par l'artisan — affichées dans l'onglet "Réalisations".
+        $realisations = ArtisanRealisation::where('artisan_id', $artisan->id)->latest()->get();
+
+        return view('public.artisans.show', compact('artisan', 'services', 'reviews', 'reviewsCount', 'isFavorited', 'realisations'));
     }
 
     /**
