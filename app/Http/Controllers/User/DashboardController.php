@@ -188,6 +188,7 @@ class DashboardController extends Controller
             'city'          => ['nullable', 'string', 'max:255'],
             'bio'           => ['nullable', 'string', 'max:500'],
             'profile_photo' => ['nullable', 'image', 'max:5120'],
+            'cover_photo'   => ['nullable', 'image', 'max:5120'],
         ];
 
         // Only artisan/recruiter accounts risk being confused with another
@@ -227,6 +228,15 @@ class DashboardController extends Controller
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_photo);
             }
             $user->profile_photo = $request->file('profile_photo')->store('profile_photos', 'public');
+            $user->save();
+        }
+
+        // Photo de couverture — affichée en bannière sur le profil public de l'artisan.
+        if ($request->hasFile('cover_photo')) {
+            if ($user->cover_photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->cover_photo);
+            }
+            $user->cover_photo = $request->file('cover_photo')->store('cover-photos', 'public');
             $user->save();
         }
 

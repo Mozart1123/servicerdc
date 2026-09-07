@@ -18,10 +18,16 @@
         {{-- Profile Card --}}
         <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             {{-- Cover --}}
-            <div class="h-56 sm:h-60 relative overflow-hidden" style="background: linear-gradient(115deg, #29B6D1 0%, #1E9CB5 45%, #090D16 100%);">
-                <div class="absolute inset-0 opacity-15" style="background-image: repeating-linear-gradient(115deg, #fff 0px, #fff 2px, transparent 2px, transparent 26px);"></div>
-                <i class="fas fa-hammer absolute" style="right:20px; bottom:-18px; font-size:150px; color:rgba(255,255,255,0.12);"></i>
-            </div>
+            @if($artisan->cover_photo)
+                <div class="h-56 sm:h-60 relative overflow-hidden">
+                    <img src="{{ Storage::url($artisan->cover_photo) }}" alt="Couverture de {{ $artisan->name }}" class="w-full h-full object-cover">
+                </div>
+            @else
+                <div class="h-56 sm:h-60 relative overflow-hidden" style="background: linear-gradient(115deg, #29B6D1 0%, #1E9CB5 45%, #090D16 100%);">
+                    <div class="absolute inset-0 opacity-15" style="background-image: repeating-linear-gradient(115deg, #fff 0px, #fff 2px, transparent 2px, transparent 26px);"></div>
+                    <i class="fas fa-hammer absolute" style="right:20px; bottom:-18px; font-size:150px; color:rgba(255,255,255,0.12);"></i>
+                </div>
+            @endif
 
             <div class="px-6 sm:px-8 pb-8 -mt-14 relative">
                 <div class="flex items-end gap-5 flex-wrap">

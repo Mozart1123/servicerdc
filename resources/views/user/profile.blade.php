@@ -48,6 +48,35 @@
             </div>
         </section>
 
+        @if(auth()->user()->isArtisan())
+        <hr class="border-slate-100">
+
+        {{-- Cover Photo Section --}}
+        <section>
+            <h2 class="text-lg font-bold text-slate-900 mb-2">Photo de couverture</h2>
+            <p class="text-sm text-slate-500 mb-6">Affichée en bannière tout en haut de votre profil public, visible par les clients.</p>
+            <div class="relative group w-full max-w-2xl">
+                @if(auth()->user()->cover_photo)
+                    <img src="{{ Storage::url(auth()->user()->cover_photo) }}"
+                         id="cover-preview"
+                         class="w-full h-36 sm:h-44 rounded-2xl border border-slate-200 object-cover" alt="Couverture">
+                @else
+                    <div id="cover-preview-placeholder" class="w-full h-36 sm:h-44 rounded-2xl border border-slate-200 flex items-center justify-center text-white text-sm font-semibold"
+                         style="background: linear-gradient(115deg, #29B6D1 0%, #1E9CB5 45%, #090D16 100%);">
+                        Aucune photo de couverture
+                    </div>
+                    <img src="" id="cover-preview" class="w-full h-36 sm:h-44 rounded-2xl border border-slate-200 object-cover hidden" alt="Couverture">
+                @endif
+                <label for="cover_photo_input" class="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                    <i class="fas fa-camera mr-2"></i> Changer la couverture
+                </label>
+                <input type="file" id="cover_photo_input" name="cover_photo" accept="image/*" class="hidden"
+                       onchange="previewCover(this)">
+            </div>
+            @error('cover_photo') <p class="text-xs text-red-500 font-medium mt-2">{{ $message }}</p> @enderror
+        </section>
+        @endif
+
         <hr class="border-slate-100">
 
         {{-- Personal Information --}}
@@ -118,6 +147,20 @@ function previewPhoto(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = e => { document.getElementById('photo-preview').src = e.target.result; };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewCover(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.getElementById('cover-preview');
+            img.src = e.target.result;
+            img.classList.remove('hidden');
+            const placeholder = document.getElementById('cover-preview-placeholder');
+            if (placeholder) placeholder.classList.add('hidden');
+        };
         reader.readAsDataURL(input.files[0]);
     }
 }
