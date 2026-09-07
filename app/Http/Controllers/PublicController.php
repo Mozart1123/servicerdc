@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ArtisanFavorite;
 use App\Models\Category;
 use App\Models\JobCategory;
 use App\Models\JobOffer;
@@ -10,6 +11,7 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\ServiceType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class PublicController extends Controller
@@ -181,7 +183,12 @@ class PublicController extends Controller
         $reviews      = Review::forArtisan($artisan->id)->approved()->with('client')->latest()->take(10)->get();
         $reviewsCount = Review::forArtisan($artisan->id)->approved()->count();
 
-        return view('public.artisans.show', compact('artisan', 'services', 'reviews', 'reviewsCount'));
+        // Le bouton favori (cœur) n'a de sens que pour un client connecté.
+        $isFavorited = Auth::check() && Auth::user()->isClient()
+            ? ArtisanFavorite::where('user_id', Auth::id())->where('artisan_id', $artisan->id)->exists()
+            : false;
+
+        return view('public.artisans.show', compact('artisan', 'services', 'reviews', 'reviewsCount', 'isFavorited'));
     }
 
     /**

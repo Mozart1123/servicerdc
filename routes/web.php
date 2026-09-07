@@ -225,6 +225,9 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         // Artisan public profile (from within app)
         Route::get('/artisans/{artisan}', [UserServiceController::class, 'artisanProfile'])->name('artisans.show');
 
+        // Favoris — un client ajoute/retire un artisan de ses favoris (bouton cœur du profil public)
+        Route::post('/artisans/{artisan}/favorite', [UserDashboardController::class, 'toggleArtisanFavorite'])->name('artisans.favorite.toggle');
+
         // Recruiter public profile
         Route::middleware('ensure.recruitment')->group(function (): void {
             Route::get('/recruiters/{id}', [RecruiterProfileController::class, 'show'])->name('recruiters.show');

@@ -56,20 +56,38 @@
                         <p class="text-sm text-[#29B6D1] font-semibold mt-1">{{ $artisan->profession ?? 'Artisan' }}</p>
                     </div>
 
-                    <div class="flex items-center gap-2.5 pb-1.5">
+                    <div class="flex items-center gap-2.5 flex-wrap w-full sm:w-auto pb-1.5">
                         <button type="button" @click="tab = 'services'"
-                                class="inline-flex items-center gap-2 px-5 py-3 bg-[#29B6D1] text-white text-sm font-bold rounded-2xl hover:bg-[#1E9CB5] transition-all shadow-md shadow-[#29B6D1]/25 whitespace-nowrap">
+                                class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#29B6D1] text-white text-sm font-bold rounded-2xl hover:bg-[#1E9CB5] transition-all shadow-md shadow-[#29B6D1]/25 whitespace-nowrap">
                             <i class="fas fa-paper-plane"></i>Demander un service
                         </button>
                         @auth
                             <a href="{{ route('user.messages.start.user', $artisan->id) }}"
-                               class="inline-flex items-center gap-2 px-4 py-3 bg-white text-[#29B6D1] text-sm font-bold rounded-2xl border border-[#29B6D1]/30 hover:border-[#29B6D1]/50 transition-all whitespace-nowrap">
+                               class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 bg-white text-[#29B6D1] text-sm font-bold rounded-2xl border border-[#29B6D1]/30 hover:border-[#29B6D1]/50 transition-all whitespace-nowrap">
                                 <i class="fas fa-envelope"></i>Contacter
                             </a>
                         @else
                             <a href="{{ route('login') }}"
-                               class="inline-flex items-center gap-2 px-4 py-3 bg-white text-[#29B6D1] text-sm font-bold rounded-2xl border border-[#29B6D1]/30 hover:border-[#29B6D1]/50 transition-all whitespace-nowrap">
+                               class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 bg-white text-[#29B6D1] text-sm font-bold rounded-2xl border border-[#29B6D1]/30 hover:border-[#29B6D1]/50 transition-all whitespace-nowrap">
                                 <i class="fas fa-sign-in-alt"></i>Contacter
+                            </a>
+                        @endauth
+
+                        @auth
+                            @if(auth()->user()->isClient())
+                                <button type="button"
+                                        data-favorite-toggle
+                                        data-url="{{ route('user.artisans.favorite.toggle', $artisan->id) }}"
+                                        data-favorited="{{ $isFavorited ? '1' : '0' }}"
+                                        aria-label="Ajouter aux favoris"
+                                        class="inline-flex items-center justify-center w-[50px] h-[50px] rounded-2xl border transition-all shrink-0 {{ $isFavorited ? 'bg-red-50 border-red-200 text-red-500' : 'bg-white border-slate-100 text-slate-300 hover:text-red-400 hover:border-red-100' }}">
+                                    <i class="{{ $isFavorited ? 'fas' : 'far' }} fa-heart"></i>
+                                </button>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}" aria-label="Connexion pour ajouter aux favoris"
+                               class="inline-flex items-center justify-center w-[50px] h-[50px] rounded-2xl border border-slate-100 text-slate-300 hover:text-red-400 hover:border-red-100 transition-all shrink-0">
+                                <i class="far fa-heart"></i>
                             </a>
                         @endauth
                     </div>
@@ -126,25 +144,25 @@
         </div>
 
         {{-- Tabs --}}
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-1.5 flex items-center gap-1 overflow-x-auto">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-1.5 flex items-center gap-0.5 sm:gap-1 overflow-x-auto">
             <button type="button" @click="tab = 'apropos'"
                     :class="tab === 'apropos' ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-500 hover:bg-slate-50'"
-                    class="px-4 py-2.5 rounded-xl text-[13px] font-bold whitespace-nowrap transition-colors">
+                    class="px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-[13px] font-bold whitespace-nowrap transition-colors">
                 À propos
             </button>
             <button type="button" @click="tab = 'services'"
                     :class="tab === 'services' ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-500 hover:bg-slate-50'"
-                    class="px-4 py-2.5 rounded-xl text-[13px] font-bold whitespace-nowrap transition-colors">
+                    class="px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-[13px] font-bold whitespace-nowrap transition-colors">
                 Services <span class="opacity-60">({{ $services->count() }})</span>
             </button>
             <button type="button" @click="tab = 'realisations'"
                     :class="tab === 'realisations' ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-500 hover:bg-slate-50'"
-                    class="px-4 py-2.5 rounded-xl text-[13px] font-bold whitespace-nowrap transition-colors">
+                    class="px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-[13px] font-bold whitespace-nowrap transition-colors">
                 Réalisations
             </button>
             <button type="button" @click="tab = 'avis'"
                     :class="tab === 'avis' ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-500 hover:bg-slate-50'"
-                    class="px-4 py-2.5 rounded-xl text-[13px] font-bold whitespace-nowrap transition-colors">
+                    class="px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-[13px] font-bold whitespace-nowrap transition-colors">
                 Avis <span class="opacity-60">({{ $reviewsCount }})</span>
             </button>
         </div>
@@ -259,4 +277,52 @@
 
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.querySelector('[data-favorite-toggle]');
+    if (!btn) return;
+
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    csrf = csrf ? csrf.content : '';
+
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+
+        fetch(btn.dataset.url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json'
+            }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            var icon = btn.querySelector('i');
+            if (data.favorited) {
+                btn.dataset.favorited = '1';
+                btn.classList.remove('bg-white', 'border-slate-100', 'text-slate-300');
+                btn.classList.add('bg-red-50', 'border-red-200', 'text-red-500');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                btn.dataset.favorited = '0';
+                btn.classList.remove('bg-red-50', 'border-red-200', 'text-red-500');
+                btn.classList.add('bg-white', 'border-slate-100', 'text-slate-300');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        })
+        .catch(function () {
+            // Échec silencieux — l'état visuel du cœur ne change simplement pas.
+        })
+        .finally(function () {
+            btn.disabled = false;
+        });
+    });
+});
+</script>
+@endpush
 @endsection

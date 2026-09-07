@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\ArtisanFavorite;
 use App\Models\Category;
 use App\Models\JobApplication;
 use App\Models\JobOffer;
@@ -669,7 +670,43 @@ class DashboardController extends Controller
      */
     public function favorites(): View
     {
-        return view('user.favorites');
+        $favoriteArtisans = ArtisanFavorite::where('user_id', Auth::id())
+            ->with(['artisan.artisanLevel'])
+            ->latest()
+            ->get()
+            ->filter(fn ($favorite) => $favorite->artisan !== null)
+            ->values();
+
+        return view('user.favorites', compact('favoriteArtisans'));
+    }
+
+    /**
+     * Toggle un artisan comme favori pour le client connecté (bouton cœur
+     * sur le profil public de l'artisan). Ne touche à aucune autre donnée.
+     */
+    public function toggleArtisanFavorite(User $artisan): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (!$user->isClient()) {
+            return response()->json(['message' => 'Action réservée aux clients.'], 403);
+        }
+
+        $existing = ArtisanFavorite::where('user_id', $user->id)
+            ->where('artisan_id', $artisan->id)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            return response()->json(['favorited' => false]);
+        }
+
+        ArtisanFavorite::create([
+            'user_id'    => $user->id,
+            'artisan_id' => $artisan->id,
+        ]);
+
+        return response()->json(['favorited' => true]);
     }
 
     /**
