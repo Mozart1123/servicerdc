@@ -60,6 +60,16 @@ class AuthenticatedSessionController extends Controller
 
             $user = Auth::user();
 
+            if ($user->status === User::STATUS_DELETED) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'email' => 'Ce compte a été supprimé.',
+                ])->onlyInput('email');
+            }
+
             if ($user->status === User::STATUS_SUSPENDED) {
                 Auth::logout();
                 $request->session()->invalidate();

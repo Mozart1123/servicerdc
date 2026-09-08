@@ -294,8 +294,12 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/favorites', [UserDashboardController::class, 'favorites'])->name('favorites');
         Route::get('/new', [UserDashboardController::class, 'newOpportunities'])->name('new');
         Route::get('/security', [UserDashboardController::class, 'security'])->name('security');
+        Route::put('/security/password', [UserDashboardController::class, 'updatePassword'])->name('security.password.update');
+        Route::delete('/security/sessions/{sessionId}', [UserDashboardController::class, 'revokeSession'])->name('security.sessions.revoke');
+        Route::delete('/security', [UserDashboardController::class, 'destroyAccount'])->name('security.destroy');
         Route::get('/help', [UserDashboardController::class, 'help'])->name('help');
         Route::get('/report', [UserDashboardController::class, 'report'])->name('report');
+        Route::post('/report', [UserDashboardController::class, 'submitReport'])->name('report.submit');
     });
 
 // Admin Routes

@@ -679,6 +679,41 @@ class DashboardController extends Controller
     }
 
     /**
+     * Handle the "Report a Problem" form submission (Paramètres & Aide).
+     * Creates a general SupportTicket — visible in the existing admin
+     * Support > Tickets panel, same place client-side service-request
+     * disputes land.
+     */
+    public function submitReport(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'problem_type' => ['required', 'string', 'in:bug,harassment,scam,content,other'],
+            'urgency'      => ['nullable', 'string', 'in:low,medium,high'],
+            'subject'      => ['required', 'string', 'max:255'],
+            'description'  => ['required', 'string', 'max:2000'],
+        ]);
+
+        $typeLabels = [
+            'bug'        => 'Bug technique / Erreur d\'affichage',
+            'harassment' => 'Comportement inapproprié',
+            'scam'       => 'Suspicion de fraude / Arnaque',
+            'content'    => 'Contenu illégal ou choquant',
+            'other'      => 'Autre problème',
+        ];
+
+        \App\Models\SupportTicket::create([
+            'user_id'     => Auth::id(),
+            'subject'     => '[' . ($typeLabels[$validated['problem_type']] ?? 'Autre') . '] ' . $validated['subject'],
+            'message'     => $validated['description'],
+            'ticket_type' => 'general',
+            'priority'    => $validated['urgency'] ?? 'medium',
+        ]);
+
+        return redirect()->route('user.report')
+            ->with('success', 'Merci, votre signalement a bien été envoyé. Notre équipe va l\'examiner.');
+    }
+
+    /**
      * Display the New Opportunities page.
      */
     public function newOpportunities(): View
@@ -731,11 +766,118 @@ class DashboardController extends Controller
     }
 
     /**
-     * Display the Security page.
+     * Display the Security page — real password change form and the
+     * user's actual active sessions (from the `sessions` table, since
+     * SESSION_DRIVER=database).
      */
     public function security(): View
     {
-        return view('user.security');
+        $currentSessionId = session()->getId();
+
+        $sessions = \Illuminate\Support\Facades\DB::table('sessions')
+            ->where('user_id', Auth::id())
+            ->orderByDesc('last_activity')
+            ->get()
+            ->map(function ($session) use ($currentSessionId) {
+                $agent = strtolower((string) $session->user_agent);
+                $isMobile = (bool) preg_match('/mobile|android|iphone/', $agent);
+
+                $browser = 'Navigateur inconnu';
+                foreach (['edge' => 'Edge', 'chrome' => 'Chrome', 'firefox' => 'Firefox', 'safari' => 'Safari', 'opera' => 'Opera'] as $needle => $label) {
+                    if (str_contains($agent, $needle)) {
+                        $browser = $label . ($isMobile ? ' Mobile' : '');
+                        break;
+                    }
+                }
+
+                return (object) [
+                    'id'          => $session->id,
+                    'is_current'  => $session->id === $currentSessionId,
+                    'is_mobile'   => $isMobile,
+                    'browser'     => $browser,
+                    'ip_address'  => $session->ip_address,
+                    'last_active' => \Illuminate\Support\Carbon::createFromTimestamp($session->last_activity),
+                ];
+            });
+
+        return view('user.security', compact('sessions'));
+    }
+
+    /**
+     * Change the authenticated user's password.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('passwordUpdate', [
+            'current_password' => ['required', 'current_password'],
+            'password'         => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'current_password.current_password' => 'Le mot de passe actuel est incorrect.',
+        ]);
+
+        Auth::user()->update(['password' => $request->password]);
+
+        return back()->with('success', 'Votre mot de passe a été mis à jour.');
+    }
+
+    /**
+     * Revoke one of the user's other active sessions (forces that device
+     * to be signed out on its next request).
+     */
+    public function revokeSession(Request $request, string $sessionId): RedirectResponse
+    {
+        if ($sessionId === session()->getId()) {
+            return back()->with('error', 'Vous ne pouvez pas déconnecter votre session actuelle depuis ici.');
+        }
+
+        \Illuminate\Support\Facades\DB::table('sessions')
+            ->where('id', $sessionId)
+            ->where('user_id', Auth::id())
+            ->delete();
+
+        return back()->with('success', 'Cet appareil a été déconnecté.');
+    }
+
+    /**
+     * Close the authenticated user's account. This does NOT hard-delete the
+     * row: several tables (missions, reviews, wallet transactions...) keep
+     * a foreign key to this user that other people still need (an
+     * artisan's mission history with this client, for instance), and some
+     * of those foreign keys cascade-delete on the DB side. Instead the
+     * account is anonymised and marked 'deleted', which hides it from
+     * every public listing (they already filter on status = active) and
+     * blocks it from logging back in.
+     */
+    public function destroyAccount(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('deleteAccount', [
+            'password' => ['required', 'current_password'],
+        ], [
+            'password.current_password' => 'Mot de passe incorrect.',
+        ]);
+
+        $user = Auth::user();
+
+        // 'status' n'est pas dans $fillable (protection volontaire ailleurs
+        // dans l'app, ex. formulaire de profil) — update() l'ignorerait
+        // silencieusement. forceFill() est utilisé ici pour ce seul champ,
+        // dans ce contrôleur interne où aucune entrée utilisateur brute
+        // n'atteint jamais ce tableau.
+        $user->update([
+            'name'          => 'Utilisateur supprimé',
+            'email'         => 'deleted-' . $user->id . '-' . time() . '@proconnectrdc.deleted',
+            'phone'         => null,
+            'bio'           => null,
+            'profile_photo' => null,
+            'cover_photo'   => null,
+        ]);
+        $user->forceFill(['status' => User::STATUS_DELETED])->save();
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home')->with('success', 'Votre compte a bien été supprimé.');
     }
 
     /**
