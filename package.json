@@ -15,7 +15,9 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "@alpinejs/collapse": "3.17.1",
         "@tailwindcss/postcss": "^4.3.1",
+        "alpinejs": "3.17.1",
         "autoprefixer": "^10.5.1",
         "laravel-echo": "^2.3.7",
         "pusher-js": "^8.5.0"

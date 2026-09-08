@@ -16,7 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    {{-- Alpine.js est désormais inclus dans le bundle app.js (plus de dépendance à un CDN externe) --}}
+    @vite(['resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
