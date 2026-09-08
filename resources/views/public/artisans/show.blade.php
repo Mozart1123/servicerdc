@@ -63,7 +63,8 @@
                     </div>
 
                     <div class="flex items-center gap-2.5 flex-wrap w-full sm:w-auto pb-1.5">
-                        <button type="button" @click="tab = 'services'"
+                        <button type="button"
+                                @click="tab = 'services'; $nextTick(() => document.getElementById('artisan-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))"
                                 class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#29B6D1] text-white text-sm font-bold rounded-2xl hover:bg-[#1E9CB5] transition-all shadow-md shadow-[#29B6D1]/25 whitespace-nowrap">
                             <i class="fas fa-paper-plane"></i>Demander un service
                         </button>
@@ -150,7 +151,7 @@
         </div>
 
         {{-- Tabs --}}
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-1.5 flex items-center gap-0.5 sm:gap-1 overflow-x-auto">
+        <div id="artisan-tabs" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-1.5 flex items-center gap-0.5 sm:gap-1 overflow-x-auto">
             <button type="button" @click="tab = 'apropos'"
                     :class="tab === 'apropos' ? 'bg-[#29B6D1]/10 text-[#29B6D1]' : 'text-slate-500 hover:bg-slate-50'"
                     class="px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-[13px] font-bold whitespace-nowrap transition-colors">
