@@ -29,7 +29,7 @@
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                     <input type="text" placeholder="Rechercher un contact..."
-                        class="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0]/40 text-sm transition-all">
+                        class="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-rdc-blue/20 focus:border-rdc-blue/40 text-sm transition-all">
                 </div>
             </div>
 
@@ -46,7 +46,7 @@
                 <a href="{{ route('user.messages.index', ['id' => $conv->id]) }}"
                    class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-50 transition-colors
                           {{ $isActive
-                              ? 'bg-[#16a3b0]/8 border-l-[3px] border-l-[#16a3b0]'
+                              ? 'bg-rdc-blue/8 border-l-[3px] border-l-rdc-blue'
                               : 'hover:bg-slate-50 border-l-[3px] border-l-transparent' }}">
 
                     {{-- Avatar avec indicateur en ligne --}}
@@ -56,7 +56,7 @@
                             <img src="{{ $other->photo_url }}"
                                  class="w-12 h-12 rounded-full object-cover border border-slate-200" alt="{{ $other->name }}">
                         @else
-                            <div class="w-12 h-12 rounded-full bg-[#16a3b0] text-white flex items-center justify-center text-sm font-bold border border-[#16a3b0]/30">
+                            <div class="w-12 h-12 rounded-full bg-rdc-blue text-white flex items-center justify-center text-sm font-bold border border-rdc-blue/30">
                                 {{ $otherInitials }}
                             </div>
                         @endif
@@ -80,7 +80,7 @@
                         </div>
                         <p class="text-xs truncate {{ $unread > 0 ? 'font-semibold text-slate-800' : 'text-slate-500' }}">
                             @if($lastMsg)
-                                @if($isMe)<span class="text-[#16a3b0]">Vous : </span>@endif
+                                @if($isMe)<span class="text-rdc-blue">Vous : </span>@endif
                                 {{ $lastMsg->body }}
                             @else
                                 <span class="italic text-slate-400">Commencer la discussion</span>
@@ -132,7 +132,7 @@
                             <img src="{{ $other->photo_url }}"
                                  class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover" alt="{{ $other->name }}">
                         @else
-                            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#16a3b0] text-white flex items-center justify-center text-sm font-bold">
+                            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-rdc-blue text-white flex items-center justify-center text-sm font-bold">
                                 {{ $otherInitialsH }}
                             </div>
                         @endif
@@ -181,7 +181,7 @@
                             <img src="{{ $other->photo_url }}"
                                  class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shadow-sm" alt="">
                         @else
-                            <div class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#16a3b0] text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                            <div class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-rdc-blue text-white flex items-center justify-center text-xs font-bold shadow-sm">
                                 {{ $senderInitials }}
                             </div>
                         @endif
@@ -195,7 +195,7 @@
                                 <p>{{ $msg->body }}</p>
                             </div>
                             @else
-                            <div class="bubble shadow-sm {{ $isMe ? 'bg-[#16a3b0] text-white' : 'bg-white text-slate-800 border border-slate-200' }}">
+                            <div class="bubble shadow-sm {{ $isMe ? 'bg-rdc-blue text-white' : 'bg-white text-slate-800 border border-slate-200' }}">
                                 @if($msg->body)
                                 <p>{{ $msg->body }}</p>
                                 @endif
@@ -224,7 +224,7 @@
                     {{-- Heure + lu (placée sous la bulle) --}}
                     <div class="bubble-time {{ !$isMe ? 'ml-[44px] sm:ml-[48px]' : 'mr-1' }}">
                         {{ $msg->created_at->format('H:i') }}
-                        @if($isMe) <i class="fas fa-check-double ml-0.5 {{ $msg->is_read ? 'text-[#16a3b0]' : 'text-slate-300' }}"></i> @endif
+                        @if($isMe) <i class="fas fa-check-double ml-0.5 {{ $msg->is_read ? 'text-rdc-blue' : 'text-slate-300' }}"></i> @endif
                     </div>
                 </div>
                 @endforeach
@@ -238,7 +238,7 @@
 
                     {{-- Preview pièce jointe --}}
                     <div id="preview-bar" class="hidden mb-2 px-3 py-2 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
-                        <div class="flex items-center gap-2 text-[#16a3b0] text-xs font-medium">
+                        <div class="flex items-center gap-2 text-rdc-blue text-xs font-medium">
                             <i class="fas fa-file"></i>
                             <span id="filename-preview" class="truncate max-w-xs"></span>
                         </div>
@@ -249,7 +249,7 @@
                         </button>
                     </div>
 
-                    <div class="relative flex items-end bg-white border border-slate-200 rounded-[1.5rem] shadow-sm focus-within:ring-2 focus-within:ring-[#16a3b0]/20 focus-within:border-[#16a3b0]/40 transition-all p-1">
+                    <div class="relative flex items-end bg-white border border-slate-200 rounded-[1.5rem] shadow-sm focus-within:ring-2 focus-within:ring-rdc-blue/20 focus-within:border-rdc-blue/40 transition-all p-1">
                         
                         {{-- Emoji Picker Container --}}
                         <div id="emoji-picker-container" class="absolute bottom-full left-0 mb-2 hidden z-50 shadow-xl rounded-xl border border-slate-200 overflow-hidden bg-white">
@@ -259,12 +259,12 @@
                         {{-- Boutons icônes (gauche) --}}
                         <div class="flex items-center gap-0.5 shrink-0 sm:ml-1">
                             {{-- Bouton Emoji --}}
-                            <button type="button" id="emoji-button" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-[#16a3b0] transition-colors rounded-full">
+                            <button type="button" id="emoji-button" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rdc-blue transition-colors rounded-full">
                                 <i class="far fa-smile text-xl"></i>
                             </button>
 
                             {{-- Bouton pièce jointe --}}
-                            <label class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-[#16a3b0] transition-colors rounded-full cursor-pointer mb-0">
+                            <label class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rdc-blue transition-colors rounded-full cursor-pointer mb-0">
                                 <i class="fas fa-paperclip text-[1.1rem]"></i>
                                 <input type="file" name="attachment" class="hidden"
                                        onchange="document.getElementById('filename-preview').innerText = this.files[0].name; document.getElementById('preview-bar').classList.remove('hidden')">
@@ -282,7 +282,7 @@
                         {{-- Bouton envoyer --}}
                         <div class="shrink-0 mr-0.5">
                             <button type="submit"
-                                class="w-10 h-10 rounded-full bg-[#16a3b0] text-white hover:bg-[#138b96] transition-colors flex items-center justify-center shadow-sm">
+                                class="w-10 h-10 rounded-full bg-rdc-blue text-white hover:bg-rdc-blue-dark transition-colors flex items-center justify-center shadow-sm">
                                 <i class="fas fa-paper-plane text-sm -ml-0.5 mt-0.5"></i>
                             </button>
                         </div>
@@ -443,14 +443,14 @@
                     const fallbackInitial = (msg.sender && msg.sender.name) ? msg.sender.name.charAt(0).toUpperCase() : 'U';
                     const avatarSrc = (msg.sender && msg.sender.photo_url)
                         ? msg.sender.photo_url
-                        : `https://ui-avatars.com/api/?name=${fallbackInitial}&background=16a3b0&color=fff&size=40`;
+                        : `https://ui-avatars.com/api/?name=${fallbackInitial}&background=29B6D1&color=fff&size=40`;
 
                     const html = `
                         <div class="bubble-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mb-2 animate-fade-in-up">
                             <div class="flex items-end gap-2 max-w-[85%] sm:max-w-[75%] ${isMe ? 'flex-row-reverse' : 'flex-row'}">
                                 ${!isMe ? `<img src="${avatarSrc}" class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shadow-sm" alt="">` : ''}
                                 <div class="min-w-0">
-                                    <div class="bubble shadow-sm ${isMe ? 'bg-[#16a3b0] text-white' : 'bg-white text-slate-800 border border-slate-200'}">
+                                    <div class="bubble shadow-sm ${isMe ? 'bg-rdc-blue text-white' : 'bg-white text-slate-800 border border-slate-200'}">
                                         <p>${text}</p>
                                     </div>
                                 </div>
@@ -496,7 +496,7 @@
             @else
             {{-- ─── ÉTAT VIDE (aucune conv sélectionnée) ─── --}}
             <div class="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                <div class="w-16 h-16 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-4 text-[#16a3b0] text-2xl shadow-sm">
+                <div class="w-16 h-16 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-4 text-rdc-blue text-2xl shadow-sm">
                     <i class="fas fa-comments"></i>
                 </div>
                 <h3 class="font-bold text-slate-800 text-base mb-1">Sélectionnez une conversation</h3>

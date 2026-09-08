@@ -25,7 +25,7 @@
     @if($applications->count() > 0)
         <div class="grid grid-cols-1 gap-4">
             @foreach($applications as $app)
-            <a href="{{ route('user.jobs.show', $app->jobOffer->id) }}" class="block bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-[#16a3b0]/30 transition-all group">
+            <a href="{{ route('user.jobs.show', $app->jobOffer->id) }}" class="block bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-rdc-blue/30 transition-all group">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="flex gap-4 items-center">
                         <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
@@ -36,7 +36,7 @@
                             @endif
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-slate-900 group-hover:text-[#16a3b0] transition-colors">{{ $app->jobOffer->title }}</h3>
+                            <h3 class="text-lg font-bold text-slate-900 group-hover:text-rdc-blue transition-colors">{{ $app->jobOffer->title }}</h3>
                             <p class="text-sm font-medium text-slate-500 mt-0.5">{{ $app->jobOffer->company_name ?? ($app->jobOffer->user->name ?? 'Entreprise') }}</p>
                         </div>
                     </div>
@@ -82,7 +82,7 @@
             </div>
             <h3 class="text-xl font-bold text-slate-800 mb-2">Vous n'avez pas encore postulé</h3>
             <p class="text-slate-500 mb-8 max-w-md mx-auto">Vous n'avez envoyé aucune candidature pour le moment. Explorez nos offres d'emploi et trouvez celle qui vous correspond.</p>
-            <a href="{{ route('public.jobs.index') }}" class="inline-block px-6 py-3 bg-[#16a3b0] text-white font-medium rounded-xl hover:bg-[#138b96] transition-colors shadow-lg shadow-[#16a3b0]/20">
+            <a href="{{ route('public.jobs.index') }}" class="inline-block px-6 py-3 bg-rdc-blue text-white font-medium rounded-xl hover:bg-rdc-blue-dark transition-colors shadow-lg shadow-rdc-blue/20">
                 Explorer les offres d'emploi
             </a>
         </div>

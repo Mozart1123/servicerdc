@@ -26,7 +26,7 @@
                              id="photo-preview"
                              class="w-24 h-24 rounded-full border border-slate-200 object-cover" alt="Profile">
                     @else
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=16a3b0&color=fff&size=200"
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'User') }}&background=29B6D1&color=fff&size=200"
                              id="photo-preview"
                              class="w-24 h-24 rounded-full border border-slate-200 object-cover" alt="Profile">
                     @endif
@@ -87,7 +87,7 @@
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Nom complet <span class="text-red-500">*</span></label>
                     <input type="text" name="name" value="{{ old('name', auth()->user()->name) }}" required
-                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
                     @error('name') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                 </div>
 
@@ -100,20 +100,20 @@
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Téléphone</label>
                     <input type="tel" name="phone" value="{{ old('phone', auth()->user()->phone) }}" placeholder="+243 ..."
-                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
                     @error('phone') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Ville</label>
                     <input type="text" name="city" value="{{ old('city', auth()->user()->city) }}" placeholder="Kinshasa, Gombe..."
-                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
                 </div>
                 
                 <div class="sm:col-span-2 space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Bio / Résumé</label>
                     <textarea name="bio" rows="4"
-                              class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm resize-none"
+                              class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm resize-none"
                               placeholder="Parlez-nous de vous...">{{ old('bio', auth()->user()->bio) }}</textarea>
                     @error('bio') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                 </div>
@@ -123,7 +123,7 @@
             <div class="mt-6">
                 <label class="block text-sm font-medium text-slate-700 mb-2">Description de l'entreprise</label>
                 <textarea name="company_description" rows="5"
-                          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm resize-none"
+                          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm resize-none"
                           placeholder="Décrivez votre entreprise (activité, valeurs, culture)...">{{ old('company_description', auth()->user()->company_description) }}</textarea>
                 <p class="text-xs text-slate-400 mt-1">Apparaîtra sur la page de votre entreprise et dans vos offres d'emploi (300 à 600 caractères recommandés).</p>
                 @error('company_description') <p class="text-xs text-red-500 font-medium mt-1">{{ $message }}</p> @enderror
@@ -132,7 +132,7 @@
         </section>
 
         <div class="flex flex-col sm:flex-row items-center justify-start gap-4 pt-4">
-            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-[#16a3b0] text-white font-medium text-sm rounded-lg hover:bg-[#138b96] transition-colors text-center">
+            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-rdc-blue text-white font-medium text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors text-center">
                 Enregistrer les modifications
             </button>
             <a href="{{ url()->previous() }}" class="w-full sm:w-auto px-6 py-2.5 text-slate-500 font-medium text-sm hover:text-slate-900 transition-colors text-center">

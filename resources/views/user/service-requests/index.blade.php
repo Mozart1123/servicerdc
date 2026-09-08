@@ -40,8 +40,8 @@
         <a href="{{ route('user.service-requests.index', array_merge(request()->except('status', 'page'), $val ? ['status' => $val] : [])) }}"
            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
                   {{ $currentStatus === $val
-                     ? 'bg-[#16a3b0] text-white border-[#16a3b0]'
-                     : 'bg-white text-slate-600 border-slate-200 hover:border-[#16a3b0] hover:text-[#16a3b0]' }}">
+                     ? 'bg-rdc-blue text-white border-rdc-blue'
+                     : 'bg-white text-slate-600 border-slate-200 hover:border-rdc-blue hover:text-rdc-blue' }}">
             {{ $filter['label'] }}
             <span class="text-xs {{ $currentStatus === $val ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500' }} px-1.5 py-0.5 rounded-full font-bold">
                 {{ $filter['count'] }}
@@ -58,9 +58,9 @@
         <div class="relative flex-1">
             <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
             <input type="text" name="search" placeholder="Rechercher une demande…" value="{{ request('search') }}"
-                class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all">
+                class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all">
         </div>
-        <button type="submit" class="px-5 py-2.5 bg-[#16a3b0] text-white font-medium text-sm rounded-lg hover:bg-[#138b96] transition-colors">
+        <button type="submit" class="px-5 py-2.5 bg-rdc-blue text-white font-medium text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors">
             Rechercher
         </button>
         @if(request()->hasAny(['search', 'status']))
@@ -114,7 +114,7 @@
                     <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                         @if($req->service?->artisan)
                         <span class="flex items-center gap-1">
-                            <i class="fas fa-user-hard-hat text-[#16a3b0]"></i>
+                            <i class="fas fa-user-hard-hat text-rdc-blue"></i>
                             {{ $req->service->artisan->name }}
                         </span>
                         @endif
@@ -155,7 +155,7 @@
                     @if(in_array($req->status, ['accepted', 'in_progress', 'completed']) && ($req->artisan_id || $req->service?->artisan_id))
                     @php $artisanId = $req->artisan_id ?? $req->service->artisan_id; @endphp
                     <a href="{{ route('user.messages.start.user', $artisanId) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#16a3b0] text-white text-xs font-medium rounded-lg hover:bg-[#138b96] transition-colors">
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rdc-blue text-white text-xs font-medium rounded-lg hover:bg-rdc-blue-dark transition-colors">
                         <i class="fas fa-comments"></i> Discuter
                     </a>
                     @endif
@@ -199,7 +199,7 @@
                 @endif
             </p>
             @if(!request()->hasAny(['search', 'status']))
-            <a href="{{ route('user.services.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#16a3b0] text-white font-medium text-sm rounded-lg hover:bg-[#138b96] transition-colors">
+            <a href="{{ route('user.services.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-rdc-blue text-white font-medium text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors">
                 <i class="fas fa-search"></i> Explorer les services
             </a>
             @endif

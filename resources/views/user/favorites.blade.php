@@ -13,14 +13,14 @@
             <div class="fav-item bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center gap-4"
                  data-favorite-id="{{ $favorite->id }}">
                 {{-- Photo --}}
-                <img src="{{ $artisan->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($artisan->name).'&background=16a3b0&color=fff' }}"
+                <img src="{{ $artisan->photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode($artisan->name).'&background=29B6D1&color=fff' }}"
                      class="w-11 h-11 rounded-xl object-cover shrink-0" alt="{{ $artisan->name }}">
 
                 {{-- Info --}}
                 <div class="flex-1 min-w-0">
                     <div class="flex flex-wrap items-center gap-2 mb-1">
                         <h4 class="font-semibold text-slate-900 text-sm">{{ $artisan->name }}</h4>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-[#16a3b0]/10 text-[#16a3b0] border border-[#16a3b0]/20">
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-rdc-blue/10 text-rdc-blue border border-rdc-blue/20">
                             Artisan
                         </span>
                     </div>

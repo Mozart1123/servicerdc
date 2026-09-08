@@ -38,7 +38,7 @@
             <div class="space-y-2">
                 <label class="block text-sm font-medium text-slate-700">Mot de passe actuel</label>
                 <input type="password" name="current_password" required
-                       class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm @error('current_password', 'passwordUpdate') border-red-400 @enderror">
+                       class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm @error('current_password', 'passwordUpdate') border-red-400 @enderror">
                 @error('current_password', 'passwordUpdate')
                     <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                 @enderror
@@ -48,7 +48,7 @@
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Nouveau mot de passe</label>
                     <input type="password" name="password" required minlength="8"
-                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm @error('password', 'passwordUpdate') border-red-400 @enderror">
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm @error('password', 'passwordUpdate') border-red-400 @enderror">
                     @error('password', 'passwordUpdate')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
@@ -56,12 +56,12 @@
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Confirmer le mot de passe</label>
                     <input type="password" name="password_confirmation" required minlength="8"
-                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
                 </div>
             </div>
 
             <div class="flex justify-start pt-2">
-                <button type="submit" class="px-6 py-2.5 bg-[#16a3b0] text-white font-medium text-sm rounded-lg hover:bg-[#138b96] transition-colors">
+                <button type="submit" class="px-6 py-2.5 bg-rdc-blue text-white font-medium text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors">
                     Mettre à jour
                 </button>
             </div>

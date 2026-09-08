@@ -17,13 +17,13 @@
                     <label class="block text-sm font-medium text-slate-700">Sujet / Service souhaité <span class="text-red-500">*</span></label>
                     <input type="text" name="requested_service_name" required
                            placeholder="Ex: Service de livraison de nuit"
-                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm">
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
                 </div>
 
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Catégorie (optionnel)</label>
                     <select name="category_needed"
-                            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm appearance-none">
+                            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm appearance-none">
                         <option value="">Sélectionner une catégorie</option>
                         <option value="Ménage">Ménage & Nettoyage</option>
                         <option value="Réparation">Réparation & Travaux</option>
@@ -38,7 +38,7 @@
                 <label class="block text-sm font-medium text-slate-700">Votre message / précisions <span class="text-red-500">*</span></label>
                 <textarea name="description" rows="5" required
                           placeholder="Décrivez votre besoin ou posez votre question ici..."
-                          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm resize-none"></textarea>
+                          class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm resize-none"></textarea>
             </div>
 
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
@@ -47,7 +47,7 @@
                     Votre demande sera transmise directement à notre équipe.
                 </p>
                 <button type="submit" id="submitBtn"
-                        class="w-full sm:w-auto px-6 py-2.5 bg-[#16a3b0] text-white font-medium text-sm rounded-lg hover:bg-[#138b96] transition-colors flex items-center justify-center gap-2">
+                        class="w-full sm:w-auto px-6 py-2.5 bg-rdc-blue text-white font-medium text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors flex items-center justify-center gap-2">
                     <span>Envoyer ma demande</span>
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -106,7 +106,7 @@ document.getElementById('helpRequestForm')?.addEventListener('submit', async (e)
         const data = await response.json();
 
         if (data.success) {
-            btn.classList.remove('bg-[#16a3b0]', 'hover:bg-[#138b96]');
+            btn.classList.remove('bg-rdc-blue', 'hover:bg-rdc-blue-dark');
             btn.classList.add('bg-emerald-500');
             btn.innerHTML = `<i class="fas fa-check"></i> <span>Demande envoyée !</span>`;
             
@@ -115,7 +115,7 @@ document.getElementById('helpRequestForm')?.addEventListener('submit', async (e)
             throw new Error(data.message || 'Erreur lors de l\'envoi');
         }
     } catch (error) {
-        btn.classList.remove('bg-[#16a3b0]', 'hover:bg-[#138b96]');
+        btn.classList.remove('bg-rdc-blue', 'hover:bg-rdc-blue-dark');
         btn.classList.add('bg-red-500');
         btn.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>Échec</span>`;
         btn.disabled = false;

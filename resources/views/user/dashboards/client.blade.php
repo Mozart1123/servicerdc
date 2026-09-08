@@ -10,7 +10,7 @@
     {{-- QUICK ACTIONS --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <a href="{{ route('public.artisans.index') }}" class="p-4 rounded-xl bg-cyan-50 hover:bg-cyan-100 transition text-center block">
-            <i class="fas fa-search text-xl text-[#16a3b0] mb-2"></i>
+            <i class="fas fa-search text-xl text-rdc-blue mb-2"></i>
             <h3 class="font-semibold text-slate-800 text-xs">Chercher artisan</h3>
         </a>
 
@@ -46,7 +46,7 @@
         </div>
         <div class="border border-slate-100 rounded-xl p-4">
             <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Messages non lus</p>
-            <p class="text-2xl font-bold text-[#16a3b0] mt-1">{{ $stats['unread_messages'] ?? 0 }}</p>
+            <p class="text-2xl font-bold text-rdc-blue mt-1">{{ $stats['unread_messages'] ?? 0 }}</p>
         </div>
     </div>
 
@@ -54,7 +54,7 @@
     <div>
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-base font-bold text-slate-900">Mes demandes récentes</h2>
-            <a href="{{ route('user.service-requests.index') }}" class="text-[#16a3b0] font-semibold text-sm hover:underline">Voir tout</a>
+            <a href="{{ route('user.service-requests.index') }}" class="text-rdc-blue font-semibold text-sm hover:underline">Voir tout</a>
         </div>
 
         <div class="space-y-3">
@@ -90,7 +90,7 @@
                 <div class="text-center py-10 border border-dashed border-slate-200 rounded-xl">
                     <i class="fas fa-inbox text-3xl text-slate-200 mb-3"></i>
                     <p class="text-sm text-slate-400 font-medium">Vous n'avez encore envoyé aucune demande de service.</p>
-                    <a href="{{ route('public.artisans.index') }}" class="inline-block mt-4 text-[#16a3b0] font-semibold text-sm hover:underline">
+                    <a href="{{ route('public.artisans.index') }}" class="inline-block mt-4 text-rdc-blue font-semibold text-sm hover:underline">
                         Trouver un artisan →
                     </a>
                 </div>
@@ -104,7 +104,7 @@
         <div class="space-y-3">
             @forelse($notifications as $notif)
                 <div class="flex items-start gap-3 text-sm">
-                    <i class="fas fa-circle text-[6px] text-[#16a3b0] mt-1.5"></i>
+                    <i class="fas fa-circle text-[6px] text-rdc-blue mt-1.5"></i>
                     <p class="text-slate-600 leading-snug">{{ $notif->message ?? $notif->title ?? 'Notification' }}</p>
                 </div>
             @empty

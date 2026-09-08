@@ -129,7 +129,7 @@
                             </div>
                         @else
                             <a href="{{ route('user.jobs.apply.form', $job->id) }}"
-                               class="inline-flex items-center justify-center gap-3 w-full py-3.5 sm:py-4 bg-[#16a3b0] hover:bg-[#128a96] text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-[#16a3b0]/20">
+                               class="inline-flex items-center justify-center gap-3 w-full py-3.5 sm:py-4 bg-rdc-blue hover:bg-rdc-blue-dark text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-rdc-blue/20">
                                 <i class="fas fa-paper-plane"></i>
                                 Postuler maintenant
                             </a>
@@ -183,7 +183,7 @@
                                     @endif
                                     
                                     @if($job->employer)
-                                        <a href="{{ route('user.recruiters.show', $job->employer->id) }}" class="inline-flex items-center gap-2 text-sm font-bold text-[#16a3b0] hover:text-[#128a96] transition-colors">
+                                        <a href="{{ route('user.recruiters.show', $job->employer->id) }}" class="inline-flex items-center gap-2 text-sm font-bold text-rdc-blue hover:text-rdc-blue-dark transition-colors">
                                             Voir toutes les offres de {{ $job->company_name }} <i class="fas fa-arrow-right text-xs"></i>
                                         </a>
                                     @endif
@@ -212,7 +212,7 @@
                                     </div>
                                     @if(in_array($userApplication->status, ['approved', 'accepted', 'interview']))
                                     <a href="{{ route('user.messages.start.user', $job->employer_id) }}"
-                                       class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 bg-[#16a3b0] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#128a96] transition-all whitespace-nowrap shrink-0 mt-2 sm:mt-0">
+                                       class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 bg-rdc-blue text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-rdc-blue-dark transition-all whitespace-nowrap shrink-0 mt-2 sm:mt-0">
                                         <i class="fas fa-comments"></i> Discuter
                                     </a>
                                     @else
@@ -237,7 +237,7 @@
                                         <p class="text-slate-400 text-sm mt-1">Envoyez votre candidature avec votre CV ProConnect ou un document personnalisé.</p>
                                     </div>
                                     <a href="{{ route('user.jobs.apply.form', $job->id) }}"
-                                       class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-[#16a3b0] hover:bg-[#128a96] text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-[#16a3b0]/20 shrink-0">
+                                       class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-rdc-blue hover:bg-rdc-blue-dark text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-rdc-blue/20 shrink-0">
                                         <i class="fas fa-paper-plane"></i>
                                         Postuler maintenant
                                     </a>

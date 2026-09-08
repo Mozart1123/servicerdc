@@ -18,10 +18,10 @@
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Titre, entreprise..."
-                       class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none transition-all">
+                       class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rdc-blue/20 focus:border-rdc-blue outline-none transition-all">
             </div>
             <div>
-                <select name="job_category_id" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none transition-all">
+                <select name="job_category_id" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rdc-blue/20 focus:border-rdc-blue outline-none transition-all">
                     <option value="">Secteur / Catégorie</option>
                     @foreach($jobCategories as $jobCategory)
                         <option value="{{ $jobCategory->id }}" {{ (string) request('job_category_id') === (string) $jobCategory->id ? 'selected' : '' }}>{{ $jobCategory->name }}</option>
@@ -29,7 +29,7 @@
                 </select>
             </div>
             <div>
-                <select name="contract_type" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none transition-all">
+                <select name="contract_type" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rdc-blue/20 focus:border-rdc-blue outline-none transition-all">
                     <option value="">Type de contrat</option>
                     @foreach($contractTypes as $type)
                         <option value="{{ $type }}" {{ request('contract_type') === $type ? 'selected' : '' }}>{{ $type }}</option>
@@ -38,8 +38,8 @@
             </div>
             <div class="flex gap-3">
                 <input type="text" name="location" value="{{ request('location') }}" placeholder="Ville..."
-                       class="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#16a3b0]/20 focus:border-[#16a3b0] outline-none transition-all">
-                <button type="submit" class="px-5 py-3 bg-[#16a3b0] text-white font-bold rounded-xl text-sm hover:bg-[#128a96] transition-all shadow-sm">
+                       class="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rdc-blue/20 focus:border-rdc-blue outline-none transition-all">
+                <button type="submit" class="px-5 py-3 bg-rdc-blue text-white font-bold rounded-xl text-sm hover:bg-rdc-blue-dark transition-all shadow-sm">
                     <i class="fas fa-search"></i>
                 </button>
             </div>
@@ -66,7 +66,7 @@
             </div>
             <h3 class="text-lg font-bold text-slate-500">Aucune offre trouvée</h3>
             <p class="text-sm text-slate-400 mt-1">Modifiez vos critères de recherche.</p>
-            <a href="{{ route('public.jobs.index') }}" class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#16a3b0] text-white text-sm font-bold rounded-xl hover:bg-[#128a96] transition-all">
+            <a href="{{ route('public.jobs.index') }}" class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-rdc-blue text-white text-sm font-bold rounded-xl hover:bg-rdc-blue-dark transition-all">
                 Voir toutes les offres
             </a>
         </div>

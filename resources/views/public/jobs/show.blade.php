@@ -8,7 +8,7 @@
 
     {{-- Breadcrumb --}}
     <nav class="text-xs font-bold text-slate-400 mb-6 sm:mb-8 flex items-center gap-2 flex-wrap">
-        <a href="{{ route('public.jobs.index') }}" class="hover:text-[#16a3b0] transition-colors">Offres d'emploi</a>
+        <a href="{{ route('public.jobs.index') }}" class="hover:text-rdc-blue transition-colors">Offres d'emploi</a>
         <i class="fas fa-chevron-right text-[9px]"></i>
         <span class="text-slate-600 break-words">{{ Str::limit($job->title, 60) }}</span>
     </nav>
@@ -23,7 +23,7 @@
                 @if($job->cover_image)
                     <img src="{{ Storage::url($job->cover_image) }}" alt="{{ $job->title }}" class="w-full h-full object-cover opacity-60">
                 @else
-                    <div class="absolute inset-0 bg-gradient-to-r from-[#16a3b0] to-blue-900 opacity-40"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-rdc-blue to-blue-900 opacity-40"></div>
                     <div class="absolute inset-0 flex items-center justify-center opacity-10">
                         <i class="fas fa-briefcase text-[8rem] sm:text-[10rem] text-white"></i>
                     </div>
@@ -35,7 +35,7 @@
                         <img src="{{ Storage::url($job->company_logo) }}" class="w-full h-full object-contain" alt="{{ $job->company_name }}">
                     @else
                         <div class="w-full h-full rounded-xl sm:rounded-2xl bg-slate-50 flex items-center justify-center">
-                            <span class="text-2xl sm:text-3xl font-black text-[#16a3b0]/50">{{ strtoupper(substr($job->company_name ?? 'C', 0, 1)) }}</span>
+                            <span class="text-2xl sm:text-3xl font-black text-rdc-blue/50">{{ strtoupper(substr($job->company_name ?? 'C', 0, 1)) }}</span>
                         </div>
                     @endif
                 </div>
@@ -47,7 +47,7 @@
                 {{-- Badges + Title --}}
                 <div>
                     <div class="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
-                        <span class="px-3 py-1.5 bg-[#16a3b0]/10 text-[#16a3b0] text-[10px] font-black uppercase tracking-widest rounded-lg">
+                        <span class="px-3 py-1.5 bg-rdc-blue/10 text-rdc-blue text-[10px] font-black uppercase tracking-widest rounded-lg">
                             {{ $job->category ?? 'Secteur non spécifié' }}
                         </span>
                         <span class="px-3 py-1.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-lg">
@@ -59,14 +59,14 @@
                     </h1>
                     <div class="flex flex-wrap items-center gap-3 sm:gap-6 mt-4">
                         <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                            <i class="fas fa-building text-[#16a3b0] opacity-70"></i>
+                            <i class="fas fa-building text-rdc-blue opacity-70"></i>
                             <span class="break-words">{{ $job->company_name }}</span>
                             @if(isset($job->user))
                                 @include('partials.verified-badge', ['user' => $job->user])
                             @endif
                         </div>
                         <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                            <i class="fas fa-map-marker-alt text-[#16a3b0] opacity-70"></i>
+                            <i class="fas fa-map-marker-alt text-rdc-blue opacity-70"></i>
                             <span>{{ $job->location }}</span>
                         </div>
                         <div class="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
@@ -81,7 +81,7 @@
                     <div class="grid grid-cols-2 {{ $job->start_date ? 'sm:grid-cols-4' : 'sm:grid-cols-3' }} gap-2 sm:gap-4 mb-5 sm:mb-6">
                         <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-100">
                             <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Salaire</p>
-                            <p class="font-black text-[#16a3b0] text-sm sm:text-lg truncate">{{ $job->salary_range ?? 'À négocier' }}</p>
+                            <p class="font-black text-rdc-blue text-sm sm:text-lg truncate">{{ $job->salary_range ?? 'À négocier' }}</p>
                         </div>
                         <div class="p-3 sm:p-4 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-slate-100">
                             <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Candidats</p>
@@ -133,7 +133,7 @@
                             </div>
                         @else
                             <a href="{{ route('public.jobs.apply', $job->id) }}"
-                               class="flex items-center justify-center gap-3 w-full py-4 bg-[#16a3b0] hover:bg-[#128a96] text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-[#16a3b0]/20">
+                               class="flex items-center justify-center gap-3 w-full py-4 bg-rdc-blue hover:bg-rdc-blue-dark text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-rdc-blue/20">
                                 <i class="fas fa-paper-plane"></i>
                                 Postuler maintenant
                             </a>
@@ -146,12 +146,12 @@
                     @else
                         <div class="space-y-3">
                             <a href="{{ route('login', ['intended' => route('public.jobs.apply', $job->id)]) }}"
-                               class="flex items-center justify-center gap-3 w-full py-4 bg-[#16a3b0] hover:bg-[#128a96] text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-[#16a3b0]/20">
+                               class="flex items-center justify-center gap-3 w-full py-4 bg-rdc-blue hover:bg-rdc-blue-dark text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-rdc-blue/20">
                                 <i class="fas fa-paper-plane"></i>
                                 Postuler maintenant
                             </a>
                             <p class="text-center text-xs text-slate-400">
-                                <a href="{{ route('register') }}" class="text-[#16a3b0] font-bold hover:underline">Créer un compte gratuit</a>
+                                <a href="{{ route('register') }}" class="text-rdc-blue font-bold hover:underline">Créer un compte gratuit</a>
                                 pour postuler à cette offre.
                             </p>
                         </div>
@@ -162,7 +162,7 @@
                 <div class="space-y-6">
                     <div>
                         <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-3">
-                            <span class="w-8 h-1 bg-[#16a3b0] rounded-full shrink-0"></span>
+                            <span class="w-8 h-1 bg-rdc-blue rounded-full shrink-0"></span>
                             Missions et Responsabilités
                         </h2>
                         <div class="text-slate-600 leading-relaxed text-base sm:text-lg whitespace-pre-line break-words">
@@ -207,7 +207,7 @@
                                 @endif
                                 @if($job->employer)
                                     <a href="{{ route('public.jobs.index', ['search' => $job->company_name]) }}"
-                                       class="inline-flex items-center gap-2 text-sm font-bold text-[#16a3b0] hover:text-[#128a96] transition-colors">
+                                       class="inline-flex items-center gap-2 text-sm font-bold text-rdc-blue hover:text-rdc-blue-dark transition-colors">
                                         Voir toutes les offres de {{ $job->company_name }} <i class="fas fa-arrow-right text-xs"></i>
                                     </a>
                                 @endif
@@ -254,7 +254,7 @@
                                         <p class="text-slate-400 text-sm mt-1">Envoyez votre candidature avec votre CV.</p>
                                     </div>
                                     <a href="{{ route('public.jobs.apply', $job->id) }}"
-                                       class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-8 py-4 bg-[#16a3b0] hover:bg-[#128a96] text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-[#16a3b0]/20 shrink-0">
+                                       class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-8 py-4 bg-rdc-blue hover:bg-rdc-blue-dark text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-rdc-blue/20 shrink-0">
                                         <i class="fas fa-paper-plane"></i>
                                         Postuler maintenant
                                     </a>
@@ -275,7 +275,7 @@
                                     <p class="text-slate-400 text-sm mt-1">Connectez-vous ou créez un compte pour postuler en quelques clics.</p>
                                 </div>
                                 <a href="{{ route('login', ['intended' => route('public.jobs.apply', $job->id)]) }}"
-                                   class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-8 py-4 bg-[#16a3b0] hover:bg-[#128a96] text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-[#16a3b0]/20 shrink-0">
+                                   class="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-8 py-4 bg-rdc-blue hover:bg-rdc-blue-dark text-white rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all shadow-lg shadow-rdc-blue/20 shrink-0">
                                     <i class="fas fa-paper-plane"></i>
                                     Postuler maintenant
                                 </a>

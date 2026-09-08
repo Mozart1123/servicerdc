@@ -19,8 +19,8 @@
                 @if($logoUrl)
                     <img src="{{ $logoUrl }}" alt="{{ $job->company_name }}" class="w-full h-full object-cover">
                 @else
-                    <div class="w-full h-full bg-gradient-to-br from-[#16a3b0]/20 to-[#16a3b0]/5 flex items-center justify-center">
-                        <span class="text-[#16a3b0] font-black text-lg">{{ $initial }}</span>
+                    <div class="w-full h-full bg-gradient-to-br from-rdc-blue/20 to-rdc-blue/5 flex items-center justify-center">
+                        <span class="text-rdc-blue font-black text-lg">{{ $initial }}</span>
                     </div>
                 @endif
             </div>
@@ -36,13 +36,13 @@
         </div>
 
         {{-- Title --}}
-        <h3 class="font-semibold text-slate-900 text-base leading-snug group-hover:text-[#16a3b0] transition-colors line-clamp-2 break-words">
+        <h3 class="font-semibold text-slate-900 text-base leading-snug group-hover:text-rdc-blue transition-colors line-clamp-2 break-words">
             {{ $job->title }}
         </h3>
 
         {{-- Badges --}}
         <div class="flex flex-wrap gap-2">
-            <span class="px-2.5 py-1 text-[10px] font-black bg-[#16a3b0]/10 text-[#16a3b0] rounded-full uppercase tracking-wide">
+            <span class="px-2.5 py-1 text-[10px] font-black bg-rdc-blue/10 text-rdc-blue rounded-full uppercase tracking-wide">
                 {{ $job->contract_type }}
             </span>
             @if($job->category)
@@ -63,7 +63,7 @@
         <span class="text-[10px] text-slate-400 font-medium">
             <i class="far fa-clock mr-1"></i>{{ $job->created_at->diffForHumans() }}
         </span>
-        <span class="inline-flex items-center gap-1 text-[10px] font-black text-[#16a3b0] group-hover:gap-2 transition-all">
+        <span class="inline-flex items-center gap-1 text-[10px] font-black text-rdc-blue group-hover:gap-2 transition-all">
             Voir <i class="fas fa-arrow-right text-[9px]"></i>
         </span>
     </div>

@@ -33,11 +33,11 @@
                     </div>
                     <div class="flex flex-wrap items-center gap-6 mt-4">
                         <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                            <i class="fas fa-map-marker-alt text-[#16a3b0] opacity-70"></i>
+                            <i class="fas fa-map-marker-alt text-rdc-blue opacity-70"></i>
                             <span>{{ $recruiter->city ?? 'Ville non précisée' }}</span>
                         </div>
                         <div class="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                            <i class="fas fa-calendar-alt text-[#16a3b0] opacity-70"></i>
+                            <i class="fas fa-calendar-alt text-rdc-blue opacity-70"></i>
                             <span>Membre depuis {{ $stats['member_since'] }}</span>
                         </div>
                     </div>
@@ -52,7 +52,7 @@
 
                 <div class="bg-slate-50 rounded-3xl p-6 border border-slate-100 text-center shrink-0 w-full md:w-48">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Offres Actives</p>
-                    <p class="font-heading font-black text-[#16a3b0] text-4xl">{{ $stats['active_offers'] }}</p>
+                    <p class="font-heading font-black text-rdc-blue text-4xl">{{ $stats['active_offers'] }}</p>
                 </div>
             </div>
         </div>
@@ -66,7 +66,7 @@
             <div class="grid grid-cols-1 gap-4">
                 @foreach($jobOffers as $job)
                     <a href="{{ route('user.jobs.show', $job->id) }}" 
-                       class="flex flex-col md:flex-row md:items-center gap-6 p-6 bg-white border border-slate-100 rounded-3xl hover:border-[#16a3b0] hover:shadow-xl transition-all group">
+                       class="flex flex-col md:flex-row md:items-center gap-6 p-6 bg-white border border-slate-100 rounded-3xl hover:border-rdc-blue hover:shadow-xl transition-all group">
                         
                         <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 p-3 hidden sm:flex">
                             @if($job->company_logo)
@@ -80,17 +80,17 @@
 
                         <div class="flex-1 min-w-0">
                             <div class="flex flex-wrap items-center gap-3 mb-2">
-                                <span class="px-3 py-1.5 bg-[#16a3b0]/10 text-[#16a3b0] text-[10px] font-black uppercase tracking-widest rounded-lg">{{ $job->category ?? 'Secteur non spécifié' }}</span>
+                                <span class="px-3 py-1.5 bg-rdc-blue/10 text-rdc-blue text-[10px] font-black uppercase tracking-widest rounded-lg">{{ $job->category ?? 'Secteur non spécifié' }}</span>
                                 <span class="px-3 py-1.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-lg">{{ $job->contract_type }}</span>
                             </div>
-                            <h4 class="font-bold text-slate-900 text-lg group-hover:text-[#16a3b0] transition-colors mb-1">{{ $job->title }}</h4>
+                            <h4 class="font-bold text-slate-900 text-lg group-hover:text-rdc-blue transition-colors mb-1">{{ $job->title }}</h4>
                             <div class="flex flex-wrap items-center gap-4 text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-2">
                                 <span class="flex items-center gap-1.5"><i class="fas fa-map-marker-alt"></i> {{ $job->location }}</span>
                                 <span class="flex items-center gap-1.5"><i class="fas fa-clock"></i> {{ $job->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
 
-                        <div class="mt-4 md:mt-0 flex items-center gap-4 text-sm font-bold text-slate-400 group-hover:text-[#16a3b0] transition-colors">
+                        <div class="mt-4 md:mt-0 flex items-center gap-4 text-sm font-bold text-slate-400 group-hover:text-rdc-blue transition-colors">
                             Voir l'offre <i class="fas fa-arrow-right"></i>
                         </div>
                     </a>

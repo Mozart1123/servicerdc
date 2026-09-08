@@ -42,7 +42,7 @@
 
             <textarea name="message" rows="6" required minlength="10" maxlength="2000"
                       placeholder="Expliquez ce qui s'est passé le plus précisément possible..."
-                      class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#16a3b0] focus:border-[#16a3b0] outline-none transition-all text-sm resize-none">{{ old('message') }}</textarea>
+                      class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm resize-none">{{ old('message') }}</textarea>
             @error('message') <p class="text-xs text-red-500 font-medium mt-2">{{ $message }}</p> @enderror
 
             <div class="flex flex-col sm:flex-row items-center gap-4 mt-6">

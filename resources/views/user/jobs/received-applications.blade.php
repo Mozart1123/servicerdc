@@ -131,7 +131,7 @@
                                     <img src="{{ $app->user->photo_url }}"
                                          class="w-10 h-10 rounded-xl object-cover border border-slate-100" alt="">
                                 @else
-                                    <div class="w-10 h-10 rounded-xl bg-[#16a3b0] text-white flex items-center justify-center text-sm font-bold border border-[#16a3b0]/30 shrink-0">
+                                    <div class="w-10 h-10 rounded-xl bg-rdc-blue text-white flex items-center justify-center text-sm font-bold border border-rdc-blue/30 shrink-0">
                                         {{ $initials }}
                                     </div>
                                 @endif
@@ -242,7 +242,7 @@
                         @if($app->user->photo_url)
                             <img src="{{ $app->user->photo_url }}" class="w-14 h-14 rounded-xl object-cover border border-slate-200" alt="{{ $app->user->name }}">
                         @else
-                            <div class="w-14 h-14 rounded-xl bg-[#16a3b0] text-white flex items-center justify-center text-sm font-black border border-[#16a3b0]/30">{{ $initials }}</div>
+                            <div class="w-14 h-14 rounded-xl bg-rdc-blue text-white flex items-center justify-center text-sm font-black border border-rdc-blue/30">{{ $initials }}</div>
                         @endif
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center justify-between gap-2">
@@ -402,7 +402,7 @@ function openCvModal(appId) {
 
             const avatarHtml = photoUrl
                 ? `<img src="${photoUrl}" class="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow" />`
-                : `<div class="w-20 h-20 rounded-2xl bg-[#16a3b0] text-white flex items-center justify-center text-2xl font-black border-2 border-white shadow">${initials}</div>`;
+                : `<div class="w-20 h-20 rounded-2xl bg-rdc-blue text-white flex items-center justify-center text-2xl font-black border-2 border-white shadow">${initials}</div>`;
 
             let fallbackCvHtml = '';
             if (!app.cv_attachment && cv && cv.cv_file) {
