@@ -160,16 +160,27 @@ class PublicController extends Controller
             $query->where('city', 'like', '%' . $request->city . '%');
         }
 
+        if ($request->filled('category')) {
+            $query->whereHas('services', function ($sq) use ($request) {
+                $sq->where('category_id', $request->category);
+            });
+        }
+
         $artisans = $query->with(['artisanLevel'])
             ->withCount('services')
             ->leftJoin('artisan_levels', 'users.id', '=', 'artisan_levels.user_id')
+            ->when($request->filled('min_rating'), function ($q) use ($request) {
+                $q->where('artisan_levels.average_rating', '>=', (float) $request->min_rating);
+            })
             ->orderByRaw("FIELD(artisan_levels.level, 'nouveau', 'actif', 'verifie', 'elite') DESC")
             ->latest('users.created_at')
             ->select('users.*') // Ensure we only select user columns
             ->paginate(12)
             ->appends($request->query());
 
-        return view('public.artisans.index', compact('artisans'));
+        $categories = Category::orderBy('name')->get();
+
+        return view('public.artisans.index', compact('artisans', 'categories'));
     }
 
     /**

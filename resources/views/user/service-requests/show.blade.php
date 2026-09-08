@@ -382,6 +382,19 @@
         </form>
         @endif
 
+        @if($serviceRequest->user_id === auth()->id() && in_array($serviceRequest->status, ['accepted', 'in_progress', 'awaiting_validation', 'completed']) && $serviceRequest->mission)
+            @if($existingDispute)
+                <span class="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-500 font-bold rounded-xl">
+                    <i class="fas fa-flag"></i> Signalement envoyé — en cours de traitement
+                </span>
+            @else
+                <a href="{{ route('user.service-requests.report', $serviceRequest->id) }}"
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-white text-red-500 font-bold rounded-xl hover:bg-red-50 border border-red-200 transition">
+                    <i class="fas fa-triangle-exclamation"></i> Signaler un problème
+                </a>
+            @endif
+        @endif
+
         <a href="{{ route('user.service-requests.index') }}"
            class="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition">
             <i class="fas fa-arrow-left"></i> Retour

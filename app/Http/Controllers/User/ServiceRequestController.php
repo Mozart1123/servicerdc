@@ -334,7 +334,74 @@ class ServiceRequestController extends Controller
             $amountToPay = 10.0;
         }
 
-        return view('user.service-requests.show', compact('serviceRequest', 'conversation', 'amountToPay'));
+        $existingDispute = null;
+        if ($serviceRequest->mission) {
+            $existingDispute = \App\Models\SupportTicket::where('mission_id', $serviceRequest->mission->id)
+                ->where('ticket_type', 'dispute')
+                ->latest()
+                ->first();
+        }
+
+        return view('user.service-requests.show', compact('serviceRequest', 'conversation', 'amountToPay', 'existingDispute'));
+    }
+
+    /**
+     * Show the "Signaler un problème" form (client only). Lets the client
+     * flag an issue with the artisan on a request that has already been
+     * accepted — this creates a SupportTicket of type "dispute" linked to
+     * the underlying mission, which surfaces in the admin support panel and
+     * counts against the artisan's "zéro litige" criterion for the Elite
+     * level. There is no refund attached: the platform no longer handles
+     * client → artisan payments, so this is a moderation signal only.
+     */
+    public function report(ServiceRequest $serviceRequest): View|RedirectResponse
+    {
+        if ($serviceRequest->user_id !== Auth::id()) {
+            abort(403, 'Cette demande ne vous appartient pas.');
+        }
+
+        if (!in_array($serviceRequest->status, ['accepted', 'in_progress', 'awaiting_validation', 'completed'], true) || !$serviceRequest->mission) {
+            return redirect()->route('user.service-requests.show', $serviceRequest->id)
+                ->with('error', 'Vous ne pouvez signaler un problème qu\'après qu\'un artisan a accepté votre demande.');
+        }
+
+        $serviceRequest->load(['mission', 'service.artisan', 'artisan']);
+
+        return view('user.service-requests.report', compact('serviceRequest'));
+    }
+
+    /**
+     * Store the "Signaler un problème" ticket (client only).
+     */
+    public function submitReport(Request $request, ServiceRequest $serviceRequest): RedirectResponse
+    {
+        if ($serviceRequest->user_id !== Auth::id()) {
+            abort(403, 'Cette demande ne vous appartient pas.');
+        }
+
+        if (!in_array($serviceRequest->status, ['accepted', 'in_progress', 'awaiting_validation', 'completed'], true) || !$serviceRequest->mission) {
+            return redirect()->route('user.service-requests.show', $serviceRequest->id)
+                ->with('error', 'Vous ne pouvez signaler un problème qu\'après qu\'un artisan a accepté votre demande.');
+        }
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'min:10', 'max:2000'],
+        ]);
+
+        $artisanForRequest = $serviceRequest->artisan ?? $serviceRequest->service?->artisan;
+
+        \App\Models\SupportTicket::create([
+            'user_id'     => Auth::id(),
+            'mission_id'  => $serviceRequest->mission->id,
+            'subject'     => 'Signalement — ' . ($serviceRequest->requested_service_name ?? 'Demande de service') . ' (#' . $serviceRequest->id . ')'
+                              . ($artisanForRequest ? ' avec ' . $artisanForRequest->name : ''),
+            'message'     => $validated['message'],
+            'ticket_type' => 'dispute',
+            'priority'    => 'high',
+        ]);
+
+        return redirect()->route('user.service-requests.show', $serviceRequest->id)
+            ->with('success', 'Votre signalement a bien été envoyé. Notre équipe va l\'examiner.');
     }
 
     /**

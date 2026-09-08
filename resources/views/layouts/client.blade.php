@@ -41,7 +41,17 @@
                         <div>
                             <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Mon compte</p>
                             <div class="space-y-2 lg:space-y-1">
-                                
+
+                                @php $isDashboard = request()->routeIs('user.dashboard'); @endphp
+                                <div class="nav-item-wrapper">
+                                    <a href="{{ route('user.dashboard') }}" class="is-nav-link flex items-center justify-between px-4 py-3 lg:py-2.5 rounded-xl text-sm font-medium transition-colors {{ $isDashboard ? 'is-active-nav bg-[#16a3b0]/10 text-[#16a3b0]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-border-all w-5 text-center {{ $isDashboard ? 'text-[#16a3b0]' : 'text-slate-400' }}"></i> Tableau de bord
+                                        </div>
+                                        <i class="fas fa-chevron-right lg:hidden text-slate-400 transition-transform duration-300"></i>
+                                    </a>
+                                </div>
+
                                 @php $isProfile = request()->routeIs('user.profile*'); @endphp
                                 <div class="nav-item-wrapper">
                                     <a href="{{ route('user.profile') }}" class="is-nav-link flex items-center justify-between px-4 py-3 lg:py-2.5 rounded-xl text-sm font-medium transition-colors {{ $isProfile ? 'is-active-nav bg-[#16a3b0]/10 text-[#16a3b0]' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">

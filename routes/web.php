@@ -194,6 +194,8 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
         Route::post('/service-requests/{serviceRequest}/rate', [UserServiceRequestController::class, 'rate'])->name('service-requests.rate');
         Route::post('/service-requests/{serviceRequest}/validate-completion', [UserServiceRequestController::class, 'validateCompletion'])->name('service-requests.validate-completion');
+        Route::get('/service-requests/{serviceRequest}/report', [UserServiceRequestController::class, 'report'])->name('service-requests.report');
+        Route::post('/service-requests/{serviceRequest}/report', [UserServiceRequestController::class, 'submitReport'])->name('service-requests.report.submit');
         Route::get('/reviews', [UserDashboardController::class, 'myReviews'])->name('reviews.index');
         // Service Requests
         // (Handled above, client-facing vs artisan-facing separated)

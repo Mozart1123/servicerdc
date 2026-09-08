@@ -14,20 +14,48 @@
 
     {{-- Filters --}}
     <form method="GET" action="{{ route('public.artisans.index') }}" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-8">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Nom, spécialité..."
                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#29B6D1]/20 focus:border-[#29B6D1] outline-none transition-all">
             </div>
-            <div class="flex gap-3">
+            <div>
                 <input type="text" name="city" value="{{ request('city') }}" placeholder="Ville..."
-                       class="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#29B6D1]/20 focus:border-[#29B6D1] outline-none transition-all">
-                <button type="submit" class="px-5 py-3 bg-[#29B6D1] text-white font-bold rounded-xl text-sm hover:bg-[#1E9CB5] transition-all shadow-sm">
+                       class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#29B6D1]/20 focus:border-[#29B6D1] outline-none transition-all">
+            </div>
+            <div>
+                <select name="category"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#29B6D1]/20 focus:border-[#29B6D1] outline-none transition-all">
+                    <option value="">Toutes les catégories</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" {{ (string) request('category') === (string) $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex gap-3">
+                <select name="min_rating"
+                        class="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#29B6D1]/20 focus:border-[#29B6D1] outline-none transition-all">
+                    <option value="">Toutes les notes</option>
+                    <option value="4.5" {{ request('min_rating') === '4.5' ? 'selected' : '' }}>4,5 étoiles et plus</option>
+                    <option value="4" {{ request('min_rating') === '4' ? 'selected' : '' }}>4 étoiles et plus</option>
+                    <option value="3" {{ request('min_rating') === '3' ? 'selected' : '' }}>3 étoiles et plus</option>
+                </select>
+                <button type="submit" class="px-5 py-3 bg-[#29B6D1] text-white font-bold rounded-xl text-sm hover:bg-[#1E9CB5] transition-all shadow-sm shrink-0">
                     <i class="fas fa-search"></i>
                 </button>
             </div>
         </div>
+
+        @if(request()->filled('search') || request()->filled('city') || request()->filled('category') || request()->filled('min_rating'))
+            <div class="mt-3">
+                <a href="{{ route('public.artisans.index') }}" class="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-times mr-1"></i>Réinitialiser les filtres
+                </a>
+            </div>
+        @endif
     </form>
 
     {{-- Results Count --}}

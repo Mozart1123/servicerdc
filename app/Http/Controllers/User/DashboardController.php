@@ -146,11 +146,22 @@ class DashboardController extends Controller
         }
 
         // --- CLIENT ---
-        $stats['service_requests_count'] = $user->serviceRequests()->count();
+        $stats['service_requests_count']  = $user->serviceRequests()->count();
+        $stats['pending_requests_count']  = $user->serviceRequests()->where('status', 'pending')->count();
+        $stats['active_requests_count']   = $user->serviceRequests()->whereIn('status', ['accepted', 'in_progress', 'awaiting_validation'])->count();
+        $stats['completed_requests_count'] = $user->serviceRequests()->where('status', 'completed')->count();
+        $stats['favorites_count']         = \App\Models\ArtisanFavorite::where('user_id', $user->id)->count();
+        $stats['reviews_left_count']      = $user->sentReviews()->count();
 
-        return view('user.dashboard', compact(
-            'stats', 'recentJobs', 'allJobs', 'recentServices',
-            'categories', 'myApplications', 'notifications'
+        $recentRequests = $user->serviceRequests()
+            ->with(['service.artisan', 'artisan'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('user.dashboards.client', compact(
+            'stats', 'recentJobs', 'recentServices',
+            'categories', 'notifications', 'recentRequests'
         ));
     }
 
