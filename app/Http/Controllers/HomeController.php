@@ -76,9 +76,12 @@ class HomeController extends Controller
     public function dashboard()
     {
         $user = auth()->user();
-        if ($user && $user->user_type === \App\Models\User::TYPE_CLIENT && $user->role === \App\Models\User::ROLE_USER) {
-            return redirect()->route('home');
-        }
+
+        // Historiquement les comptes client n'avaient pas de tableau de bord
+        // dédié et étaient renvoyés vers l'accueil. Ce n'est plus le cas —
+        // DashboardController::index() gère désormais correctement les
+        // comptes client — donc on redirige tout le monde vers son propre
+        // tableau de bord, comme pour les artisans et recruteurs.
         return redirect()->route($user->dashboard_route);
     }
 

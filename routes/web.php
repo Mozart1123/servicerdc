@@ -124,10 +124,14 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
     ->prefix('user')
     ->name('user.')
     ->group(function (): void {
-        // Dashboard
-        Route::middleware([PreventClientDashboardAccess::class])->group(function (): void {
-            Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
+        // Dashboard — accessible aux 3 types de compte (client, artisan,
+        // recruteur) : DashboardController::index() choisit lui-même la
+        // bonne vue selon $user->user_type. Elle ne doit donc PAS être dans
+        // le groupe PreventClientDashboardAccess ci-dessous, qui protège
+        // uniquement les actions réservées aux artisans.
+        Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
+        Route::middleware([PreventClientDashboardAccess::class])->group(function (): void {
             // Services Management (Artisan)
             Route::get('/services/create', [UserServiceController::class, 'create'])->name('services.create');
             Route::post('/services', [UserServiceController::class, 'store'])->name('services.store');
