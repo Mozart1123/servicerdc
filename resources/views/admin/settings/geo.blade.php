@@ -44,7 +44,13 @@
                             p.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-100',
                             selected === p.name ? 'ring-2 ring-offset-1 ring-emerald-400' : ''
                         ]">
-                        <span x-text="p.name"></span>
+                        <span class="flex items-center gap-2">
+                            <span class="relative flex h-2 w-2 shrink-0" x-show="p.is_active">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span x-text="p.name"></span>
+                        </span>
                         <div class="flex items-center gap-2">
                             <span class="text-[7px] px-1.5 py-0.5 rounded-md" :class="p.is_active ? 'bg-emerald-100' : 'bg-slate-200 text-slate-500'" x-text="p.is_active ? p.user_count + ' util.' : 'Inactif'"></span>
                             <i class="fas fa-check-circle text-xs" x-show="p.is_active"></i>

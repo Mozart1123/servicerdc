@@ -78,6 +78,10 @@ Route::get('/public/service-types/{serviceType}/services', [PublicController::cl
 // API publique pour les types de services d'une catégorie (utilisée par les formulaires artisans)
 Route::get('/api/categories/{category}/service-types', [PublicController::class, 'apiCategoryServiceTypes'])->name('api.categories.service-types');
 
+// API publique — comptages réels par métier pour le widget "Services à
+// proximité" du hero (page d'accueil), rafraîchie après géolocalisation.
+Route::get('/api/nearby-services', [PublicController::class, 'apiNearbyServices'])->name('api.nearby-services');
+
 // Newsletter subscription from the landing page
 Route::post('/newsletter/subscribe', [HomeController::class, 'subscribeNewsletter'])->name('newsletter.subscribe');
 

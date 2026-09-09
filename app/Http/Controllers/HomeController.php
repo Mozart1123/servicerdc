@@ -9,6 +9,7 @@ use App\Models\NewsletterSubscriber;
 use App\Models\Service;
 use App\Models\Category;
 use App\Models\SupportTicket;
+use App\Services\NearbyServicesService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -18,7 +19,7 @@ class HomeController extends Controller
     /**
      * Display the landing page.
      */
-    public function index(): View
+    public function index(NearbyServicesService $nearbyServicesService): View
     {
         $categories = Category::withCount(['services' => function ($q) {
             $q->where('status', 'active');
@@ -27,7 +28,13 @@ class HomeController extends Controller
             $q->where('status', 'active');
         }])->orderBy('name')->get();
 
-        return view('welcome', compact('categories', 'jobCategories'));
+        // Ville affichée par défaut dans le widget "Services à proximité" du
+        // hero, avant toute géolocalisation réelle du visiteur (le JS la
+        // remplace ensuite par la vraie ville détectée — voir welcome.blade.php).
+        $nearbyCity = 'Kinshasa';
+        $nearbyServices = $nearbyServicesService->countByCity($nearbyCity);
+
+        return view('welcome', compact('categories', 'jobCategories', 'nearbyCity', 'nearbyServices'));
     }
 
     public function about(): View

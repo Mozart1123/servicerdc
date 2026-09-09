@@ -239,4 +239,20 @@ class PublicController extends Controller
     {
         return response()->json($category->serviceTypes);
     }
+
+    /**
+     * API endpoint — comptages réels d'artisans (par métier mis en avant)
+     * pour le widget "Services à proximité" du hero (page d'accueil).
+     * Appelé côté client après une géolocalisation réussie, avec la vraie
+     * ville détectée.
+     */
+    public function apiNearbyServices(Request $request, \App\Services\NearbyServicesService $nearbyServicesService): \Illuminate\Http\JsonResponse
+    {
+        $city = trim((string) $request->query('city', ''));
+
+        return response()->json([
+            'city'     => $city !== '' ? $city : null,
+            'services' => $nearbyServicesService->countByCity($city !== '' ? $city : null),
+        ]);
+    }
 }

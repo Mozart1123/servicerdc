@@ -845,13 +845,13 @@
                                                 rounded-full mb-4">
                                         <i class="fas fa-map-marker-alt text-yellow-300 mr-2"></i>
                                         <h3 class="text-2xl font-bold">Localisé à
-                                            <span id="current-city" class="text-yellow-300">Kinshasa</span>
+                                            <span id="current-city" class="text-yellow-300">{{ $nearbyCity }}</span>
                                         </h3>
                                     </div>
                                     <div class="flex items-center justify-center text-blue-100">
                                         <i class="fas fa-crosshairs text-green-400 mr-2"></i>
                                         <span id="current-address" class="text-lg">
-                                            Détection automatique activée
+                                            Cliquez sur « Me localiser » pour voir les services près de vous
                                         </span>
                                     </div>
                                 </div>
@@ -886,15 +886,15 @@
                                                 </div>
                                             </div>
                                             <div class="text-right">
-                                                <div class="font-bold text-lg">15</div>
+                                                <div class="font-bold text-lg" id="count-electriciens">{{ $nearbyServices['electriciens']['count'] }}</div>
                                                 <div class="text-sm text-green-300">disponibles</div>
                                             </div>
                                         </div>
 
-                                        <div class="flex items-center justify-between p-3 bg-white/5 
+                                        <div class="flex items-center justify-between p-3 bg-white/5
                                                     rounded-xl hover:bg-white/10 transition-colors">
                                             <div class="flex items-center">
-                                                <div class="w-12 h-12 rounded-full bg-yellow-100/20 
+                                                <div class="w-12 h-12 rounded-full bg-yellow-100/20
                                                             flex items-center justify-center mr-4">
                                                     <i class="fas fa-tools text-yellow-300 text-xl"></i>
                                                 </div>
@@ -904,15 +904,15 @@
                                                 </div>
                                             </div>
                                             <div class="text-right">
-                                                <div class="font-bold text-lg">9</div>
+                                                <div class="font-bold text-lg" id="count-plombiers">{{ $nearbyServices['plombiers']['count'] }}</div>
                                                 <div class="text-sm text-green-300">disponibles</div>
                                             </div>
                                         </div>
 
-                                        <div class="flex items-center justify-between p-3 bg-white/5 
+                                        <div class="flex items-center justify-between p-3 bg-white/5
                                                     rounded-xl hover:bg-white/10 transition-colors">
                                             <div class="flex items-center">
-                                                <div class="w-12 h-12 rounded-full bg-red-100/20 
+                                                <div class="w-12 h-12 rounded-full bg-red-100/20
                                                             flex items-center justify-center mr-4">
                                                     <i class="fas fa-cut text-red-300 text-xl"></i>
                                                 </div>
@@ -922,7 +922,7 @@
                                                 </div>
                                             </div>
                                             <div class="text-right">
-                                                <div class="font-bold text-lg">22</div>
+                                                <div class="font-bold text-lg" id="count-couturiers">{{ $nearbyServices['couturiers']['count'] }}</div>
                                                 <div class="text-sm text-green-300">disponibles</div>
                                             </div>
                                         </div>
@@ -1841,6 +1841,34 @@
             // la classe .js-geolocation-btn (desktop ET tiroir mobile).
             const currentCity = document.getElementById('current-city');
             const currentAddress = document.getElementById('current-address');
+            const countElectriciens = document.getElementById('count-electriciens');
+            const countPlombiers = document.getElementById('count-plombiers');
+            const countCouturiers = document.getElementById('count-couturiers');
+
+            // Recharge les vrais comptages d'artisans (widget "Services à
+            // proximité") pour la ville détectée. Affichée par défaut pour
+            // Kinshasa au chargement de la page (calculée côté serveur),
+            // puis rafraîchie ici avec la vraie ville une fois la
+            // géolocalisation réussie.
+            async function updateNearbyServicesCounts(city) {
+                try {
+                    const response = await fetch(`{{ route('api.nearby-services') }}?city=${encodeURIComponent(city)}`);
+                    if (!response.ok) return;
+                    const data = await response.json();
+
+                    if (countElectriciens && data.services?.electriciens) {
+                        countElectriciens.textContent = data.services.electriciens.count;
+                    }
+                    if (countPlombiers && data.services?.plombiers) {
+                        countPlombiers.textContent = data.services.plombiers.count;
+                    }
+                    if (countCouturiers && data.services?.couturiers) {
+                        countCouturiers.textContent = data.services.couturiers.count;
+                    }
+                } catch (error) {
+                    console.error('Erreur chargement des services à proximité:', error);
+                }
+            }
 
             const rdCities = [
                 { name: "Kinshasa", address: "Commune de la Gombe, Kinshasa", province: "Kinshasa" },
@@ -1893,6 +1921,10 @@
                                 if (currentAddress) currentAddress.textContent = `${fullAddress} ${province ? '• ' + province : ''}`;
 
                                 locationText.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${city}`;
+
+                                // Recharge les vrais comptages d'artisans pour la ville
+                                // réellement détectée (plus les chiffres fixes de Kinshasa).
+                                updateNearbyServicesCounts(city);
 
                                 showNotification(`Localisé à ${city}`, 'success');
                             } catch (error) {
