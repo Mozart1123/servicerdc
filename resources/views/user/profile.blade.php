@@ -131,6 +131,97 @@
             @endif
         </section>
 
+        @if(auth()->user()->isArtisan())
+        <hr class="border-slate-100">
+
+        {{-- Informations professionnelles --}}
+        <section>
+            <h2 class="text-lg font-bold text-slate-900 mb-2">Informations professionnelles</h2>
+            <p class="text-sm text-slate-500 mb-6">Ces informations seront visibles sur votre fiche publique, dans l'onglet « À propos ». Le téléphone reste privé.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Années d'expérience</label>
+                    <input type="number" name="years_experience" min="0" max="80"
+                           value="{{ old('years_experience', auth()->user()->years_experience) }}"
+                           placeholder="Ex : 5"
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
+                    @error('years_experience') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2" x-data="{
+                        languages: {{ Illuminate\Support\Js::from(old('languages', auth()->user()->languages ?? [])) }},
+                        newLanguage: ''
+                     }">
+                    <label class="block text-sm font-medium text-slate-700">Langues parlées</label>
+                    <div class="flex flex-wrap items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded-lg focus-within:ring-2 focus-within:ring-rdc-blue focus-within:border-rdc-blue">
+                        <template x-for="(lang, index) in languages" :key="index">
+                            <span class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1 bg-rdc-blue/10 text-rdc-blue text-xs font-semibold rounded-full">
+                                <span x-text="lang"></span>
+                                <button type="button" @click="languages.splice(index, 1)" class="hover:text-red-500" aria-label="Retirer cette langue">
+                                    <i class="fas fa-times text-[10px]"></i>
+                                </button>
+                                <input type="hidden" name="languages[]" :value="lang">
+                            </span>
+                        </template>
+                        <input type="text" x-model="newLanguage"
+                               @keydown.enter.prevent="if (newLanguage.trim()) { languages.push(newLanguage.trim()); newLanguage = ''; }"
+                               placeholder="Ajouter..."
+                               class="flex-1 min-w-[100px] py-1 text-sm outline-none border-0">
+                        <button type="button"
+                                @click="if (newLanguage.trim()) { languages.push(newLanguage.trim()); newLanguage = ''; }"
+                                class="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-slate-100 hover:bg-rdc-blue hover:text-white text-slate-500 transition-colors"
+                                aria-label="Ajouter cette langue">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                    @error('languages') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Zone d'intervention</label>
+                    <input type="text" name="intervention_zone"
+                           value="{{ old('intervention_zone', auth()->user()->intervention_zone) }}"
+                           placeholder="Ex : Kinshasa et environs"
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
+                    @error('intervention_zone') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                @php
+                    $homeServiceValue = old('home_service');
+                    if ($homeServiceValue === null && auth()->user()->home_service !== null) {
+                        $homeServiceValue = auth()->user()->home_service ? '1' : '0';
+                    }
+                @endphp
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Déplacement à domicile</label>
+                    <div class="flex items-center gap-6 pt-2.5">
+                        <label class="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                            <input type="radio" name="home_service" value="1" {{ $homeServiceValue === '1' ? 'checked' : '' }}
+                                   class="text-rdc-blue focus:ring-rdc-blue">
+                            Oui
+                        </label>
+                        <label class="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                            <input type="radio" name="home_service" value="0" {{ $homeServiceValue === '0' ? 'checked' : '' }}
+                                   class="text-rdc-blue focus:ring-rdc-blue">
+                            Non
+                        </label>
+                    </div>
+                    @error('home_service') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="sm:col-span-2 space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Adresse (si applicable)</label>
+                    <input type="text" name="address"
+                           value="{{ old('address', auth()->user()->address) }}"
+                           placeholder="Ex : Commune de la Gombe"
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
+                    @error('address') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </section>
+        @endif
+
         <div class="flex flex-col sm:flex-row items-center justify-start gap-4 pt-4">
             <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-rdc-blue text-white font-medium text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors text-center">
                 Enregistrer les modifications

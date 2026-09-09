@@ -223,6 +223,18 @@ class DashboardController extends Controller
             $rules['company_description'] = ['nullable', 'string', 'max:600'];
         }
 
+        // Informations professionnelles — artisans uniquement. Le téléphone
+        // (déjà géré ci-dessus) reste privé : il n'apparaît pas sur la fiche
+        // publique, contrairement à ces champs qui y seront affichés.
+        if ($user->isArtisan()) {
+            $rules['years_experience']   = ['nullable', 'integer', 'min:0', 'max:80'];
+            $rules['languages']          = ['nullable', 'array'];
+            $rules['languages.*']        = ['string', 'max:50'];
+            $rules['intervention_zone']  = ['nullable', 'string', 'max:255'];
+            $rules['home_service']       = ['nullable', 'in:0,1'];
+            $rules['address']            = ['nullable', 'string', 'max:255'];
+        }
+
         $request->validate($rules);
 
         $fields = $request->only(['name', 'phone', 'city', 'bio']);
@@ -230,6 +242,17 @@ class DashboardController extends Controller
         // Only persist company_description when the user is actually a recruiter
         if ($user->isRecruiter()) {
             $fields['company_description'] = $request->input('company_description');
+        }
+
+        if ($user->isArtisan()) {
+            $fields['years_experience']  = $request->input('years_experience');
+            $fields['languages']         = array_values(array_filter(
+                $request->input('languages', []),
+                fn ($lang) => trim((string) $lang) !== ''
+            ));
+            $fields['intervention_zone'] = $request->input('intervention_zone');
+            $fields['home_service']      = $request->filled('home_service') ? (bool) $request->input('home_service') : null;
+            $fields['address']           = $request->input('address');
         }
 
         $user->update($fields);

@@ -187,6 +187,84 @@
                     <p class="text-sm text-slate-400 font-medium">Cet artisan n'a pas encore complété sa présentation.</p>
                 </div>
             @endif
+
+            @php
+                $hasPracticalInfo = $artisan->years_experience
+                    || !empty($artisan->languages)
+                    || $artisan->intervention_zone
+                    || !is_null($artisan->home_service)
+                    || $artisan->address;
+            @endphp
+            @if($hasPracticalInfo)
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 mt-6">
+                    <h2 class="text-lg font-bold text-slate-900 mb-5">Informations pratiques</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        @if($artisan->years_experience)
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-[#29B6D1]/10 text-[#29B6D1] flex items-center justify-center shrink-0">
+                                    <i class="fas fa-briefcase text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Expérience</p>
+                                    <p class="text-sm font-bold text-slate-800">{{ $artisan->years_experience }} an{{ $artisan->years_experience > 1 ? 's' : '' }}</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if(!empty($artisan->languages))
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-[#29B6D1]/10 text-[#29B6D1] flex items-center justify-center shrink-0">
+                                    <i class="fas fa-language text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide mb-1">Langues parlées</p>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach($artisan->languages as $lang)
+                                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full">{{ $lang }}</span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($artisan->intervention_zone)
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-[#29B6D1]/10 text-[#29B6D1] flex items-center justify-center shrink-0">
+                                    <i class="fas fa-map-marked-alt text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Zone d'intervention</p>
+                                    <p class="text-sm font-bold text-slate-800">{{ $artisan->intervention_zone }}</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if(!is_null($artisan->home_service))
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-[#29B6D1]/10 text-[#29B6D1] flex items-center justify-center shrink-0">
+                                    <i class="fas fa-house-user text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Déplacement à domicile</p>
+                                    <p class="text-sm font-bold text-slate-800">{{ $artisan->home_service ? 'Oui' : 'Non' }}</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($artisan->address)
+                            <div class="flex items-start gap-3 sm:col-span-2">
+                                <div class="w-9 h-9 rounded-lg bg-[#29B6D1]/10 text-[#29B6D1] flex items-center justify-center shrink-0">
+                                    <i class="fas fa-location-dot text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Adresse</p>
+                                    <p class="text-sm font-bold text-slate-800">{{ $artisan->address }}</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
         </div>
 
         {{-- Tab : Services --}}

@@ -59,6 +59,11 @@ class User extends Authenticatable
         'company_description',
         'skills',
         'interests',
+        'years_experience',
+        'languages',
+        'intervention_zone',
+        'home_service',
+        'address',
     ];
 
     protected $hidden = [
@@ -79,6 +84,8 @@ class User extends Authenticatable
             'password'          => 'hashed',
             'skills'            => 'array',
             'interests'         => 'array',
+            'languages'         => 'array',
+            'home_service'      => 'boolean',
         ];
     }
 
