@@ -1336,8 +1336,9 @@
                     <div style="max-height:300px;overflow-y:auto;background:var(--bg-card,#ffffff);">
                         @forelse($saRecentNotifications as $notif)
                             <div style="padding:10px 16px;border-bottom:1px solid var(--border,#f1f5f9);display:flex;align-items:flex-start;gap:10px;{{ !$notif->is_read ? 'background:rgba(41,182,209,0.06);' : '' }}">
-                                <div style="width:32px;height:32px;border-radius:50%;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;">
-                                    <i class="fas {{ $notif->is_read ? 'fa-bell-slash' : 'fa-bell' }}"></i>
+                                @php [$saIconBg, $saIconText, $saIcon] = $notif->iconClasses(); @endphp
+                                <div class="{{ $saIconBg }} {{ $saIconText }}" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;">
+                                    <i class="fas {{ $saIcon }}"></i>
                                 </div>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:12px;font-weight:600;color:var(--text-primary,#1e293b);line-height:1.3;margin-bottom:2px;">
@@ -1367,7 +1368,7 @@
 
                     {{-- Footer --}}
                     <div style="padding:10px 16px;border-top:1px solid var(--border,#e2e8f0);text-align:center;background:var(--bg-body,#f8fafc);">
-                        <a href="{{ route('user.notifications.index') }}" style="font-size:12px;font-weight:600;color:#29B6D1;text-decoration:none;">
+                        <a href="{{ route('super-admin.notifications.index') }}" style="font-size:12px;font-weight:600;color:#29B6D1;text-decoration:none;">
                             Voir toutes les notifications <i class="fas fa-arrow-right" style="font-size:10px;margin-left:4px;"></i>
                         </a>
                     </div>

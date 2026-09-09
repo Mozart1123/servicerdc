@@ -1,9 +1,6 @@
-@extends('layouts.admin')
+@extends('layouts.super-admin')
 
-@section('title', 'Notifications')
-@section('header_title', 'Notifications')
-@section('page_title', 'Centre de Notifications')
-@section('page_subtitle', 'Retrouvez ici toute l\'activité qui vous concerne sur ProConnect.')
+@section('header_title', 'Centre de Notifications')
 
 @section('content')
 <div class="space-y-8 pb-20" x-data="{ openId: null, confirmDeleteId: null }">
@@ -21,7 +18,7 @@
                 {{ $total }} notification(s)
             </p>
             @if($unreadTotal > 0)
-                <span class="bg-rdc-blue/10 text-rdc-blue text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wide">{{ $unreadTotal }} non lue{{ $unreadTotal > 1 ? 's' : '' }}</span>
+                <span class="bg-blue-50 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wide">{{ $unreadTotal }} non lue{{ $unreadTotal > 1 ? 's' : '' }}</span>
             @endif
         </div>
         <form action="{{ route('user.notifications.read-all') }}" method="POST">
@@ -34,10 +31,10 @@
 
     <!-- Filter tabs -->
     <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-2xl">
-        <a href="{{ route('admin.notifications.index') }}" class="px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all {{ !request()->boolean('unread') ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500' }}">
+        <a href="{{ route('super-admin.notifications.index') }}" class="px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all {{ !request()->boolean('unread') ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500' }}">
             Toutes <span class="opacity-50">{{ $total }}</span>
         </a>
-        <a href="{{ route('admin.notifications.index', ['unread' => 1]) }}" class="px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all {{ request()->boolean('unread') ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500' }}">
+        <a href="{{ route('super-admin.notifications.index', ['unread' => 1]) }}" class="px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all {{ request()->boolean('unread') ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500' }}">
             Non lues <span class="opacity-50">{{ $unreadTotal }}</span>
         </a>
     </div>
@@ -45,7 +42,7 @@
     <!-- Notifications List -->
     <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
         @forelse($notifications as $n)
-            <x-notification-row :notification="$n" variant="rdc" />
+            <x-notification-row :notification="$n" variant="super" />
         @empty
             <div class="flex flex-col items-center justify-center py-24 text-center">
                 <div class="w-16 h-16 rounded-full bg-slate-50 text-slate-200 flex items-center justify-center text-3xl mb-4 shadow-inner">

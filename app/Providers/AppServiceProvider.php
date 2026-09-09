@@ -32,6 +32,13 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // The whole UI is French, but Carbon's own locale (used by
+        // ->diffForHumans() and ->translatedFormat()) doesn't follow
+        // config('app.locale') automatically — without this, relative
+        // dates render in English ("1 week ago") everywhere they're used,
+        // notifications included.
+        \Illuminate\Support\Carbon::setLocale('fr');
+
         // Share layout-selection variables with all user.* views (Client vs Dashboard)
         View::composer('user.*', ClientLayoutComposer::class);
 

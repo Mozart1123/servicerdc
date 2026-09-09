@@ -303,8 +303,9 @@
                                 <div class="flex items-start gap-3 hover:bg-slate-50 transition-colors {{ !$notif->is_read ? 'bg-sky-50/40' : '' }}">
                                     <a href="{{ $notif->action_url ?: route('admin.notifications.index') }}"
                                        class="flex-1 min-w-0 flex items-start gap-3 p-4">
-                                        <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 text-xs mt-0.5">
-                                            <i class="fas {{ $notif->is_read ? 'fa-bell-slash' : 'fa-bell' }}"></i>
+                                        @php [$adminIconBg, $adminIconText, $adminIcon] = $notif->iconClasses(); @endphp
+                                        <div class="w-8 h-8 rounded-full {{ $adminIconBg }} {{ $adminIconText }} flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                            <i class="fas {{ $adminIcon }}"></i>
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-bold text-slate-800 leading-snug">

@@ -14,17 +14,31 @@ class NotificationController extends Controller
 {
     /**
      * Display the notifications page.
+     *
+     * `?unread=1` filters the list (and pagination) to unread notifications
+     * only — done server-side rather than client-side so it stays correct
+     * across pages, not just the notifications currently on screen.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $user = Auth::user();
-        
-        $notifications = Notification::where('user_id', $user->id)
+        $userId = Auth::id();
+
+        $base        = Notification::where('user_id', $userId);
+        $total       = (clone $base)->count();
+        $unreadTotal = (clone $base)->unread()->count();
+
+        $query = Notification::where('user_id', $userId);
+        if ($request->boolean('unread')) {
+            $query->unread();
+        }
+
+        $notifications = $query
             ->orderBy('is_read', 'asc')
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('user.notifications.index', compact('notifications'));
+        return view('user.notifications.index', compact('notifications', 'total', 'unreadTotal'));
     }
 
     /**

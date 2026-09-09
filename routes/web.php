@@ -44,6 +44,7 @@ use App\Http\Controllers\SuperAdmin\BillingController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\OrganizationController as SuperAdminOrganizationController;
 use App\Http\Controllers\SuperAdmin\PlanController as SuperAdminPlanController;
+use App\Http\Controllers\SuperAdmin\NotificationController as SuperAdminNotificationController;
 use App\Http\Controllers\SuperAdmin\ServiceController as SuperAdminServiceController;
 use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingController;
 
@@ -500,6 +501,8 @@ Route::middleware(['auth', 'role:super_admin'])
 
         Route::get('/profile', [SuperAdminDashboardController::class, 'profile'])->name('profile.edit');
         Route::put('/profile', [SuperAdminDashboardController::class, 'updateProfile'])->name('profile.update');
+
+        Route::get('/notifications', [SuperAdminNotificationController::class, 'index'])->name('notifications.index');
 
         // Admin Hierarchy
         Route::prefix('users')->name('users.')->group(function (): void {
