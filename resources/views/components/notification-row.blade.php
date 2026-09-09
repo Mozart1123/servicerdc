@@ -28,7 +28,7 @@
     $accentHover  = $isSuper ? 'hover:bg-blue-600' : 'hover:bg-rdc-blue';
     $accentText   = $isSuper ? 'text-blue-600' : 'text-rdc-blue';
 
-    [, $iconText] = $n->iconClasses();
+    [$iconBg, $iconText] = $n->iconClasses();
 @endphp
 
 <div class="flex items-start gap-4 md:gap-6 p-6 md:p-8 border-b border-slate-50 last:border-b-0 border-l-4 transition-colors {{ $unread ? "$accentBg $accentBorder" : 'border-transparent' }}">
@@ -90,41 +90,56 @@
     x-cloak
     @click="openId = null"
     @keydown.escape.window="openId = null"
-    class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 sm:p-6"
 >
-    <div @click.stop class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden">
-        <div class="flex items-start justify-between gap-4 p-7 border-b border-slate-50">
+    <div @click.stop
+         x-show="openId === {{ $n->id }}"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+         class="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden">
+
+        <div class="flex items-start justify-between gap-4 p-6 sm:p-8 pb-6">
             <div class="flex items-center gap-4 min-w-0">
                 <x-notification-icon :notification="$n" size="lg" />
                 <div class="min-w-0">
-                    <span class="text-[10px] font-black {{ $iconText }} uppercase tracking-widest">{{ $n->categoryLabel() }}</span>
-                    <h3 class="font-black text-slate-900 text-lg mt-0.5">{{ $n->title }}</h3>
+                    <span class="inline-block {{ $iconBg }} {{ $iconText }} text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full mb-2">{{ $n->categoryLabel() }}</span>
+                    <h3 class="font-black text-slate-900 text-lg sm:text-xl leading-snug">{{ $n->title }}</h3>
                 </div>
             </div>
-            <button type="button" @click="openId = null" class="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 shrink-0">
-                <i class="fas fa-xmark text-xs"></i>
+            <button type="button" @click="openId = null" class="w-9 h-9 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-full text-slate-500 transition-colors shrink-0">
+                <i class="fas fa-xmark text-sm"></i>
             </button>
         </div>
 
-        <div class="p-7">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-tighter mb-3">{{ $n->created_at->translatedFormat('j F Y à H:i') }} · {{ $n->created_at->diffForHumans() }}</p>
-            <p class="text-slate-700 text-sm leading-relaxed">{{ $n->message }}</p>
+        <div class="px-6 sm:px-8 pb-7">
+            <p class="text-xs font-bold text-slate-400 flex items-center gap-2 mb-4">
+                <i class="far fa-clock"></i>
+                <span>{{ $n->created_at->translatedFormat('j F Y à H:i') }} <span class="text-slate-300">·</span> {{ $n->created_at->diffForHumans() }}</span>
+            </p>
+            <p class="text-slate-700 text-base leading-relaxed">{{ $n->message }}</p>
         </div>
 
-        <div class="flex items-center justify-between gap-3 px-7 pb-7" x-show="confirmDeleteId !== {{ $n->id }}">
-            <button type="button" @click="confirmDeleteId = {{ $n->id }}" class="flex items-center gap-2 text-[11px] font-black text-slate-400 hover:text-red-500 uppercase tracking-widest">
+        <div class="flex items-center justify-between gap-3 px-6 sm:px-8 py-6 bg-slate-50/70 border-t border-slate-100" x-show="confirmDeleteId !== {{ $n->id }}">
+            <button type="button" @click="confirmDeleteId = {{ $n->id }}" class="flex items-center gap-2 text-[12px] font-bold text-slate-400 hover:text-red-500 transition-colors">
                 <i class="fas fa-trash text-xs"></i> Supprimer
             </button>
             <div class="flex items-center gap-3">
-                <button type="button" @click="openId = null" class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600">Fermer</button>
+                <button type="button" @click="openId = null" class="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-[11px] font-black uppercase tracking-widest text-slate-600 transition-colors">Fermer</button>
                 @if($n->action_url)
-                    <a href="{{ $n->action_url }}" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest {{ $accentHover }} transition-all">Voir l'élément</a>
+                    <a href="{{ $n->action_url }}" class="px-5 py-2.5 {{ $accentBadge }} text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-md">Voir l'élément</a>
                 @endif
             </div>
         </div>
 
-        <div class="flex items-center gap-3 px-7 pb-7 pt-4 bg-red-50" x-show="confirmDeleteId === {{ $n->id }}" x-cloak>
-            <span class="text-[11px] font-bold text-red-700 flex-1">Supprimer définitivement cette notification ?</span>
+        <div class="flex items-center gap-3 px-6 sm:px-8 py-6 bg-red-50 border-t border-red-100" x-show="confirmDeleteId === {{ $n->id }}" x-cloak>
+            <span class="text-[12px] font-bold text-red-700 flex-1">Supprimer définitivement cette notification ?</span>
             <button type="button" @click="confirmDeleteId = null" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase text-slate-600">Annuler</button>
             <form action="{{ route('user.notifications.destroy', $n->id) }}" method="POST">
                 @csrf
