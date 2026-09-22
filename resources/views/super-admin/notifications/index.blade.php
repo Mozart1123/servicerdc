@@ -13,6 +13,8 @@
         :active-category="$activeCategory"
         :category-options="$categoryOptions"
         index-route="super-admin.notifications.index"
+        read-all-route="super-admin.notifications.read-all"
+        read-route="super-admin.notifications.read"
         variant="super"
         subtitle="Gardez une vue claire sur les notifications système et les actions sensibles."
     />

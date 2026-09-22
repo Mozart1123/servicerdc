@@ -1323,7 +1323,7 @@
                             @endif
                         </div>
                         @if($saUnreadCount > 0)
-                            <form method="POST" action="{{ route('user.notifications.read-all') }}" style="margin:0;">
+                            <form method="POST" action="{{ route('super-admin.notifications.read-all') }}" style="margin:0;">
                                 @csrf
                                 <button type="submit" style="font-size:11px;color:#29B6D1;background:none;border:none;cursor:pointer;font-weight:600;">
                                     Tout marquer lu
@@ -1350,7 +1350,7 @@
                                     <div style="font-size:10px;color:var(--text-muted,#94a3b8);display:flex;align-items:center;gap:8px;">
                                         <span>{{ $notif->created_at ? $notif->created_at->diffForHumans() : '' }}</span>
                                         @if(!$notif->is_read)
-                                            <form method="POST" action="{{ route('user.notifications.read', $notif->id) }}" style="margin:0;display:inline;">
+                                            <form method="POST" action="{{ route('super-admin.notifications.read', $notif->id) }}" style="margin:0;display:inline;">
                                                 @csrf
                                                 <button type="submit" style="font-size:10px;color:#29B6D1;background:none;border:none;cursor:pointer;padding:0;font-weight:600;">Marquer lu</button>
                                             </form>

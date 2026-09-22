@@ -289,7 +289,7 @@
                                 @endif
                             </div>
                             @if($adminUnreadCount > 0)
-                                <form method="POST" action="{{ route('user.notifications.read-all') }}" class="m-0">
+                                <form method="POST" action="{{ route('admin.notifications.read-all') }}" class="m-0">
                                     @csrf
                                     <button type="submit" class="text-xs font-bold text-rdc-blue hover:underline">
                                         Tout marquer lu
@@ -320,7 +320,7 @@
                                         </div>
                                     </a>
                                     @if(!$notif->is_read)
-                                        <form method="POST" action="{{ route('user.notifications.read', $notif->id) }}" class="m-0 shrink-0 pt-4 pr-4">
+                                        <form method="POST" action="{{ route('admin.notifications.read', $notif->id) }}" class="m-0 shrink-0 pt-4 pr-4">
                                             @csrf
                                             <button type="submit" class="text-[10px] font-bold text-rdc-blue hover:underline whitespace-nowrap">Marquer lu</button>
                                         </form>

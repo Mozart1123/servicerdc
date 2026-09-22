@@ -187,26 +187,58 @@
                 <div class="space-y-4">
                     <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Image Principale (Miniature)</label>
                     <div class="flex flex-col md:flex-row gap-6 items-start">
-                        @if($service->service_image)
-                            <div class="relative w-40 h-40 rounded-2xl overflow-hidden border-2 border-slate-100 shadow-sm flex-none">
-                                <img src="{{ Storage::url($service->service_image) }}" class="w-full h-full object-cover">
-                                <div class="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                    <span class="text-white text-[8px] font-black uppercase">Actuelle</span>
-                                </div>
-                            </div>
-                        @else
-                            <div class="w-40 h-40 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300 flex-none">
+                        {{-- Aperçu : affiche le fichier sélectionné en priorité, sinon l'image actuelle --}}
+                        <div class="relative w-40 h-40 rounded-2xl overflow-hidden border-2 flex-none transition-all"
+                             :class="mainImagePreview ? 'border-rdc-blue shadow-md' : 'border-slate-100 shadow-sm'">
+                            <img
+                                :src="mainImagePreview ?? '{{ $service->service_image ? Storage::url($service->service_image) : '' }}'"
+                                x-show="mainImagePreview || {{ $service->service_image ? 'true' : 'false' }}"
+                                class="w-full h-full object-cover"
+                            >
+                            <div x-show="!mainImagePreview && {{ $service->service_image ? 'false' : 'true' }}"
+                                 class="w-full h-full bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
                                 <i class="fas fa-image text-2xl mb-2"></i>
                                 <span class="text-[8px] font-black uppercase">Aucune</span>
                             </div>
-                        @endif
-
-                        <div class="flex-1 w-full relative border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center hover:bg-slate-50 transition-colors group">
-                            <input type="file" name="service_image" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-rdc-blue text-lg mx-auto mb-3 group-hover:scale-110 transition-transform">
-                                <i class="fas fa-camera"></i>
+                            {{-- Badge « Aperçu » lorsqu'un fichier est sélectionné --}}
+                            <div x-show="mainImagePreview"
+                                 class="absolute bottom-0 inset-x-0 bg-rdc-blue/80 text-white text-[8px] font-black uppercase text-center py-1">
+                                Aperçu
                             </div>
-                            <h4 class="font-bold text-slate-900 text-[11px] mb-1">Remplacer l'image principale</h4>
+                            {{-- Overlay « Actuelle » pour l'image enregistrée --}}
+                            <div x-show="!mainImagePreview && {{ $service->service_image ? 'true' : 'false' }}"
+                                 class="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                <span class="text-white text-[8px] font-black uppercase">Actuelle</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 w-full relative border-2 border-dashed rounded-3xl p-8 text-center transition-colors group"
+                             :class="mainImagePreview ? 'border-rdc-blue bg-rdc-blue/5' : 'border-slate-200 hover:bg-slate-50'">
+                            <input
+                                type="file"
+                                name="service_image"
+                                accept="image/*"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                @change="
+                                    const f = $event.target.files[0];
+                                    if (f) {
+                                        const reader = new FileReader();
+                                        reader.onload = e => { mainImagePreview = e.target.result; };
+                                        reader.readAsDataURL(f);
+                                    } else {
+                                        mainImagePreview = null;
+                                    }
+                                "
+                            >
+                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-lg mx-auto mb-3 group-hover:scale-110 transition-transform"
+                                 :class="mainImagePreview ? 'text-rdc-blue' : 'text-rdc-blue'">
+                                <i x-show="!mainImagePreview" class="fas fa-camera"></i>
+                                <i x-show="mainImagePreview" class="fas fa-check"></i>
+                            </div>
+                            <h4 class="font-bold text-[11px] mb-1" :class="mainImagePreview ? 'text-rdc-blue' : 'text-slate-900'">
+                                <span x-show="!mainImagePreview">Remplacer l'image principale</span>
+                                <span x-show="mainImagePreview">Image sélectionnée — cliquer pour changer</span>
+                            </h4>
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">JPG, PNG (Max 2MB)</p>
                         </div>
                     </div>
@@ -238,13 +270,46 @@
                 <!-- Nouvelles Images -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Ajouter de nouvelles images (Max 5)</label>
-                    <div class="relative border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center hover:bg-slate-50 transition-colors group">
-                        <input type="file" name="images[]" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                        <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center text-amber-500 text-2xl mx-auto mb-4 group-hover:scale-110 transition-transform">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <h4 class="font-bold text-slate-900 mb-1">Cliquez ou glissez vos images ici</h4>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">JPG, PNG, GIF (Max 2MB)</p>
+                    <div class="relative border-2 border-dashed rounded-3xl p-10 text-center transition-colors group"
+                         :class="newGalleryPreviews.length > 0 ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200 hover:bg-slate-50'">
+                        <input
+                            type="file"
+                            name="images[]"
+                            multiple
+                            accept="image/*"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            @change="
+                                newGalleryPreviews = [];
+                                const files = Array.from($event.target.files).slice(0, 5);
+                                files.forEach(f => {
+                                    const reader = new FileReader();
+                                    reader.onload = e => { newGalleryPreviews.push(e.target.result); };
+                                    reader.readAsDataURL(f);
+                                });
+                            "
+                        >
+                        {{-- Aperçus galerie --}}
+                        <template x-if="newGalleryPreviews.length === 0">
+                            <div>
+                                <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center text-amber-500 text-2xl mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 mb-1">Cliquez ou glissez vos images ici</h4>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">JPG, PNG, GIF (Max 2MB)</p>
+                            </div>
+                        </template>
+                        <template x-if="newGalleryPreviews.length > 0">
+                            <div>
+                                <div class="flex flex-wrap gap-3 justify-center mb-3 pointer-events-none">
+                                    <template x-for="(src, i) in newGalleryPreviews" :key="i">
+                                        <img :src="src" class="w-20 h-20 object-cover rounded-xl border-2 border-amber-300 shadow-sm">
+                                    </template>
+                                </div>
+                                <p class="text-xs font-black text-amber-600 uppercase tracking-widest">
+                                    <span x-text="newGalleryPreviews.length"></span> image(s) sélectionnée(s) — cliquer pour modifier
+                                </p>
+                            </div>
+                        </template>
                     </div>
                     @error('images.*')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
                 </div>
@@ -284,6 +349,9 @@ function serviceForm() {
         availability: '{{ old('availability', $service->availability) }}',
         minNotice: '{{ old('min_notice', $service->min_notice ?? 'none') }}',
         serviceTypes: [],
+        // Aperçu instantané — uniquement côté navigateur, aucune requête réseau
+        mainImagePreview: null,    // data-URL de l'image principale sélectionnée
+        newGalleryPreviews: [],    // tableau de data-URLs pour les nouvelles images
         init() {
             if (this.categoryId) {
                 this.loadServiceTypes();

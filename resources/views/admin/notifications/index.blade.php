@@ -16,6 +16,8 @@
         :active-category="$activeCategory"
         :category-options="$categoryOptions"
         index-route="admin.notifications.index"
+        read-all-route="admin.notifications.read-all"
+        read-route="admin.notifications.read"
         variant="rdc"
         subtitle="Suivez les alertes, actions et messages liés à l'administration."
     />

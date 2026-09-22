@@ -127,6 +127,7 @@ class NotificationController extends Controller
             $since = \Carbon\Carbon::createFromTimestamp((int) $request->since);
             $newNotifications = Notification::where('user_id', $userId)
                 ->where('created_at', '>', $since)
+                ->where('is_read', false)   // n'envoyer en toast que les non lues
                 ->orderBy('created_at', 'desc')
                 ->get(['id', 'type', 'title', 'message', 'action_url', 'is_read', 'created_at'])
                 ->toArray();

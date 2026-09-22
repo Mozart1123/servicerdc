@@ -351,6 +351,8 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::put('/profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
 
         Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [UserNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'markAsRead'])->name('notifications.read');
         // Service Requests Management
         Route::prefix('service-requests')->name('service-requests.')->group(function (): void {
             Route::get('/', [UserServiceRequestController::class, 'adminIndex'])->name('index');
@@ -503,6 +505,8 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::put('/profile', [SuperAdminDashboardController::class, 'updateProfile'])->name('profile.update');
 
         Route::get('/notifications', [SuperAdminNotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [UserNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [UserNotificationController::class, 'markAsRead'])->name('notifications.read');
 
         // Admin Hierarchy
         Route::prefix('users')->name('users.')->group(function (): void {

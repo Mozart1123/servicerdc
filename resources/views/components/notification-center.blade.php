@@ -1,29 +1,31 @@
 @props([
     'notifications',
-    'total' => 0,
-    'unreadTotal' => 0,
-    'readTotal' => 0,
-    'activeStatus' => 'all',
-    'activeSearch' => '',
-    'activeCategory' => '',
+    'total'         => 0,
+    'unreadTotal'   => 0,
+    'readTotal'     => 0,
+    'activeStatus'  => 'all',
+    'activeSearch'  => '',
+    'activeCategory'=> '',
     'categoryOptions' => [],
-    'indexRoute' => 'user.notifications.index',
-    'variant' => 'rdc',
-    'subtitle' => "Restez informé de l'activité de votre compte.",
+    'indexRoute'    => 'user.notifications.index',
+    'readAllRoute'  => 'user.notifications.read-all',   // route POST "Tout marquer"
+    'readRoute'     => 'user.notifications.read',       // route POST "Marquer lu"
+    'variant'       => 'rdc',
+    'subtitle'      => "Restez informé de l'activité de votre compte.",
 ])
 
 @php
-    $accent = $variant === 'super' ? 'var(--accent, #2563eb)' : '#29B6D1';
-    $accentHover = $variant === 'super' ? 'var(--accent-hover, #1d4ed8)' : '#159bb5';
-    $accentSoft = $variant === 'super' ? 'rgba(37, 99, 235, .08)' : 'rgba(41, 182, 209, .08)';
+    $accent       = $variant === 'super' ? 'var(--accent, #2563eb)' : '#29B6D1';
+    $accentHover  = $variant === 'super' ? 'var(--accent-hover, #1d4ed8)' : '#159bb5';
+    $accentSoft   = $variant === 'super' ? 'rgba(37, 99, 235, .08)' : 'rgba(41, 182, 209, .08)';
     $accentSofter = $variant === 'super' ? 'rgba(37, 99, 235, .04)' : 'rgba(41, 182, 209, .04)';
-    $readUrlTemplate = route('user.notifications.read', ['notification' => '__ID__']);
+    $readUrlTemplate = route($readRoute, ['notification' => '__ID__']);
     $tabs = [
-        'all' => ['label' => 'Toutes', 'count' => $total],
+        'all'    => ['label' => 'Toutes',   'count' => $total],
         'unread' => ['label' => 'Non lues', 'count' => $unreadTotal],
-        'read' => ['label' => 'Lues', 'count' => $readTotal],
+        'read'   => ['label' => 'Lues',     'count' => $readTotal],
     ];
-    $hasFilters = $activeStatus !== 'all' || $activeSearch !== '' || $activeCategory !== '';
+    $hasFilters    = $activeStatus !== 'all' || $activeSearch !== '' || $activeCategory !== '';
     $selectedInitial = optional($notifications->first())->id;
 @endphp
 
@@ -120,7 +122,7 @@
             </nav>
 
             @if($unreadTotal > 0)
-                <form action="{{ route('user.notifications.read-all') }}" method="POST">
+                <form action="{{ route($readAllRoute) }}" method="POST">
                     @csrf
                     <button type="submit" class="n-focus inline-flex items-center justify-center gap-2 rounded-2xl border bg-white px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all hover:shadow-sm" style="border-color: var(--n-accent); color: var(--n-accent);">
                         <i class="fas fa-check-double"></i>
