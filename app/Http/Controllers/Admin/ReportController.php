@@ -122,7 +122,8 @@ class ReportController extends Controller
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
             foreach ($services as $service) {
-                fputcsv($file, [$service->id, $service->title, $service->price, $service->user->name ?? 'N/A', $service->status, $service->created_at]);
+                $priceDisplay = $service->pricing_type === 'quote' ? 'Sur devis' : ($service->price !== null ? $service->price : 'Sur devis');
+                fputcsv($file, [$service->id, $service->title, $priceDisplay, $service->user->name ?? 'N/A', $service->status, $service->created_at]);
             }
             fclose($file);
         };

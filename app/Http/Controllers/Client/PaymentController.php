@@ -65,12 +65,12 @@ class PaymentController extends Controller
                 if ($serviceRequest->mission && (float) $serviceRequest->mission->amount > 0) {
                     $amountUsd = (float) $serviceRequest->mission->amount;
                     $missionId = $serviceRequest->mission->id;
-                } elseif ($serviceRequest->service && (float) $serviceRequest->service->price > 0) {
+                } elseif ($serviceRequest->service && $serviceRequest->service->pricing_type !== 'quote' && (float) $serviceRequest->service->price > 0) {
                     $amountUsd = (float) $serviceRequest->service->price;
                 } elseif ((float) $serviceRequest->budget_max > 0) {
                     $amountUsd = (float) $serviceRequest->budget_max;
                 } else {
-                    $amountUsd = 10.0; // fallback minimal
+                    $amountUsd = 0;
                 }
 
                 $serviceRequest->update(['payment_status' => 'pending']);
@@ -78,19 +78,31 @@ class PaymentController extends Controller
 
             case 'mission':
                 $mission   = Mission::findOrFail($validated['reference_id']);
-                $amountUsd = $mission->amount;
+                $amountUsd = (float) $mission->amount;
                 $missionId = $mission->id;
                 break;
 
             case 'service':
                 $service   = Service::findOrFail($validated['reference_id']);
-                $amountUsd = $service->price;
+                if ($service->pricing_type === 'quote' || !$service->price || $service->price <= 0) {
+                    return response()->json([
+                        'error' => 'Ce service est sur devis. Veuillez contacter le prestataire pour convenir d\'un montant avant le paiement.',
+                    ], 422);
+                }
+                $amountUsd = (float) $service->price;
                 break;
 
             case 'subscription':
                 $plan      = SubscriptionPlan::findOrFail($validated['reference_id']);
-                $amountUsd = $plan->price_monthly;
+                $amountUsd = (float) $plan->price_monthly;
                 break;
+        }
+
+        // ── GARDE MONTANT STRICTEMENT POSITIF ──
+        if ($amountUsd <= 0) {
+            return response()->json([
+                'error' => 'Aucun montant valide n\'a pu être déterminé pour ce paiement. Contactez le prestataire pour convenir d\'un montant.',
+            ], 422);
         }
 
         // ── 2. CURRENCY CONVERSION (USD → LOCAL) ──────────────────────────────

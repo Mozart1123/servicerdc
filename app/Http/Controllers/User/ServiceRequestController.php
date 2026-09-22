@@ -326,12 +326,12 @@ class ServiceRequestController extends Controller
         $amountToPay = 0;
         if ($serviceRequest->mission && (float) $serviceRequest->mission->amount > 0) {
             $amountToPay = (float) $serviceRequest->mission->amount;
-        } elseif ($serviceRequest->service && (float) $serviceRequest->service->price > 0) {
+        } elseif ($serviceRequest->service && $serviceRequest->service->pricing_type !== 'quote' && (float) $serviceRequest->service->price > 0) {
             $amountToPay = (float) $serviceRequest->service->price;
         } elseif ((float) $serviceRequest->budget_max > 0) {
             $amountToPay = (float) $serviceRequest->budget_max;
         } else {
-            $amountToPay = 10.0;
+            $amountToPay = 0;
         }
 
         $existingDispute = null;

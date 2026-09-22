@@ -82,7 +82,7 @@
                                         <div style="font-weight:600;color:var(--text-primary);font-size:13px;">
                                             {{ $service->title }}</div>
                                         <div style="font-size:11px;color:var(--text-muted);">
-                                            {{ number_format($service->price, 2) }} {{ config('app.currency', 'USD') }}</div>
+                                            {{ $service->formattedPrice() }}</div>
                                     </div>
                                 </div>
                             </td>

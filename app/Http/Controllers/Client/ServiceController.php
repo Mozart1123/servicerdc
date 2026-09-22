@@ -36,8 +36,8 @@ class ServiceController extends Controller
         // Sort
         $sort = $request->query('sort', 'latest');
         match ($sort) {
-            'price_asc'  => $query->orderBy('price'),
-            'price_desc' => $query->orderByDesc('price'),
+            'price_asc'  => $query->orderByRaw('price IS NULL, price ASC'),
+            'price_desc' => $query->orderByRaw('price IS NULL, price DESC'),
             'rating'     => $query->orderByDesc('rating'),
             default      => $query->orderByDesc('created_at'),
         };

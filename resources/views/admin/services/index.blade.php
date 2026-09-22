@@ -59,7 +59,7 @@
                             </span>
                         </td>
                         <td class="px-2 sm:px-8 py-4 sm:py-6 text-center">
-                            <span class="text-[10px] sm:text-sm font-black text-slate-900 font-mono">{{ number_format($service->price, 2) }}$</span>
+                            <span class="text-[10px] sm:text-sm font-black {{ $service->pricing_type === 'quote' ? 'text-rdc-blue' : 'text-slate-900 font-mono' }}">{{ $service->formattedPrice() }}</span>
                         </td>
                         <td class="hidden min-[480px]:table-cell px-8 py-6">
                             <div class="flex items-center gap-2 text-slate-500 text-[10px] sm:text-xs font-bold">

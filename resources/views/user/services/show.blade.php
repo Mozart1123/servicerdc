@@ -86,8 +86,15 @@
                             </div>
                         </div>
                         <div class="text-right">
-                           <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Prix à partir de</div>
-                           <div class="text-4xl font-black text-rdc-blue">{{ number_format($service->price, 0) }}<span class="text-lg ml-1">$</span></div>
+                            @if($service->pricing_type === 'quote')
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tarification</div>
+                                <div class="text-2xl font-black text-rdc-blue">Sur devis</div>
+                            @else
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                                    {{ $service->pricing_type === 'starting_from' ? 'À partir de' : 'Prix' }}
+                                </div>
+                                <div class="text-4xl font-black text-rdc-blue">{{ number_format((float)($service->price ?? 0), 0) }}<span class="text-lg ml-1">$</span></div>
+                            @endif
                         </div>
                     </div>
 

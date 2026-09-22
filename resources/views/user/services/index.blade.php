@@ -98,7 +98,13 @@
                     <i class="fas {{ $service->category->icon ?? 'fa-tools' }} text-2xl"></i>
                 </div>
               @endif
-              <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">{{ $service->price }}$ / req</span>
+              @if($service->pricing_type === 'quote' || empty($service->price))
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Sur devis</span>
+              @elseif($service->pricing_type === 'starting_from')
+                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Dès {{ number_format((float)$service->price, 0) }}$</span>
+              @else
+                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">{{ number_format((float)$service->price, 0) }}$ / req</span>
+              @endif
             </div>
 
             <h3 class="text-xl font-bold mb-1 text-slate-800">{{ $service->title }}</h3>

@@ -301,7 +301,13 @@
                                         <i class="fas fa-map-marker-alt mr-1"></i>{{ $service->location ?? $artisan->city ?? 'RDC' }}
                                     </span>
                                     <span class="text-sm font-black text-[#29B6D1]">
-                                        @if($service->price) ${{ number_format($service->price, 0) }} @else Sur devis @endif
+                                        @if($service->pricing_type === 'quote' || empty($service->price))
+                                            Sur devis
+                                        @elseif($service->pricing_type === 'starting_from')
+                                            À partir de ${{ number_format((float)$service->price, 0) }}
+                                        @else
+                                            ${{ number_format((float)$service->price, 0) }}
+                                        @endif
                                     </span>
                                 </div>
                             </div>

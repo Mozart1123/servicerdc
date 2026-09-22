@@ -15,15 +15,16 @@ class StoreServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'       => ['required', 'string', 'max:255'],
-            'category'    => ['nullable', 'string', 'max:100'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'description' => ['required', 'string', 'min:20'],
-            'price'       => ['required', 'numeric', 'min:0'],
-            'location'    => ['required', 'string', 'max:255'],
-            'status'      => ['sometimes', 'string', 'in:active,inactive'],
-            'images'      => ['nullable', 'array'],
-            'images.*'    => ['nullable', 'string'],
+            'title'        => ['required', 'string', 'max:255'],
+            'category'     => ['nullable', 'string', 'max:100'],
+            'category_id'  => ['nullable', 'integer', 'exists:categories,id'],
+            'description'  => ['required', 'string', 'min:20'],
+            'pricing_type' => ['nullable', 'string', 'in:fixed,starting_from,quote'],
+            'price'        => ['nullable', 'required_unless:pricing_type,quote', 'numeric', 'min:0'],
+            'location'     => ['required', 'string', 'max:255'],
+            'status'       => ['sometimes', 'string', 'in:active,inactive'],
+            'images'       => ['nullable', 'array'],
+            'images.*'     => ['nullable', 'string'],
         ];
     }
 

@@ -98,10 +98,12 @@
 
                         <div class="flex items-center justify-between mt-2">
                             <span class="text-base font-black text-[#29B6D1]">
-                                @if($service->price)
-                                    ${{ number_format($service->price, 0) }}
-                                @else
+                                @if($service->pricing_type === 'quote' || empty($service->price))
                                     Sur devis
+                                @elseif($service->pricing_type === 'starting_from')
+                                    <span class="text-xs font-semibold text-slate-500 block">À partir de</span>${{ number_format((float)$service->price, 0) }}
+                                @else
+                                    ${{ number_format((float)$service->price, 0) }}
                                 @endif
                             </span>
                             <span class="text-xs font-bold text-[#29B6D1] bg-[#29B6D1]/10 px-2 py-1 rounded-lg">

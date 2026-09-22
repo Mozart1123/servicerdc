@@ -136,19 +136,33 @@ class ServiceController extends Controller
         // "génériques" quand aucun type n'est coché (une seule offre), ou un
         // jeu de champs par type sélectionné (titles.{id}, prices.{id}, ...).
         $rules = [];
+        $durationsList    = implode(',', array_keys(Service::DURATIONS));
+        $availabilitiesList = implode(',', array_keys(Service::AVAILABILITIES));
+        $minNoticesList   = implode(',', array_keys(Service::MIN_NOTICES));
+
         if (empty($serviceTypeIds)) {
-            $rules['title']       = ['required', 'string', 'max:255'];
-            $rules['price']       = ['required', 'numeric', 'min:0'];
-            $rules['description'] = ['nullable', 'string'];
-            $rules['images']      = ['nullable', 'array', 'max:5'];
-            $rules['images.*']    = ['nullable', 'image', 'max:5120'];
+            $rules['title']            = ['required', 'string', 'max:255'];
+            $rules['pricing_type']     = ['required', 'in:fixed,starting_from,quote'];
+            $rules['price']            = ['nullable', 'numeric', 'min:0', 'required_unless:pricing_type,quote'];
+            $rules['duration']         = ['required', "in:{$durationsList}"];
+            $rules['service_location'] = ['required', 'in:home,provider,both'];
+            $rules['availability']     = ['required', "in:{$availabilitiesList}"];
+            $rules['min_notice']       = ['nullable', 'required_if:availability,appointment', "in:{$minNoticesList}"];
+            $rules['description']      = ['nullable', 'string'];
+            $rules['images']           = ['nullable', 'array', 'max:5'];
+            $rules['images.*']         = ['nullable', 'image', 'max:5120'];
         } else {
             foreach ($serviceTypeIds as $id) {
-                $rules["titles.$id"]           = ['required', 'string', 'max:255'];
-                $rules["prices.$id"]           = ['required', 'numeric', 'min:0'];
-                $rules["descriptions.$id"]     = ['nullable', 'string'];
-                $rules["images_by_type.$id"]   = ['nullable', 'array', 'max:5'];
-                $rules["images_by_type.$id.*"] = ['nullable', 'image', 'max:5120'];
+                $rules["titles.$id"]            = ['required', 'string', 'max:255'];
+                $rules["pricing_types.$id"]     = ['required', 'in:fixed,starting_from,quote'];
+                $rules["prices.$id"]            = ['nullable', 'numeric', 'min:0', "required_unless:pricing_types.$id,quote"];
+                $rules["durations.$id"]         = ['required', "in:{$durationsList}"];
+                $rules["service_locations.$id"] = ['required', 'in:home,provider,both'];
+                $rules["availabilities.$id"]     = ['required', "in:{$availabilitiesList}"];
+                $rules["min_notices.$id"]       = ['nullable', "required_if:availabilities.$id,appointment", "in:{$minNoticesList}"];
+                $rules["descriptions.$id"]      = ['nullable', 'string'];
+                $rules["images_by_type.$id"]    = ['nullable', 'array', 'max:5'];
+                $rules["images_by_type.$id.*"]  = ['nullable', 'image', 'max:5120'];
             }
         }
         $request->validate($rules);
@@ -158,7 +172,12 @@ class ServiceController extends Controller
             if ($serviceTypeId === null) {
                 // Une seule offre, sans type précis — champs génériques.
                 $serviceTitle       = $request->input('title');
-                $servicePrice       = $request->input('price');
+                $pricingType        = (string) $request->input('pricing_type', 'fixed');
+                $servicePrice       = $pricingType === 'quote' ? null : $request->input('price');
+                $duration           = $request->input('duration');
+                $serviceLocation    = $request->input('service_location');
+                $availability       = $request->input('availability');
+                $minNotice          = $availability === 'appointment' ? $request->input('min_notice') : null;
                 $serviceDescription = $request->input('description');
                 $files              = $request->file('images', []) ?? [];
             } else {
@@ -166,7 +185,12 @@ class ServiceController extends Controller
                 $st = \App\Models\ServiceType::find($serviceTypeId);
                 $typedTitle   = trim((string) $request->input("titles.$serviceTypeId", ''));
                 $serviceTitle = $typedTitle !== '' ? $typedTitle : ($st->title ?? 'Service');
-                $servicePrice       = $request->input("prices.$serviceTypeId");
+                $pricingType        = (string) $request->input("pricing_types.$serviceTypeId", 'fixed');
+                $servicePrice       = $pricingType === 'quote' ? null : $request->input("prices.$serviceTypeId");
+                $duration           = $request->input("durations.$serviceTypeId");
+                $serviceLocation    = $request->input("service_locations.$serviceTypeId");
+                $availability       = $request->input("availabilities.$serviceTypeId");
+                $minNotice          = $availability === 'appointment' ? $request->input("min_notices.$serviceTypeId") : null;
                 $serviceDescription = $request->input("descriptions.$serviceTypeId");
                 $files              = $request->file("images_by_type.$serviceTypeId", []) ?? [];
             }
@@ -179,22 +203,27 @@ class ServiceController extends Controller
             }
 
             $service = Service::create([
-                'artisan_id'      => $user->id,
-                'category_id'     => $base['category_id'],
-                'service_type_id' => $serviceTypeId,
-                'provider_name'   => $user->name,
-                'profession'      => $user->profession ?? 'Artisan',
-                'city'            => $base['location'],
-                'phone_number'    => $user->phone ?? '—',
-                'title'           => $serviceTitle,
-                'description'     => $serviceDescription,
-                'price'           => $servicePrice,
-                'location'        => $base['location'],
-                'service_image'   => $gallery[0] ?? null,
-                'gallery_images'  => $gallery,
-                'images'          => $gallery,
-                'status'          => 'active',
-                'is_verified'     => true,
+                'artisan_id'       => $user->id,
+                'category_id'      => $base['category_id'],
+                'service_type_id'  => $serviceTypeId,
+                'provider_name'    => $user->name,
+                'profession'       => $user->profession ?? 'Artisan',
+                'city'             => $base['location'],
+                'phone_number'     => $user->phone ?? '—',
+                'title'            => $serviceTitle,
+                'pricing_type'     => $pricingType,
+                'price'            => $servicePrice,
+                'duration'         => $duration,
+                'service_location' => $serviceLocation,
+                'availability'     => $availability,
+                'min_notice'       => $minNotice,
+                'description'      => $serviceDescription,
+                'location'         => $base['location'],
+                'service_image'    => $gallery[0] ?? null,
+                'gallery_images'   => $gallery,
+                'images'           => $gallery,
+                'status'           => 'active',
+                'is_verified'      => true,
             ]);
 
             $createdServices[] = $service;
@@ -242,17 +271,36 @@ class ServiceController extends Controller
         $service = Service::findOrFail($id);
         if (Auth::id() !== $service->artisan_id) { abort(403); }
 
+        $durationsList      = implode(',', array_keys(Service::DURATIONS));
+        $availabilitiesList = implode(',', array_keys(Service::AVAILABILITIES));
+        $minNoticesList     = implode(',', array_keys(Service::MIN_NOTICES));
+
         $validated = $request->validate([
-            'title'           => ['required', 'string', 'max:255'],
-            'category_id'     => ['required', 'exists:categories,id'],
-            'service_type_id' => ['nullable', 'exists:service_types,id'],
-            'description'     => ['nullable', 'string'],
-            'price'           => ['required', 'numeric', 'min:0'],
-            'location'        => ['required', 'string', 'max:255'],
-            'status'          => ['required', 'in:active,inactive'],
-            'service_image'   => ['nullable', 'image'],
-            'images.*'        => ['nullable', 'image'],
+            'title'            => ['required', 'string', 'max:255'],
+            'category_id'      => ['required', 'exists:categories,id'],
+            'service_type_id'  => ['nullable', 'exists:service_types,id'],
+            'pricing_type'     => ['required', 'in:fixed,starting_from,quote'],
+            'price'            => ['nullable', 'numeric', 'min:0', 'required_unless:pricing_type,quote'],
+            'duration'         => ['required', "in:{$durationsList}"],
+            'service_location' => ['required', 'in:home,provider,both'],
+            'availability'     => ['required', "in:{$availabilitiesList}"],
+            'min_notice'       => ['nullable', 'required_if:availability,appointment', "in:{$minNoticesList}"],
+            'description'      => ['nullable', 'string'],
+            'location'         => ['required', 'string', 'max:255'],
+            'status'           => ['required', 'in:active,inactive'],
+            'service_image'    => ['nullable', 'image'],
+            'images.*'         => ['nullable', 'image'],
         ]);
+
+        // Si "Sur devis", le prix doit impérativement être null en base (ne jamais conserver l'ancien prix)
+        if ($validated['pricing_type'] === 'quote') {
+            $validated['price'] = null;
+        }
+
+        // Si disponibilité n'est pas "appointment", min_notice doit être null
+        if ($validated['availability'] !== 'appointment') {
+            $validated['min_notice'] = null;
+        }
 
         $user = Auth::user();
 

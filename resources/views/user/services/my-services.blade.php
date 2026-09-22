@@ -91,7 +91,13 @@
                     </div>
                     
                     <div class="mt-6 flex items-center justify-between">
-                        <span class="text-xl font-black text-slate-900">{{ number_format($service->price, 2) }}$</span>
+                        @if($service->pricing_type === 'quote')
+                            <span class="text-xl font-black text-rdc-blue">Sur devis</span>
+                        @elseif($service->pricing_type === 'starting_from')
+                            <span class="text-xl font-black text-slate-900"><span class="text-xs font-bold text-slate-500 mr-1">À partir de</span>{{ number_format((float)($service->price ?? 0), 2) }}$</span>
+                        @else
+                            <span class="text-xl font-black text-slate-900">{{ number_format((float)($service->price ?? 0), 2) }}$</span>
+                        @endif
                         
                         <div class="flex gap-2">
                             <a href="{{ route('user.services.edit', $service->id) }}" class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition" title="Modifier">

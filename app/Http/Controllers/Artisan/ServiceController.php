@@ -83,10 +83,12 @@ class ServiceController extends Controller
                     'phone' => $sr->user->phone ?? $sr->phone,
                 ],
                 'service' => [
-                    'id'       => $sr->service?->id,
-                    'title'    => $sr->service?->title,
-                    'price'    => $sr->service?->price,
-                    'location' => $sr->service?->location,
+                    'id'              => $sr->service?->id,
+                    'title'           => $sr->service?->title,
+                    'price'           => $sr->service?->price,
+                    'pricing_type'    => $sr->service?->pricing_type,
+                    'formatted_price' => $sr->service?->formattedPrice(),
+                    'location'        => $sr->service?->location,
                 ],
             ];
         });

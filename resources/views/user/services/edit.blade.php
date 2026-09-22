@@ -61,21 +61,118 @@
                     </div>
                 </div>
 
-                <!-- Prix SEULEMENT (Grille mise à jour) -->
-                <div class="space-y-2 relative">
-                    <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Prix de base ($) <span class="text-red-500">*</span></label>
-                    <input type="number" name="price" step="0.01" min="0" required value="{{ old('price', $service->price) }}"
-                           class="w-full pl-6 pr-12 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
-                    <span class="absolute right-4 top-[38px] text-slate-400 font-bold">$</span>
-                    @error('price')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
-                </div>
-
                 <!-- Localisation -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Localisation (Ville, Commune) <span class="text-red-500">*</span></label>
                     <input type="text" name="location" required value="{{ old('location', $service->location) }}"
                            class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
                     @error('location')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                </div>
+
+                <!-- Tarification -->
+                <div class="space-y-4">
+                    <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Tarification <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <label :class="pricingType === 'fixed' ? 'border-rdc-blue bg-rdc-blue/5 ring-2 ring-rdc-blue/20' : 'border-slate-200 bg-slate-50 hover:border-slate-300'"
+                               class="flex items-center gap-3 px-5 py-4 rounded-2xl cursor-pointer transition-all border group">
+                            <input type="radio" name="pricing_type" value="fixed" x-model="pricingType" class="w-4 h-4 accent-rdc-blue">
+                            <span class="text-xs font-bold text-slate-800 leading-tight">Prix fixe</span>
+                        </label>
+                        <label :class="pricingType === 'starting_from' ? 'border-rdc-blue bg-rdc-blue/5 ring-2 ring-rdc-blue/20' : 'border-slate-200 bg-slate-50 hover:border-slate-300'"
+                               class="flex items-center gap-3 px-5 py-4 rounded-2xl cursor-pointer transition-all border group">
+                            <input type="radio" name="pricing_type" value="starting_from" x-model="pricingType" class="w-4 h-4 accent-rdc-blue">
+                            <span class="text-xs font-bold text-slate-800 leading-tight">À partir de</span>
+                        </label>
+                        <label :class="pricingType === 'quote' ? 'border-rdc-blue bg-rdc-blue/5 ring-2 ring-rdc-blue/20' : 'border-slate-200 bg-slate-50 hover:border-slate-300'"
+                               class="flex items-center gap-3 px-5 py-4 rounded-2xl cursor-pointer transition-all border group">
+                            <input type="radio" name="pricing_type" value="quote" x-model="pricingType" class="w-4 h-4 accent-rdc-blue">
+                            <span class="text-xs font-bold text-slate-800 leading-tight">Sur devis</span>
+                        </label>
+                    </div>
+                    @error('pricing_type')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+
+                    <!-- Champ Prix -->
+                    <div class="space-y-2 relative" x-show="pricingType !== 'quote'" x-transition>
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">
+                            <span x-text="pricingType === 'starting_from' ? 'Prix minimum (USD)' : 'Prix (USD)'"></span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="price" step="0.01" min="0" placeholder="0.00" x-model="price"
+                               :required="pricingType !== 'quote'"
+                               :disabled="pricingType === 'quote'"
+                               class="w-full pl-6 pr-12 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                        <span class="absolute right-4 top-[38px] text-slate-400 font-bold">$</span>
+                        @error('price')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
+                <!-- Durée approximative & Lieu de prestation (côte à côte sur desktop) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Durée approximative <span class="text-red-500">*</span></label>
+                        <select name="duration" required x-model="duration"
+                                class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                            <option value="">Sélectionnez la durée</option>
+                            <option value="30_minutes">30 minutes</option>
+                            <option value="45_minutes">45 minutes</option>
+                            <option value="1_hour">1 heure</option>
+                            <option value="1h30">1 h 30</option>
+                            <option value="2_hours">2 heures</option>
+                            <option value="3_hours">3 heures</option>
+                            <option value="half_day">Demi-journée</option>
+                            <option value="full_day">Journée complète</option>
+                            <option value="multiple_days">Plusieurs jours</option>
+                            <option value="to_define">À définir avec le client</option>
+                        </select>
+                        @error('duration')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Lieu de prestation <span class="text-red-500">*</span></label>
+                        <select name="service_location" required x-model="serviceLocation"
+                                class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                            <option value="">Où proposez-vous ce service ?</option>
+                            <option value="home">À domicile</option>
+                            <option value="provider">Chez moi</option>
+                            <option value="both">Les deux</option>
+                        </select>
+                        <p class="text-[10px] text-slate-400 font-bold pl-4">Sélectionnez où vous proposez habituellement ce service.</p>
+                        @error('service_location')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
+                <!-- Disponibilité -->
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Disponibilité <span class="text-red-500">*</span></label>
+                        <select name="availability" required x-model="availability"
+                                class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                            <option value="">Sélectionnez votre disponibilité</option>
+                            <option value="daily">Tous les jours</option>
+                            <option value="weekdays">Du lundi au vendredi</option>
+                            <option value="monday_saturday">Du lundi au samedi</option>
+                            <option value="weekends">Week-ends uniquement</option>
+                            <option value="appointment">Sur rendez-vous</option>
+                            <option value="availability_based">Selon disponibilité</option>
+                        </select>
+                        @error('availability')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                    </div>
+
+                    <!-- Préavis minimum si sur rendez-vous -->
+                    <div class="space-y-2" x-show="availability === 'appointment'" x-transition>
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Préavis minimum <span class="text-red-500">*</span></label>
+                        <select name="min_notice" x-model="minNotice" :required="availability === 'appointment'"
+                                class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-900 focus:ring-4 focus:ring-rdc-blue/10 transition-all outline-none">
+                            <option value="none">Aucun</option>
+                            <option value="2_hours">2 heures</option>
+                            <option value="6_hours">6 heures</option>
+                            <option value="12_hours">12 heures</option>
+                            <option value="24_hours">24 heures</option>
+                            <option value="48_hours">48 heures</option>
+                            <option value="72_hours">72 heures</option>
+                        </select>
+                        @error('min_notice')<span class="text-xs text-red-500 pl-4 font-bold">{{ $message }}</span>@enderror
+                    </div>
                 </div>
 
                 <!-- Description -->
@@ -177,6 +274,12 @@ function serviceForm() {
         categoryId: '{{ old('category_id', $service->category_id) }}',
         serviceTypeId: '{{ old('service_type_id', $service->service_type_id) }}',
         title: '{{ old('title', addslashes($service->title)) }}',
+        pricingType: '{{ old('pricing_type', $service->pricing_type ?? 'fixed') }}',
+        price: '{{ old('price', $service->price) }}',
+        duration: '{{ old('duration', $service->duration) }}',
+        serviceLocation: '{{ old('service_location', $service->service_location) }}',
+        availability: '{{ old('availability', $service->availability) }}',
+        minNotice: '{{ old('min_notice', $service->min_notice ?? 'none') }}',
         serviceTypes: [],
         init() {
             if (this.categoryId) {

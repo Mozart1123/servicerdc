@@ -92,11 +92,15 @@
                             @endif
 
                             <div class="flex items-center justify-between mt-2">
-                                <span class="text-sm font-black text-[#29B6D1]">
-                                    À partir de
+                                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                                    {{ $service->pricing_type === 'quote' ? 'Tarification' : ($service->pricing_type === 'starting_from' ? 'À partir de' : 'Prix fixe') }}
                                 </span>
-                                <span class="text-base font-black text-slate-900">
-                                    {{ $service->price == 0 ? 'Gratuit' : number_format($service->price, 2) . '$' }}
+                                <span class="text-base font-black {{ $service->pricing_type === 'quote' ? 'text-[#29B6D1]' : 'text-slate-900' }}">
+                                    @if($service->pricing_type === 'quote' || empty($service->price))
+                                        Sur devis
+                                    @else
+                                        {{ number_format((float)$service->price, 2) }}$
+                                    @endif
                                 </span>
                             </div>
                         </div>

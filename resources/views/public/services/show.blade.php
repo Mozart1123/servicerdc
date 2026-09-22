@@ -66,13 +66,17 @@
             {{-- Price & CTA Card --}}
             <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
                 <div class="text-3xl font-black text-[#29B6D1] mb-1">
-                    @if($service->price)
-                        ${{ number_format($service->price, 0) }}
-                    @else
+                    @if($service->pricing_type === 'quote' || empty($service->price))
                         Sur devis
+                    @elseif($service->pricing_type === 'starting_from')
+                        À partir de ${{ number_format((float)$service->price, 0) }}
+                    @else
+                        ${{ number_format((float)$service->price, 0) }}
                     @endif
                 </div>
-                <p class="text-xs text-slate-400 font-medium mb-5">Prix de base</p>
+                <p class="text-xs text-slate-400 font-medium mb-5">
+                    {{ $service->pricing_type === 'quote' ? 'Tarification' : ($service->pricing_type === 'starting_from' ? 'Prix de départ' : 'Prix fixe') }}
+                </p>
 
                 @auth
                     <button onclick="document.getElementById('requestModal').classList.remove('hidden'); document.getElementById('requestModal').classList.add('flex')"
@@ -135,7 +139,13 @@
                     <div class="p-3">
                         <h4 class="font-bold text-slate-900 text-xs line-clamp-2 group-hover:text-[#29B6D1] transition-colors">{{ $rel->title }}</h4>
                         <p class="text-[#29B6D1] font-black text-sm mt-1">
-                            @if($rel->price) ${{ number_format($rel->price, 0) }} @else Sur devis @endif
+                            @if($rel->pricing_type === 'quote' || empty($rel->price))
+                                Sur devis
+                            @elseif($rel->pricing_type === 'starting_from')
+                                À partir de ${{ number_format((float)$rel->price, 0) }}
+                            @else
+                                ${{ number_format((float)$rel->price, 0) }}
+                            @endif
                         </p>
                     </div>
                 </a>
