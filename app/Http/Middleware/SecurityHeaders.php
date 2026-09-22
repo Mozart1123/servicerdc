@@ -36,17 +36,24 @@ class SecurityHeaders
             );
         }
 
+        // Dev-only sources (Vite hot reload over http/ws on localhost/127.0.0.1/[::1]).
+        // Never included in production, and never any third-party antivirus/browser
+        // extension domains — those don't belong in an app's CSP at all.
+        $devSources = app()->environment('production')
+            ? ''
+            : ' http://localhost:* ws://localhost:* http://127.0.0.1:* ws://127.0.0.1:* http://[::1]:* ws://[::1]:*';
+
         // Content-Security-Policy — now enforced (was Report-Only).
         // Still permissive (unsafe-inline needed for Alpine.js x-data and onclick handlers
         // in Blade views). Progressively tighten directives (drop unsafe-inline/unsafe-eval)
         // once inline handlers are migrated to attached listeners / nonces.
         $cspValue = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com http://localhost:* http://127.0.0.1:* http://[::1]:* http://*.kaspersky-labs.com ws://*.kaspersky-labs.com",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com http://localhost:* http://127.0.0.1:* http://[::1]:*",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com{$devSources}",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com{$devSources}",
             "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com data:",
             "img-src 'self' data: blob: https:",
-            "connect-src 'self' http://localhost:* ws://localhost:* http://127.0.0.1:* ws://127.0.0.1:* http://[::1]:* ws://[::1]:* https://*.pusher.com wss://*.pusher.com https://nominatim.openstreetmap.org http://*.kaspersky-labs.com ws://*.kaspersky-labs.com ws: wss:",
+            "connect-src 'self' https://*.pusher.com wss://*.pusher.com https://nominatim.openstreetmap.org ws: wss:{$devSources}",
             "media-src 'self'",
             "object-src 'none'",
             "frame-ancestors 'none'",
