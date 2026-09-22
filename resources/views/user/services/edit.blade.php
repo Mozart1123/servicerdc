@@ -219,13 +219,16 @@
                     <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Images actuelles</label>
                     <div class="flex gap-4 overflow-x-auto pb-4">
                         @foreach($currentGallery as $index => $img)
-                            <div class="relative flex-none w-32 h-32 rounded-2xl overflow-hidden group">
+                            <div class="relative flex-none w-32 h-32 rounded-2xl overflow-hidden">
                                 <img src="{{ Storage::url($img) }}" class="w-full h-full object-cover">
-                                <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <button type="button" onclick="if(confirm('Supprimer cette image ?')) document.getElementById('deleteImgForm-{{ $index }}').submit()" class="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center hover:scale-110 shadow-lg">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    onclick="if(confirm('Supprimer cette image ?')) document.getElementById('deleteImgForm-{{ $index }}').submit()"
+                                    class="absolute top-1.5 right-1.5 w-8 h-8 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition-transform hover:scale-110 z-10"
+                                    title="Supprimer cette image"
+                                >
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
                             </div>
                         @endforeach
                     </div>
