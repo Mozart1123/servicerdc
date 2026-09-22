@@ -52,6 +52,57 @@ class Notification extends Model
         return $query->where('type', $type);
     }
 
+    public function scopeSearch($query, ?string $term)
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where(function ($query) use ($term): void {
+            $query->where('title', 'like', "%{$term}%")
+                ->orWhere('message', 'like', "%{$term}%")
+                ->orWhere('type', 'like', "%{$term}%");
+        });
+    }
+
+    public function scopePresentationCategory($query, ?string $category)
+    {
+        $category = (string) $category;
+
+        if ($category === '' || ! array_key_exists($category, self::CATEGORY_LABELS)) {
+            return $query;
+        }
+
+        $filters = [
+            'negative' => ['reject', 'refus', 'fail', 'cancel'],
+            'review' => ['review', 'rated', 'rating'],
+            'verification' => ['verif', 'identit'],
+            'message' => ['message'],
+            'payment' => ['payment', 'payout', 'subscription', 'commission', 'refund', 'paid', 'credit', 'debit'],
+            'request' => ['application', 'job', 'mission', 'service', 'account'],
+        ];
+
+        if ($category === 'default') {
+            $keywords = collect($filters)->flatten()->all();
+
+            return $query->where(function ($query) use ($keywords): void {
+                foreach ($keywords as $keyword) {
+                    $query->where('type', 'not like', "%{$keyword}%");
+                }
+            });
+        }
+
+        $keywords = $filters[$category] ?? [];
+
+        return $query->where(function ($query) use ($keywords): void {
+            foreach ($keywords as $keyword) {
+                $query->orWhere('type', 'like', "%{$keyword}%");
+            }
+        });
+    }
+
     public function scopeForUser($query, int $userId)
     {
         return $query->where('user_id', $userId);
@@ -151,6 +202,11 @@ class Notification extends Model
     public function categoryLabel(): string
     {
         return self::CATEGORY_LABELS[$this->category()] ?? self::CATEGORY_LABELS['default'];
+    }
+
+    public static function categoryOptions(): array
+    {
+        return self::CATEGORY_LABELS;
     }
 
     /**

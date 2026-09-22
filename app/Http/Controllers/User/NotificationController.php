@@ -23,13 +23,27 @@ class NotificationController extends Controller
     {
         $userId = Auth::id();
 
-        $base        = Notification::where('user_id', $userId);
+        $activeStatus = $request->query('status', $request->boolean('unread') ? 'unread' : 'all');
+        $activeStatus = in_array($activeStatus, ['all', 'unread', 'read'], true) ? $activeStatus : 'all';
+        $activeSearch = trim((string) $request->query('q', ''));
+        $activeCategory = (string) $request->query('category', '');
+
+        $base = Notification::where('user_id', $userId)
+            ->search($activeSearch)
+            ->presentationCategory($activeCategory);
+
         $total       = (clone $base)->count();
         $unreadTotal = (clone $base)->unread()->count();
+        $readTotal   = (clone $base)->read()->count();
 
-        $query = Notification::where('user_id', $userId);
-        if ($request->boolean('unread')) {
+        $query = Notification::where('user_id', $userId)
+            ->search($activeSearch)
+            ->presentationCategory($activeCategory);
+
+        if ($activeStatus === 'unread') {
             $query->unread();
+        } elseif ($activeStatus === 'read') {
+            $query->read();
         }
 
         $notifications = $query
@@ -38,7 +52,18 @@ class NotificationController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('user.notifications.index', compact('notifications', 'total', 'unreadTotal'));
+        $categoryOptions = Notification::categoryOptions();
+
+        return view('user.notifications.index', compact(
+            'notifications',
+            'total',
+            'unreadTotal',
+            'readTotal',
+            'activeStatus',
+            'activeSearch',
+            'activeCategory',
+            'categoryOptions'
+        ));
     }
 
     /**
