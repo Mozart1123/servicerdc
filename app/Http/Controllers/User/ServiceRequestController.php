@@ -672,7 +672,7 @@ class ServiceRequestController extends Controller
             return back()->with('error', 'Artisan introuvable.');
         }
 
-        Review::create([
+        $review = Review::create([
             'service_request_id' => $serviceRequest->id,
             'client_id'  => $user->id,
             'artisan_id' => $artisanId,
@@ -689,6 +689,19 @@ class ServiceRequestController extends Controller
             'action_url' => route('user.artisan.service-requests.index'),
             'is_read'    => false,
         ]);
+
+        // Notify all admins and super-admins about the new review
+        $admins = User::whereIn('role', ['admin', 'super_admin'])->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id'    => $admin->id,
+                'type'       => 'review_created',
+                'title'      => 'Nouvel avis client',
+                'message'    => "{$user->name} a laisse un avis de {$validated['rating']}/5 pour {$review->artisan->name}.",
+                'action_url' => route('admin.avis.index'),
+                'is_read'    => false,
+            ]);
+        }
 
         return back()->with('success', 'Merci pour votre evaluation !');
     }

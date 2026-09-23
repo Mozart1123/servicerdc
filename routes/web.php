@@ -406,6 +406,11 @@ Route::middleware(['auth', 'role:admin,super_admin'])
             Route::post('/reviews/{id}/reject', [ModerationController::class, 'rejectReview'])->name('reviews.reject');
         });
 
+        // Admin Avis - Liste de tous les avis
+        Route::prefix('avis')->name('avis.')->group(function () {
+            Route::get('/', [ModerationController::class, 'allReviews'])->name('index');
+        });
+
         Route::prefix('finances')->name('finances.')->group(function () {
             Route::get('/dashboard', [AdminFinancialController::class, 'dashboard'])->name('dashboard');
             

@@ -36,6 +36,38 @@ class ModerationController extends Controller
     }
 
     /**
+     * Display all reviews for admin overview.
+     */
+    public function allReviews(Request $request): View
+    {
+        $status = $request->query('status', 'all');
+        $search = $request->query('search');
+        $rating = $request->query('rating');
+
+        $reviews = Review::query()
+            ->when($status !== 'all', fn($q) => $q->where('status', $status))
+            ->when($search, fn($q) => $q->where(function ($q) use ($search) {
+                $q->whereHas('client', fn($q2) => $q2->where('name', 'like', "%{$search}%"))
+                  ->orWhere('feedback', 'like', "%{$search}%");
+            }))
+            ->when($rating, fn($q) => $q->where('rating', $rating))
+            ->with('client', 'artisan', 'mission')
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $stats = [
+            'pending'  => Review::pending()->count(),
+            'approved' => Review::approved()->count(),
+            'rejected' => Review::rejected()->count(),
+            'total'    => Review::count(),
+            'avg_rating' => Review::avg('rating') ?? 0,
+        ];
+
+        return view('admin.avis.index', compact('reviews', 'stats', 'status', 'search', 'rating'));
+    }
+
+    /**
      * Approve a review.
      */
     public function approveReview(int $id): RedirectResponse

@@ -194,8 +194,9 @@
                 </x-admin-dropdown-nav>
 
                 <!-- [MISSIONS & AVIS] -->
-                <x-admin-dropdown-nav icon="fas fa-briefcase" label="Missions & Avis" :activePrefixes="['admin.missions']">
+                <x-admin-dropdown-nav icon="fas fa-briefcase" label="Missions & Avis" :activePrefixes="['admin.missions', 'admin.avis']">
                     <x-admin-dropdown-item route="admin.missions.index" label="Toutes les missions" />
+                    <x-admin-dropdown-item route="admin.avis.index" label="Tous les avis" />
                 </x-admin-dropdown-nav>
 
                 <!-- [CONFIGURATION TECHNIQUE] -->

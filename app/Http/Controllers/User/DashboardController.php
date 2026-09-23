@@ -622,7 +622,7 @@ class DashboardController extends Controller
                     'type'       => 'admin_new_review',
                     'title'      => 'Nouvel avis client en attente',
                     'message'    => "Mission #{$mission->id} - Note: {$request->rating}/5 (En attente d'approbation)",
-                    'action_url' => route('admin.moderation.reviews'),
+                    'action_url' => route('admin.avis.index'),
                     'is_read'    => false,
                 ]);
             }

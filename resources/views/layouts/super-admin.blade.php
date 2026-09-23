@@ -1203,6 +1203,10 @@
                     class="nav-item {{ request()->routeIs('super-admin.services.*') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-briefcase"></i> Services
                 </a>
+                <a href="{{ route('admin.avis.index') }}"
+                    class="nav-item {{ request()->routeIs('admin.avis*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-star"></i> Tous les avis
+                </a>
                 <a href="{{ route('super-admin.organizations.index') }}"
                     class="nav-item {{ request()->routeIs('super-admin.organizations.*') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-building"></i> Organizations
