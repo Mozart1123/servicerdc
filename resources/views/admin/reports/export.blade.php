@@ -14,21 +14,47 @@
         <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tight mb-2">Exports Massifs</h2>
         <p class="text-slate-500 max-w-md mx-auto">Ici vous pouvez générer des exports CSV/Excel complets. Sélectionnez le module ci-dessous.</p>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12 w-full max-w-2xl">
-            <a href="{{ route('admin.reports-hq.export.users') }}" class="p-10 bg-white border border-slate-100 rounded-[2.5rem] hover:border-rdc-blue hover:shadow-2xl hover:shadow-blue-500/10 transition-all cursor-pointer group flex flex-col items-center text-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 w-full max-w-4xl">
+            <a href="{{ route('admin.reports.preview', ['type' => 'services']) }}" class="p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all cursor-pointer group flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-briefcase text-2xl"></i>
+                </div>
+                <h4 class="text-xs font-black uppercase tracking-widest text-slate-900">Catalogue Services</h4>
+                <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">Prévisualisation & Exports Excel / PDF / Word</p>
+            </a>
+
+            <a href="{{ route('admin.reports.preview', ['type' => 'users']) }}" class="p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:border-rdc-blue hover:shadow-2xl hover:shadow-blue-500/10 transition-all cursor-pointer group flex flex-col items-center text-center">
                 <div class="w-16 h-16 bg-blue-50 text-rdc-blue rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                     <i class="fas fa-users text-2xl"></i>
                 </div>
                 <h4 class="text-xs font-black uppercase tracking-widest text-slate-900">Base Utilisateurs</h4>
                 <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">Prévisualisation & Exports Excel / PDF / Word</p>
             </a>
-            
-            <a href="{{ route('admin.reports.preview', ['type' => 'services']) }}" class="p-10 bg-white border border-slate-100 rounded-[2.5rem] hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all cursor-pointer group flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <i class="fas fa-briefcase text-2xl"></i>
+
+            <a href="{{ route('admin.reports.preview', ['type' => 'missions']) }}" class="p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:border-indigo-500 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all cursor-pointer group flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-invoice text-2xl"></i>
                 </div>
-                <h4 class="text-xs font-black uppercase tracking-widest text-slate-900">Catalogue Services</h4>
+                <h4 class="text-xs font-black uppercase tracking-widest text-slate-900">Activité Missions</h4>
                 <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">Prévisualisation & Exports Excel / PDF / Word</p>
+            </a>
+
+            @if(auth()->user()?->isSuperAdmin())
+            <a href="{{ route('admin.reports.preview', ['type' => 'transactions']) }}" class="p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:border-emerald-600 hover:shadow-2xl hover:shadow-emerald-600/10 transition-all cursor-pointer group flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                </div>
+                <h4 class="text-xs font-black uppercase tracking-widest text-slate-900">Flux & Transactions</h4>
+                <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">Audit Financier & Exports Excel / PDF / Word</p>
+            </a>
+            @endif
+
+            <a href="{{ route('admin.reports.preview', ['type' => 'reviews']) }}" class="p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:border-amber-500 hover:shadow-2xl hover:shadow-amber-500/10 transition-all cursor-pointer group flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-star text-2xl"></i>
+                </div>
+                <h4 class="text-xs font-black uppercase tracking-widest text-slate-900">Avis & Modération</h4>
+                <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">Qualité Retours & Exports Excel / PDF / Word</p>
             </a>
         </div>
     </div>

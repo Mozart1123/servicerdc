@@ -375,7 +375,15 @@
                 </div>
                 <div class="flex items-center gap-3">
                     @php
-                        $contextReportType = request()->is('admin/users*') ? 'users' : (request()->is('admin/services*') ? 'services' : 'services');
+                        $contextReportType = match(true) {
+                            request()->is('admin/users*') => 'users',
+                            request()->is('admin/missions*') => 'missions',
+                            request()->is('admin/finances*') => 'transactions',
+                            request()->is('admin/moderation*'), request()->is('admin/avis*') => 'reviews',
+                            request()->is('admin/reports/preview*') && request()->filled('type') => request('type'),
+                            request()->is('admin/services*') => 'services',
+                            default => 'services',
+                        };
                     @endphp
                     <a href="{{ route('admin.reports.preview', ['type' => $contextReportType]) }}" 
                        class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-rdc-blue hover:text-rdc-blue transition-all flex items-center gap-2">

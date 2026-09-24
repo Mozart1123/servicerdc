@@ -48,10 +48,13 @@
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase">Type de Données</label>
                         <select name="type" class="w-full text-xs font-bold border-slate-200 rounded-xl px-4 py-3 focus:ring-rdc-blue/20">
-                            <option value="full">Système Complet</option>
-                            <option value="financial">États Financiers</option>
-                            <option value="users">Utilisateurs & Roles</option>
-                            <option value="services">Services & Jobs</option>
+                            <option value="services">Services & Catalogue</option>
+                            <option value="users">Utilisateurs & Communauté</option>
+                            <option value="missions">Missions & Opérations</option>
+                            @if(auth()->user()?->isSuperAdmin())
+                            <option value="transactions">États Financiers & Transactions</option>
+                            @endif
+                            <option value="reviews">Avis & Modération</option>
                         </select>
                     </div>
                     <div class="space-y-2">

@@ -25,7 +25,12 @@ class ReportController extends Controller
         $user = Auth::user();
         $availableTypes = $this->reportService->getAvailableTypes($user);
 
-        $type = $request->input('type', 'services');
+        $requestedType = $request->input('type');
+        if ($requestedType === 'transactions' && (!$user || !$user->isSuperAdmin())) {
+            abort(403, 'Accès interdit. Le rapport financier est strictement réservé au Super Administrateur.');
+        }
+
+        $type = $requestedType ?: 'services';
         if (!array_key_exists($type, $availableTypes)) {
             $type = 'services';
         }
@@ -55,7 +60,12 @@ class ReportController extends Controller
         $user = Auth::user();
         $availableTypes = $this->reportService->getAvailableTypes($user);
 
-        $type = $request->input('type', 'services');
+        $requestedType = $request->input('type');
+        if ($requestedType === 'transactions' && (!$user || !$user->isSuperAdmin())) {
+            abort(403, 'Accès interdit. Le rapport financier est strictement réservé au Super Administrateur.');
+        }
+
+        $type = $requestedType ?: 'services';
         if (!array_key_exists($type, $availableTypes)) {
             $type = 'services';
         }

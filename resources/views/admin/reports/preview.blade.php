@@ -21,7 +21,7 @@
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                         <i class="fas fa-layer-group text-rdc-blue"></i> Type de Rapport
                     </label>
-                    <select name="type" @change="document.getElementById('reportFilterForm').submit()" 
+                    <select name="type" @change="window.location.href = '{{ route('admin.reports.preview') }}?type=' + $event.target.value" 
                             class="w-full text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 focus:ring-4 focus:ring-rdc-blue/10 focus:border-rdc-blue transition-all cursor-pointer">
                         @foreach($availableTypes as $tKey => $tName)
                             <option value="{{ $tKey }}" {{ $report->type === $tKey ? 'selected' : '' }}>
