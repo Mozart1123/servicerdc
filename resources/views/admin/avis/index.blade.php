@@ -83,6 +83,10 @@
             <a href="{{ route('admin.avis.index') }}" class="px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-2xl text-[10px] uppercase tracking-widest transition-all shrink-0 text-center">
                 Réinitialiser
             </a>
+
+            <a href="{{ route('admin.reports.preview', ['type' => 'reviews']) }}" class="px-8 py-4 bg-slate-900 hover:bg-rdc-blue text-white font-black rounded-2xl text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200 shrink-0 flex items-center justify-center gap-2">
+                <i class="fas fa-file-shield"></i> Rapport Modération
+            </a>
         </form>
     </div>
 

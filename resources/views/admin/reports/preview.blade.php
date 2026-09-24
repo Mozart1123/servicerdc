@@ -63,6 +63,20 @@
                             <option value="active" {{ ($filters['status'] ?? '') === 'active' ? 'selected' : '' }}>Actifs</option>
                             <option value="suspended" {{ ($filters['status'] ?? '') === 'suspended' ? 'selected' : '' }}>Suspendus</option>
                             <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>En attente</option>
+                        @elseif($report->type === 'missions')
+                            <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="in_progress" {{ ($filters['status'] ?? '') === 'in_progress' ? 'selected' : '' }}>En cours</option>
+                            <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Complétées</option>
+                            <option value="cancelled" {{ ($filters['status'] ?? '') === 'cancelled' ? 'selected' : '' }}>Annulées</option>
+                        @elseif($report->type === 'transactions')
+                            <option value="succeeded" {{ ($filters['status'] ?? '') === 'succeeded' ? 'selected' : '' }}>Validées / Réussies</option>
+                            <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="failed" {{ ($filters['status'] ?? '') === 'failed' ? 'selected' : '' }}>Échouées</option>
+                            <option value="refunded" {{ ($filters['status'] ?? '') === 'refunded' ? 'selected' : '' }}>Remboursées</option>
+                        @elseif($report->type === 'reviews')
+                            <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="approved" {{ ($filters['status'] ?? '') === 'approved' ? 'selected' : '' }}>Approuvés</option>
+                            <option value="rejected" {{ ($filters['status'] ?? '') === 'rejected' ? 'selected' : '' }}>Rejetés</option>
                         @endif
                     </select>
                 </div>
@@ -162,9 +176,9 @@
                         @foreach($report->headers as $idx => $header)
                             @php
                                 $align = 'text-left';
-                                if ($idx === 0 || in_array($header, ['Statut', 'Certification', 'Type Profil', 'Rôle Système', 'Date Création', 'Date Inscription'])) {
+                                if ($idx === 0 || in_array($header, ['Statut', 'Statut Modération', 'Certification', 'Type Profil', 'Rôle Système', 'Date', 'Date Début', 'Date Création', 'Date Déposition', 'Date Inscription', 'Date & Heure', 'Note', 'Devise'])) {
                                     $align = 'text-center';
-                                } elseif (str_contains($header, 'Prix') || str_contains($header, 'CDF')) {
+                                } elseif (str_contains($header, 'Prix') || str_contains($header, 'CDF') || str_contains($header, 'Montant') || str_contains($header, 'Commission') || str_contains($header, '$')) {
                                     $align = 'text-right';
                                 }
                             @endphp
@@ -180,28 +194,35 @@
                             @foreach($row as $cIdx => $val)
                                 @php
                                     $align = 'text-left';
-                                    if ($cIdx === 0 || str_starts_with((string)$val, '#') || in_array((string)$val, ['Actif', 'Inactif', 'Vérifié', 'Standard', 'Suspendu', 'En attente', 'Artisan', 'Client', 'Admin', 'Super Admin'])) {
+                                    $valStr = (string)$val;
+                                    $isFirst = ($cIdx === 0 || str_starts_with($valStr, '#'));
+                                    $isMonetary = str_contains($valStr, 'CDF') || str_contains($valStr, '$') || str_contains($valStr, 'USD');
+                                    $isStars = str_contains($valStr, '★');
+
+                                    if ($isFirst || in_array($valStr, ['Actif', 'Inactif', 'Vérifié', 'Standard', 'Suspendu', 'En attente', 'En cours', 'Complétée', 'Annulée', 'Validé', 'Succès', 'Échoué', 'Remboursé', 'Approuvé', 'Rejeté', 'Artisan', 'Client', 'Admin', 'Super Admin']) || $isStars) {
                                         $align = 'text-center';
-                                    } elseif (str_contains((string)$val, 'CDF')) {
+                                    } elseif ($isMonetary) {
                                         $align = 'text-right';
                                     }
                                 @endphp
                                 <td class="px-6 py-4 text-xs font-medium text-slate-800 {{ $align }} whitespace-nowrap">
-                                    @if($cIdx === 0)
+                                    @if($isFirst)
                                         <span class="font-mono text-slate-400 font-bold">{{ $val }}</span>
-                                    @elseif($val === 'Actif' || $val === 'Vérifié')
+                                    @elseif(in_array($valStr, ['Actif', 'Vérifié', 'Complétée', 'Validé', 'Approuvé', 'Succès']))
                                         <span class="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase rounded-full tracking-wider">
                                             {{ $val }}
                                         </span>
-                                    @elseif($val === 'Inactif' || $val === 'Suspendu')
+                                    @elseif(in_array($valStr, ['Inactif', 'Suspendu', 'Annulée', 'Échoué', 'Rejeté', 'Remboursé']))
                                         <span class="px-3 py-1 bg-rose-50 text-rose-600 border border-rose-100 text-[10px] font-black uppercase rounded-full tracking-wider">
                                             {{ $val }}
                                         </span>
-                                    @elseif($val === 'En attente')
+                                    @elseif(in_array($valStr, ['En attente', 'En cours']))
                                         <span class="px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 text-[10px] font-black uppercase rounded-full tracking-wider">
                                             {{ $val }}
                                         </span>
-                                    @elseif(str_contains((string)$val, 'CDF'))
+                                    @elseif($isStars)
+                                        <span class="text-amber-500 font-bold tracking-wider">{{ $val }}</span>
+                                    @elseif($isMonetary)
                                         <span class="font-mono font-bold text-slate-900">{{ $val }}</span>
                                     @else
                                         {{ $val }}

@@ -13,6 +13,14 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class WordReportExporter
 {
+    /**
+     * Escape a string for safe use inside OOXML (PhpWord does not auto-escape & < > etc.).
+     */
+    private function xmlText(string $text): string
+    {
+        return htmlspecialchars($text, ENT_COMPAT | ENT_XML1, 'UTF-8');
+    }
+
     public function export(ReportData $data): BinaryFileResponse
     {
         $phpWord = new PhpWord();
@@ -48,12 +56,12 @@ class WordReportExporter
             ]);
         }
         $leftContainer->addText('PROCONNECT RDC', ['bold' => true, 'size' => 16, 'color' => '0D2137']);
-        $leftContainer->addText('Plateforme Nationale des Services & Artisans', ['size' => 8, 'color' => '64748B', 'italic' => true]);
+        $leftContainer->addText($this->xmlText('Plateforme Nationale des Services & Artisans'), ['size' => 8, 'color' => '64748B', 'italic' => true]);
 
         $rightCell = $headerTable->addCell(5000);
-        $rightCell->addText(mb_strtoupper($data->title, 'UTF-8'), ['bold' => true, 'size' => 11, 'color' => '0D2137'], ['alignment' => 'right']);
-        $rightCell->addText('Période : ' . $data->periodLabel, ['size' => 9, 'color' => '475569'], ['alignment' => 'right']);
-        $rightCell->addText('Généré le ' . $data->generatedAt . ' par ' . $data->generatedBy, ['size' => 8, 'color' => '64748B'], ['alignment' => 'right']);
+        $rightCell->addText($this->xmlText(mb_strtoupper($data->title, 'UTF-8')), ['bold' => true, 'size' => 11, 'color' => '0D2137'], ['alignment' => 'right']);
+        $rightCell->addText($this->xmlText('Période : ' . $data->periodLabel), ['size' => 9, 'color' => '475569'], ['alignment' => 'right']);
+        $rightCell->addText($this->xmlText('Généré le ' . $data->generatedAt . ' par ' . $data->generatedBy), ['size' => 8, 'color' => '64748B'], ['alignment' => 'right']);
 
         $section->addTextBreak(1);
 
@@ -69,10 +77,10 @@ class WordReportExporter
             $kpiTable->addRow();
             foreach ($data->kpis as $kpi) {
                 $cell = $kpiTable->addCell(2200, ['bgColor' => 'F8FAFC']);
-                $cell->addText(mb_strtoupper($kpi['label'], 'UTF-8'), ['size' => 7.5, 'bold' => true, 'color' => '64748B'], ['alignment' => 'center']);
-                $cell->addText($kpi['value'], ['size' => 12, 'bold' => true, 'color' => '0D2137'], ['alignment' => 'center']);
+                $cell->addText($this->xmlText(mb_strtoupper($kpi['label'], 'UTF-8')), ['size' => 7.5, 'bold' => true, 'color' => '64748B'], ['alignment' => 'center']);
+                $cell->addText($this->xmlText((string) $kpi['value']), ['size' => 12, 'bold' => true, 'color' => '0D2137'], ['alignment' => 'center']);
                 if (!empty($kpi['badge'])) {
-                    $cell->addText($kpi['badge'], ['size' => 7, 'bold' => true, 'color' => '29B6D1'], ['alignment' => 'center']);
+                    $cell->addText($this->xmlText((string) $kpi['badge']), ['size' => 7, 'bold' => true, 'color' => '29B6D1'], ['alignment' => 'center']);
                 }
             }
             $section->addTextBreak(1);
@@ -90,7 +98,7 @@ class WordReportExporter
         $dataTable->addRow(400, ['tblHeader' => true, 'cantSplit' => true]);
         foreach ($data->headers as $header) {
             $dataTable->addCell(null, ['bgColor' => '0D2137'])
-                ->addText(mb_strtoupper($header, 'UTF-8'), ['bold' => true, 'color' => 'FFFFFF', 'size' => 8.5], ['alignment' => 'center']);
+                ->addText($this->xmlText(mb_strtoupper($header, 'UTF-8')), ['bold' => true, 'color' => 'FFFFFF', 'size' => 8.5], ['alignment' => 'center']);
         }
 
         // Lignes de données
@@ -99,15 +107,16 @@ class WordReportExporter
             $dataTable->addRow(300, ['cantSplit' => true]);
 
             foreach ($row as $colIdx => $val) {
+                $valStr = (string) $val;
                 $align = 'left';
-                if ($colIdx === 0 || str_starts_with((string)$val, '#') || in_array((string)$val, ['Actif', 'Inactif', 'Vérifié', 'Standard', 'Suspendu'])) {
+                if ($colIdx === 0 || str_starts_with($valStr, '#') || in_array($valStr, ['Actif', 'Inactif', 'Vérifié', 'Standard', 'Suspendu', 'En attente', 'En cours', 'Complétée', 'Annulée', 'Validé', 'Approuvé', 'Rejeté', 'Échoué', 'Remboursé'])) {
                     $align = 'center';
-                } elseif (str_contains((string)$val, 'CDF')) {
+                } elseif (str_contains($valStr, 'CDF') || str_contains($valStr, '$') || str_contains($valStr, 'USD')) {
                     $align = 'right';
                 }
 
                 $dataTable->addCell(null, ['bgColor' => $bgColor])
-                    ->addText((string) $val, ['size' => 8, 'color' => '0F172A'], ['alignment' => $align]);
+                    ->addText($this->xmlText($valStr), ['size' => 8, 'color' => '0F172A'], ['alignment' => $align]);
             }
         }
 

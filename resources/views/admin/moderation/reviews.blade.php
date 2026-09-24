@@ -79,6 +79,9 @@
             <button type="submit" class="px-8 py-4 bg-slate-900 hover:bg-rdc-blue text-white font-black rounded-2xl text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200 shrink-0">
                 <i class="fas fa-search mr-2"></i> Filtrer
             </button>
+            <a href="{{ route('admin.reports.preview', ['type' => 'reviews']) }}" class="px-8 py-4 bg-slate-900 hover:bg-rdc-blue text-white font-black rounded-2xl text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200 shrink-0 flex items-center justify-center gap-2">
+                <i class="fas fa-file-shield"></i> Rapport Modération
+            </a>
         </form>
     </div>
 

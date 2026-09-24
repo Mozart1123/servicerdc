@@ -89,6 +89,9 @@
             @endforeach
         </select>
         <button type="submit" class="px-6 py-3 bg-rdc-blue text-white font-bold rounded-xl hover:bg-rdc-blue-dark transition">Filtrer</button>
+        <a href="{{ route('admin.reports.preview', ['type' => 'missions']) }}" class="px-6 py-3 bg-slate-900 hover:bg-rdc-blue text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2 shrink-0">
+            <i class="fas fa-file-invoice"></i> Rapport Missions
+        </a>
     </form>
 
     <!-- Missions Table -->

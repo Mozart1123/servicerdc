@@ -22,15 +22,27 @@ class ReportController extends Controller
      */
     public function preview(Request $request)
     {
-        $type = $request->input('type', 'services');
-        $filters = $request->only(['date_from', 'date_to', 'status', 'category_id', 'user_type', 'role', 'search']);
+        $user = Auth::user();
+        $availableTypes = $this->reportService->getAvailableTypes($user);
 
-        $availableTypes = $this->reportService->getAvailableTypes();
+        $type = $request->input('type', 'services');
         if (!array_key_exists($type, $availableTypes)) {
             $type = 'services';
         }
 
-        $report = $this->reportService->generate($type, $filters, Auth::user());
+        $filters = $request->only([
+            'date_from',
+            'date_to',
+            'status',
+            'category_id',
+            'user_type',
+            'role',
+            'search',
+            'rating',
+            'operation_type'
+        ]);
+
+        $report = $this->reportService->generate($type, $filters, $user);
 
         return view('admin.reports.preview', compact('report', 'filters', 'availableTypes'));
     }
@@ -40,11 +52,28 @@ class ReportController extends Controller
      */
     public function exportFile(Request $request)
     {
-        $type = $request->input('type', 'services');
-        $format = $request->input('format', 'excel');
-        $filters = $request->only(['date_from', 'date_to', 'status', 'category_id', 'user_type', 'role', 'search']);
+        $user = Auth::user();
+        $availableTypes = $this->reportService->getAvailableTypes($user);
 
-        return $this->reportService->export($type, $format, $filters, Auth::user());
+        $type = $request->input('type', 'services');
+        if (!array_key_exists($type, $availableTypes)) {
+            $type = 'services';
+        }
+
+        $format = $request->input('format', 'excel');
+        $filters = $request->only([
+            'date_from',
+            'date_to',
+            'status',
+            'category_id',
+            'user_type',
+            'role',
+            'search',
+            'rating',
+            'operation_type'
+        ]);
+
+        return $this->reportService->export($type, $format, $filters, $user);
     }
 
     public function index()

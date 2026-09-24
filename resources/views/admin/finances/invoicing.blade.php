@@ -15,17 +15,24 @@
     }
 }">
     <div class="bg-white rounded-[2.5rem] sm:rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden relative min-h-[450px]">
-        <div class="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">
+        <div class="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/20">
             <h3 class="text-sm sm:text-lg font-black text-slate-900 uppercase tracking-tight">Registre de Facturation</h3>
-            <button @click="downloadAll()" :disabled="exporting" class="px-4 sm:px-6 py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase rounded-xl tracking-widest hover:bg-rdc-blue transition-all shadow-xl shadow-slate-200 disabled:opacity-50 flex items-center justify-center gap-2">
-                <template x-if="!exporting">
-                    <i class="fas fa-file-pdf"></i>
-                </template>
-                <template x-if="exporting">
-                    <i class="fas fa-circle-notch animate-spin"></i>
-                </template>
-                <span x-text="exporting ? 'Téléchargement...' : 'Télécharger Tout'">Télécharger Tout</span>
-            </button>
+            <div class="flex items-center gap-2">
+                @if(auth()->user()?->isSuperAdmin())
+                <a href="{{ route('admin.reports.preview', ['type' => 'transactions']) }}" class="px-4 sm:px-6 py-2.5 bg-emerald-600 text-white text-[9px] font-black uppercase rounded-xl tracking-widest hover:bg-emerald-700 transition-all shadow-md flex items-center justify-center gap-2">
+                    <i class="fas fa-file-invoice-dollar"></i> Rapport Financier
+                </a>
+                @endif
+                <button @click="downloadAll()" :disabled="exporting" class="px-4 sm:px-6 py-2.5 bg-slate-900 text-white text-[9px] font-black uppercase rounded-xl tracking-widest hover:bg-rdc-blue transition-all shadow-xl shadow-slate-200 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <template x-if="!exporting">
+                        <i class="fas fa-file-pdf"></i>
+                    </template>
+                    <template x-if="exporting">
+                        <i class="fas fa-circle-notch animate-spin"></i>
+                    </template>
+                    <span x-text="exporting ? 'Téléchargement...' : 'Télécharger Tout'">Télécharger Tout</span>
+                </button>
+            </div>
         </div>
         
         <div class="overflow-x-hidden">

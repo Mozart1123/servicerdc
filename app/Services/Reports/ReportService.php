@@ -7,7 +7,10 @@ namespace App\Services\Reports;
 use App\Contracts\ReportBuilderInterface;
 use App\DTO\ReportData;
 use App\Models\User;
+use App\Services\Reports\Builders\MissionReportBuilder;
+use App\Services\Reports\Builders\ReviewReportBuilder;
 use App\Services\Reports\Builders\ServiceReportBuilder;
+use App\Services\Reports\Builders\TransactionReportBuilder;
 use App\Services\Reports\Builders\UserReportBuilder;
 use App\Services\Reports\Exporters\ExcelReportExporter;
 use App\Services\Reports\Exporters\PdfReportExporter;
@@ -22,10 +25,16 @@ class ReportService
 
     public function __construct(
         ServiceReportBuilder $serviceBuilder,
-        UserReportBuilder $userBuilder
+        UserReportBuilder $userBuilder,
+        MissionReportBuilder $missionBuilder,
+        TransactionReportBuilder $transactionBuilder,
+        ReviewReportBuilder $reviewBuilder
     ) {
         $this->registerBuilder($serviceBuilder);
         $this->registerBuilder($userBuilder);
+        $this->registerBuilder($missionBuilder);
+        $this->registerBuilder($transactionBuilder);
+        $this->registerBuilder($reviewBuilder);
     }
 
     public function registerBuilder(ReportBuilderInterface $builder): void
@@ -36,12 +45,17 @@ class ReportService
     /**
      * Liste des types de rapports disponibles avec leurs libellés.
      *
+     * @param User|null $user
      * @return array<string, string>
      */
-    public function getAvailableTypes(): array
+    public function getAvailableTypes(?User $user = null): array
     {
         $list = [];
         foreach ($this->builders as $type => $builder) {
+            // Le rapport des transactions est réservé au super_admin
+            if ($type === 'transactions' && (!$user || !$user->isSuperAdmin())) {
+                continue;
+            }
             $list[$type] = $builder->getName();
         }
         return $list;
