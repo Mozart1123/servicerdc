@@ -4,15 +4,49 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Report;
+use App\Models\SystemLog;
+use App\Services\Reports\ReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\SystemLog;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\HQMonthlyReport;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        protected ReportService $reportService
+    ) {}
+
+    /**
+     * Prévisualisation dynamique du rapport avec filtres et cartes de KPIs.
+     */
+    public function preview(Request $request)
+    {
+        $type = $request->input('type', 'services');
+        $filters = $request->only(['date_from', 'date_to', 'status', 'category_id', 'user_type', 'role', 'search']);
+
+        $availableTypes = $this->reportService->getAvailableTypes();
+        if (!array_key_exists($type, $availableTypes)) {
+            $type = 'services';
+        }
+
+        $report = $this->reportService->generate($type, $filters, Auth::user());
+
+        return view('admin.reports.preview', compact('report', 'filters', 'availableTypes'));
+    }
+
+    /**
+     * Téléchargement du rapport dans le format demandé (excel, pdf, word).
+     */
+    public function exportFile(Request $request)
+    {
+        $type = $request->input('type', 'services');
+        $format = $request->input('format', 'excel');
+        $filters = $request->only(['date_from', 'date_to', 'status', 'category_id', 'user_type', 'role', 'search']);
+
+        return $this->reportService->export($type, $format, $filters, Auth::user());
+    }
+
     public function index()
     {
         $reports = Report::with('generator')->latest()->paginate(20);
@@ -21,19 +55,9 @@ class ReportController extends Controller
 
     public function generate(Request $request)
     {
-        $type = $request->input('type', 'daily');
-        $period = $request->input('period', 'day'); // day, week, month
-
-        // In a real app, we would query counts/sums based on the period
-        // For HQ Demo, we create the record which will link to a dynamic stream
-        Report::create([
-            'type' => strtoupper($type) . ' (' . strtoupper($period) . ')',
-            'file_path' => '/reports/' . $type . '_' . now()->format('YmdHis') . '.csv',
-            'generated_by_user_id' => Auth::id() ?? 1,
-            'status' => 'completed',
-        ]);
-
-        return redirect()->route('admin.reports.index')->with('success', 'Rapport ' . $type . ' généré avec succès.');
+        $type = $request->input('type', 'services');
+        // Redirige vers la prévisualisation du type sélectionné
+        return redirect()->route('admin.reports.preview', ['type' => $type]);
     }
 
     public function destroy(Report $report)
@@ -53,7 +77,7 @@ class ReportController extends Controller
             'total_users' => \App\Models\User::count(),
             'total_artisans' => \App\Models\User::where('role', 'artisan')->count(),
             'total_services' => \App\Models\Service::count(),
-            'growth_rate' => 12.4, // Mock calculated rate
+            'growth_rate' => 12.4,
             'pwa_installs' => 76
         ];
         return view('admin.reports.analytics', compact('stats'));
@@ -61,7 +85,6 @@ class ReportController extends Controller
 
     public function financial()
     {
-        // Mock financial health data - in real app would query payments table
         $metrics = [
             'gross_revenue' => 12450.00,
             'net_commissions' => 1867.50,
@@ -76,59 +99,14 @@ class ReportController extends Controller
         return view('admin.reports.export');
     }
 
-    public function exportUsers(): StreamedResponse
+    public function exportUsers(Request $request)
     {
-        $fileName = 'users_export_' . date('Y-m-d') . '.csv';
-        $users = \App\Models\User::all();
-
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
-        $columns = ['ID', 'Name', 'Email', 'Role', 'Status', 'Created At'];
-
-        $callback = function() use($users, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-            foreach ($users as $user) {
-                fputcsv($file, [$user->id, $user->name, $user->email, $user->role, $user->status, $user->created_at]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return redirect()->route('admin.reports.preview', ['type' => 'users']);
     }
 
-    public function exportServices(): StreamedResponse
+    public function exportServices(Request $request)
     {
-        $fileName = 'services_export_' . date('Y-m-d') . '.csv';
-        $services = \App\Models\Service::all();
-
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
-        $columns = ['ID', 'Title', 'Price', 'Provider', 'Status', 'Created At'];
-
-        $callback = function() use($services, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-            foreach ($services as $service) {
-                $priceDisplay = $service->pricing_type === 'quote' ? 'Sur devis' : ($service->price !== null ? $service->price : 'Sur devis');
-                fputcsv($file, [$service->id, $service->title, $priceDisplay, $service->user->name ?? 'N/A', $service->status, $service->created_at]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return redirect()->route('admin.reports.preview', ['type' => 'services']);
     }
 
     public function exportLogs(Request $request): StreamedResponse

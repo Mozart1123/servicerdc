@@ -473,6 +473,8 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         });
 
         Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/preview', [AdminReportController::class, 'preview'])->name('reports.preview');
+        Route::get('/reports/export-file', [AdminReportController::class, 'exportFile'])->name('reports.export-file');
         Route::post('/reports/generate', [AdminReportController::class, 'generate'])->name('reports.generate');
         Route::get('/reports/{report}/download', [AdminReportController::class, 'download'])->name('reports.download');
         Route::delete('/reports/{report}', [AdminReportController::class, 'destroy'])->name('reports.destroy');

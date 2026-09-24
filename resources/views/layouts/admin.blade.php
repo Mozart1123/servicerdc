@@ -175,10 +175,12 @@
                 </x-admin-dropdown-nav>
 
                 <!-- [RAPPORTS & ANALYTICS] -->
-                <x-admin-dropdown-nav icon="fas fa-chart-pie" label="Rapports Data" :activePrefixes="['admin.reports-hq']">
+                <x-admin-dropdown-nav icon="fas fa-chart-pie" label="Rapports Data" :activePrefixes="['admin.reports', 'admin.reports-hq']">
+                    <x-admin-dropdown-item route="admin.reports.preview" label="Rapports & Exports" />
                     <x-admin-dropdown-item route="admin.reports-hq.analytics" label="Analytics globaux" />
                     <x-admin-dropdown-item route="admin.reports-hq.financial" label="Rapports financiers" />
                     <x-admin-dropdown-item route="admin.reports-hq.export" label="Exports massifs" />
+                    <x-admin-dropdown-item route="admin.reports.index" label="Archives" />
                 </x-admin-dropdown-nav>
 
                 <!-- [SUPPORT CLIENT] -->
@@ -372,18 +374,17 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <form action="{{ route('admin.api.logs.export') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-rdc-blue hover:text-rdc-blue transition-all flex items-center gap-2">
-                            <i class="fas fa-file-export"></i> Exporter
-                        </button>
-                    </form>
-                    <form action="{{ route('admin.reports.generate') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="px-5 py-2.5 bg-rdc-blue text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:bg-rdc-blue-dark transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
-                            <i class="fas fa-plus-circle"></i> Nouveau Rapport
-                        </button>
-                    </form>
+                    @php
+                        $contextReportType = request()->is('admin/users*') ? 'users' : (request()->is('admin/services*') ? 'services' : 'services');
+                    @endphp
+                    <a href="{{ route('admin.reports.preview', ['type' => $contextReportType]) }}" 
+                       class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-rdc-blue hover:text-rdc-blue transition-all flex items-center gap-2">
+                        <i class="fas fa-file-export"></i> Exporter
+                    </a>
+                    <a href="{{ route('admin.reports.preview', ['type' => $contextReportType]) }}" 
+                       class="px-5 py-2.5 bg-rdc-blue text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:bg-rdc-blue-dark transform hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                        <i class="fas fa-plus-circle"></i> Nouveau Rapport
+                    </a>
                 </div>
             </div>
 

@@ -27,6 +27,12 @@
                 <span class="text-[8px] sm:text-[10px] font-black text-white/30 uppercase tracking-[0.2em] font-mono truncate">system.log</span>
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto">
+                <form action="{{ route('admin.api.logs.export') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="py-2 px-3.5 bg-white/10 hover:bg-white/20 text-white transition-colors text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5">
+                        <i class="fas fa-file-export"></i> Exporter (.csv)
+                    </button>
+                </form>
                 <button @click="window.location.reload()" class="flex-1 sm:flex-none py-2 px-4 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-colors text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg">Refresh</button>
                 <button @click="clearLogs()" class="flex-1 sm:flex-none px-4 py-2 bg-red-500/10 text-red-500 text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-lg border border-red-500/20 active:scale-95 transition-all">Clear</button>
             </div>

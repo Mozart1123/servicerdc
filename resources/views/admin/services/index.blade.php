@@ -19,10 +19,14 @@
                 <i class="fas fa-filter"></i>
             </button>
         </div>
-        
-        <a href="{{ route('admin.services.create') }}" class="w-full md:w-auto px-8 py-4 bg-rdc-blue text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-105 transition-all text-center">
-            <i class="fas fa-plus mr-2"></i> Ajouter un Service
-        </a>
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <a href="{{ route('admin.reports.preview', ['type' => 'services']) }}" class="w-full sm:w-auto px-6 py-4 bg-white border border-slate-200 text-slate-700 hover:text-rdc-blue hover:border-rdc-blue font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-sm hover:scale-105 transition-all text-center flex items-center justify-center gap-2">
+                <i class="fas fa-file-invoice"></i> Rapport Services
+            </a>
+            <a href="{{ route('admin.services.create') }}" class="w-full sm:w-auto px-8 py-4 bg-rdc-blue text-white font-black rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-105 transition-all text-center">
+                <i class="fas fa-plus mr-2"></i> Ajouter un Service
+            </a>
+        </div>
     </div>
 
     <!-- Services Table Card -->

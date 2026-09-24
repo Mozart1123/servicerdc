@@ -104,6 +104,10 @@
                     @endforeach
                 </select>
             </div>
+
+            <a href="{{ route('admin.reports.preview', ['type' => 'users']) }}" class="px-5 py-3.5 bg-slate-900 hover:bg-rdc-blue text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2 shrink-0">
+                <i class="fas fa-file-invoice"></i> Rapport Utilisateurs
+            </a>
         </div>
     </div>
 
