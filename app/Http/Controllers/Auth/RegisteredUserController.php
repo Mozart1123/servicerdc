@@ -23,9 +23,18 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View|\Illuminate\Http\RedirectResponse
     {
-        return view('auth.register');
+        if (! $request->has('type')) {
+            return redirect()->route('register.choose');
+        }
+
+        // The ?type= query param comes from the choose-profile screen (Point 1)
+        $preselectedType = in_array($request->query('type'), ['client', 'artisan', 'recruiter'], true)
+            ? $request->query('type')
+            : null;
+
+        return view('auth.register', compact('preselectedType'));
     }
 
     /**

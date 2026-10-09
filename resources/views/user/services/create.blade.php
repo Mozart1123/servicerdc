@@ -509,9 +509,21 @@ function serviceForm() {
         // service_type_id, ou 'single' pour l'offre unique sans type).
         previewImages(event, key) {
             const files = Array.from(event.target.files || []).slice(0, 5);
+            if (files.length === 1 && typeof openImageCropper === 'function') {
+                openImageCropper({
+                    input: event.target,
+                    aspectRatio: 4 / 3,
+                    title: "Recadrer l'image du service",
+                    callback: (res) => {
+                        this.previews[key] = [res.dataUrl];
+                    }
+                });
+                return;
+            }
             this.previews[key] = files.map(file => URL.createObjectURL(file));
         },
     }
 }
 </script>
+@include('partials.image-cropper-modal')
 @endsection

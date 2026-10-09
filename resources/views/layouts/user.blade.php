@@ -204,6 +204,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('user.artisan.opportunities.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.opportunities.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
+                            <i class="fas fa-bullhorn text-lg {{ request()->routeIs('user.artisan.opportunities.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
+                            Opportunités
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('user.artisan.service-requests.index') }}" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all group {{ request()->routeIs('user.artisan.service-requests.*') ? 'bg-rdc-blue text-white shadow-lg shadow-[#29B6D1]/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900' }}">
                             <i class="fas fa-inbox text-lg {{ request()->routeIs('user.artisan.service-requests.*') ? 'text-white' : 'text-slate-400 group-hover:text-rdc-blue' }}"></i>
                             Demandes reçues
@@ -407,7 +413,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 pb-24 md:pb-8">
             @yield('content')
         </main>
 
@@ -676,6 +682,9 @@
     })();
     </script>
     @endif
+
+    {{-- Barre d'onglets fixe en bas (Mobile uniquement - Point 6) --}}
+    @include('partials.mobile-bottom-nav')
 </body>
 
 </html>

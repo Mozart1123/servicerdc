@@ -38,6 +38,14 @@ class Review extends Model
     }
 
     /**
+     * Get the service request for this review (if any).
+     */
+    public function serviceRequest()
+    {
+        return $this->belongsTo(ServiceRequest::class, 'service_request_id');
+    }
+
+    /**
      * Get the client who left the review.
      */
     public function client()

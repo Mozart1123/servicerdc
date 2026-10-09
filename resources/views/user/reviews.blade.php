@@ -47,8 +47,14 @@
                             <i class="fas fa-hard-hat"></i>
                         </div>
                         <div>
-                            <h4 class="font-heading font-black text-slate-900 text-lg">{{ $review->artisan->name }}</h4>
-                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Mission #{{ str_pad($review->mission_id, 5, '0', STR_PAD_LEFT) }}</p>
+                            <h4 class="font-heading font-black text-slate-900 text-lg">{{ $review->artisan?->name ?? 'Artisan ProConnect' }}</h4>
+                            @if($review->mission)
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Mission #{{ str_pad($review->mission_id, 5, '0', STR_PAD_LEFT) }} — {{ $review->mission->title }}</p>
+                            @elseif($review->serviceRequest)
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Demande #{{ str_pad($review->service_request_id, 5, '0', STR_PAD_LEFT) }} — {{ $review->serviceRequest->requested_service_name ?? $review->serviceRequest->service?->title ?? 'Prestation' }}</p>
+                            @else
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Prestation #{{ str_pad($review->id, 5, '0', STR_PAD_LEFT) }}</p>
+                            @endif
                             <p class="text-xs text-slate-400 mt-1">{{ $review->created_at->format('d/m/Y à H:i') }}</p>
                         </div>
                     </div>
@@ -103,11 +109,13 @@
         </div>
         @empty
         <div class="bg-white rounded-2xl p-12 border border-slate-100 shadow-sm text-center">
-            <i class="fas fa-star text-5xl text-slate-200 mb-4"></i>
-            <h3 class="font-black text-slate-900 text-lg mb-2">Aucun avis laissé</h3>
-            <p class="text-slate-500 mb-6">Vous n'avez pas encore laissé d'avis. Complétez une mission et évaluez l'artisan !</p>
-            <a href="{{ route('user.missions.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-xs uppercase tracking-widest transition-all">
-                <i class="fas fa-tasks"></i> Voir mes missions
+            <div class="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                <i class="fas fa-star"></i>
+            </div>
+            <h3 class="font-black text-slate-900 text-lg mb-2">Tu n'as pas encore laissé d'avis.</h3>
+            <p class="text-slate-500 text-sm max-w-md mx-auto mb-6">Après avoir fait appel à un artisan et finalisé une prestation, vos évaluations et avis apparaîtront ici.</p>
+            <a href="{{ route('user.service-requests.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
+                <i class="fas fa-list-check"></i> Voir mes demandes
             </a>
         </div>
         @endforelse

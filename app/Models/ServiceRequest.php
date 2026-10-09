@@ -102,6 +102,50 @@ class ServiceRequest extends Model
         return $this->hasOne(ArtisanRating::class);
     }
 
+    public function review()
+    {
+        return $this->hasOne(Review::class, 'service_request_id');
+    }
+
+    /**
+     * Get review left for this service request (via direct link or legacy rating).
+     */
+    public function getClientReviewAttribute(): ?Review
+    {
+        if ($this->relationLoaded('review')) {
+            return $this->review;
+        }
+        return $this->review()->first();
+    }
+
+    /**
+     * Nicely formatted mission duration, or null if duration is 0 / < 1min.
+     * Prevents displaying '0min' on completed requests.
+     */
+    public function getDurationFormattedAttribute(): ?string
+    {
+        if (!$this->accepted_at || !$this->completed_at) {
+            return null;
+        }
+
+        $totalSeconds = $this->completed_at->diffInSeconds($this->accepted_at);
+        if ($totalSeconds < 60) {
+            return null;
+        }
+
+        $diffDays = (int) floor($totalSeconds / 86400);
+        $diffHours = (int) floor(($totalSeconds % 86400) / 3600);
+        $diffMinutes = (int) floor(($totalSeconds % 3600) / 60);
+
+        if ($diffDays > 0) {
+            return $diffDays . 'j' . ($diffHours > 0 ? " {$diffHours}h" : '');
+        }
+        if ($diffHours > 0) {
+            return "{$diffHours}h" . ($diffMinutes > 0 ? " " . sprintf('%02d', $diffMinutes) . "min" : '');
+        }
+        return "{$diffMinutes} min";
+    }
+
     public function workSessions()
     {
         return $this->hasMany(ServiceRequestWorkSession::class)->orderBy('started_at');

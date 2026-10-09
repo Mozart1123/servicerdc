@@ -1015,36 +1015,63 @@
                     </p>
                 </div>
 
-                <!-- Catégories Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-12">
+                <!-- Catégories Grid (2 colonnes compactes sur mobile, grille complète sur desktop) -->
+                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-6 mb-12">
                     @foreach($categories as $index => $category)
                         <a href="{{ route('public.categories.service-types', $category->id) }}"
-                           class="group relative overflow-hidden bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer will-change-transform hover:-translate-y-1"
+                           class="group relative overflow-hidden bg-white rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer will-change-transform hover:-translate-y-1 border border-slate-100 flex flex-col"
                            data-aos="fade-up" data-aos-delay="{{ ($index % 6) * 100 }}">
-                            <div class="relative h-44 overflow-hidden">
-                                {{-- Photo ou fallback gradient --}}
-                                @if($category->image)
-                                    <img src="{{ Storage::url($category->image) }}"
-                                         alt="{{ $category->name }}"
-                                         class="w-full h-full object-cover absolute inset-0">
-                                @else
-                                    <div class="w-full h-full bg-gradient-to-br from-[#1E9CB5] to-[#090D16] flex flex-col items-center justify-center absolute inset-0">
-                                        <i class="{{ $category->icon ?? 'fas fa-tools' }} text-white text-4xl opacity-80 mb-2"></i>
-                                        <span class="text-white text-xs font-black opacity-30 uppercase tracking-widest text-center px-2">{{ $category->name }}</span>
-                                    </div>
-                                @endif
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-                                <div class="absolute bottom-0 left-0 right-0 p-4">
-                                    <h4 class="text-white font-bold text-base leading-tight drop-shadow">{{ $category->name }}</h4>
-                                    <p class="text-white/80 text-xs font-medium mt-0.5">{{ Str::limit($category->description, 50) }}</p>
+                            
+                            {{-- Version Mobile (< sm) : vignette carrée compacte type grille 2 colonnes --}}
+                            <div class="sm:hidden flex flex-col h-full">
+                                <div class="relative aspect-square w-full overflow-hidden bg-slate-100">
+                                    @if($category->image)
+                                        <img src="{{ Storage::url($category->image) }}"
+                                             alt="{{ $category->name }}"
+                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    @else
+                                        <div class="w-full h-full bg-gradient-to-br from-[#1E9CB5] to-[#090D16] flex flex-col items-center justify-center p-2 text-center">
+                                            <i class="{{ $category->icon ?? 'fas fa-tools' }} text-white text-3xl opacity-80 mb-1"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="p-2 text-center flex-1 flex flex-col justify-between">
+                                    <h4 class="text-slate-900 font-bold text-xs leading-snug line-clamp-2 group-hover:text-rdc-blue transition-colors">
+                                        {{ $category->name }}
+                                    </h4>
+                                    <span class="text-[10px] font-semibold text-slate-400 mt-1 block">
+                                        {{ $category->services_count ?? 0 }} {{ Str::plural('offre', $category->services_count ?? 0) }}
+                                    </span>
                                 </div>
                             </div>
-                            <div class="px-4 py-3 flex items-center justify-between">
-                                <span class="text-rdc-blue text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
-                                    Voir les services
-                                    <i class="fas fa-arrow-right text-[10px]"></i>
-                                </span>
-                                <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">{{ $category->services_count }} offres</span>
+
+                            {{-- Version Desktop (>= sm) : grande carte avec dégradé et détails --}}
+                            <div class="hidden sm:block">
+                                <div class="relative h-44 overflow-hidden">
+                                    {{-- Photo ou fallback gradient --}}
+                                    @if($category->image)
+                                        <img src="{{ Storage::url($category->image) }}"
+                                             alt="{{ $category->name }}"
+                                             class="w-full h-full object-cover absolute inset-0">
+                                    @else
+                                        <div class="w-full h-full bg-gradient-to-br from-[#1E9CB5] to-[#090D16] flex flex-col items-center justify-center absolute inset-0">
+                                            <i class="{{ $category->icon ?? 'fas fa-tools' }} text-white text-4xl opacity-80 mb-2"></i>
+                                            <span class="text-white text-xs font-black opacity-30 uppercase tracking-widest text-center px-2">{{ $category->name }}</span>
+                                        </div>
+                                    @endif
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                                    <div class="absolute bottom-0 left-0 right-0 p-4">
+                                        <h4 class="text-white font-bold text-base leading-tight drop-shadow">{{ $category->name }}</h4>
+                                        <p class="text-white/80 text-xs font-medium mt-0.5">{{ Str::limit($category->description, 50) }}</p>
+                                    </div>
+                                </div>
+                                <div class="px-4 py-3 flex items-center justify-between">
+                                    <span class="text-rdc-blue text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                                        Voir les services
+                                        <i class="fas fa-arrow-right text-[10px]"></i>
+                                    </span>
+                                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">{{ $category->services_count }} offres</span>
+                                </div>
                             </div>
                         </a>
                     @endforeach

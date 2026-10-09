@@ -11,6 +11,11 @@
 
     <!-- Header -->
     <div class="mb-6 sm:mb-8 text-center lg:text-left">
+        @if($preselectedType ?? null)
+        <a href="{{ route('register.choose') }}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-rdc-blue transition-colors mb-3">
+            <i class="fas fa-arrow-left"></i> Changer de profil
+        </a>
+        @endif
         <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-1.5 sm:mb-2 font-heading">Créer un compte</h2>
         <p class="text-slate-500 text-xs sm:text-sm">Rejoignez la communauté <span class="text-rdc-blue font-semibold">ProConnect</span>.</p>
     </div>
@@ -109,14 +114,16 @@
             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Je suis un(e)...</label>
             <div class="grid {{ config('features.recruitment_enabled') ? 'grid-cols-3' : 'grid-cols-2' }} gap-2">
                 <label class="relative cursor-pointer group">
-                    <input type="radio" name="user_type" value="client" class="peer sr-only" required {{ old('user_type') == 'client' ? 'checked' : '' }}>
+                    <input type="radio" name="user_type" value="client" class="peer sr-only" required
+                        {{ (old('user_type', $preselectedType ?? '') === 'client') ? 'checked' : '' }}>
                     <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 text-center transition-all peer-checked:border-rdc-blue peer-checked:bg-rdc-blue/10 group-hover:bg-white group-hover:shadow-sm">
                         <i class="fas fa-user-tie mb-1 text-sm block text-slate-400 peer-checked:text-rdc-blue"></i>
                         <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-blue uppercase tracking-tighter">Client</span>
                     </div>
                 </label>
                 <label class="relative cursor-pointer group">
-                    <input type="radio" name="user_type" value="artisan" class="peer sr-only" {{ old('user_type') == 'artisan' ? 'checked' : '' }}>
+                    <input type="radio" name="user_type" value="artisan" class="peer sr-only"
+                        {{ (old('user_type', $preselectedType ?? '') === 'artisan') ? 'checked' : '' }}>
                     <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 text-center transition-all peer-checked:border-rdc-yellow peer-checked:bg-rdc-yellow/10 group-hover:bg-white group-hover:shadow-sm">
                         <i class="fas fa-tools mb-1 text-sm block text-slate-400 peer-checked:text-rdc-yellow"></i>
                         <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-yellow uppercase tracking-tighter">Artisan</span>
@@ -124,7 +131,8 @@
                 </label>
                 @if(config('features.recruitment_enabled'))
                     <label class="relative cursor-pointer group">
-                        <input type="radio" name="user_type" value="recruiter" class="peer sr-only" {{ old('user_type') == 'recruiter' ? 'checked' : '' }}>
+                        <input type="radio" name="user_type" value="recruiter" class="peer sr-only"
+                            {{ (old('user_type', $preselectedType ?? '') === 'recruiter') ? 'checked' : '' }}>
                         <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 text-center transition-all peer-checked:border-rdc-red peer-checked:bg-rdc-red/10 group-hover:bg-white group-hover:shadow-sm">
                             <i class="fas fa-building mb-1 text-sm block text-slate-400 peer-checked:text-rdc-red"></i>
                             <span class="text-[9px] font-bold text-slate-500 peer-checked:text-rdc-red uppercase tracking-tighter">Recruteur</span>

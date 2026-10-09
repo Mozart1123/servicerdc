@@ -436,20 +436,26 @@
 
     {{-- Rating Section --}}
     @if($serviceRequest->status === 'completed' && $serviceRequest->user_id === auth()->id())
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6" data-aos="fade-up">
-        @if($serviceRequest->rating)
+    @php
+        $existingReview = $serviceRequest->client_review;
+    @endphp
+    <div id="review-section" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6" data-aos="fade-up">
+        @if($existingReview)
             {{-- Already rated --}}
             <div class="text-center">
-                <h3 class="text-lg font-bold text-slate-900 mb-3">Votre evaluation</h3>
-                <div class="flex justify-center gap-1 mb-3">
-                    @for($i = 1; $i <= 5; $i++)
-                        <i class="fas fa-star text-xl {{ $i <= $serviceRequest->rating->rating ? 'text-amber-400' : 'text-slate-200' }}"></i>
-                    @endfor
+                <h3 class="text-lg font-bold text-slate-900 mb-2">Votre évaluation</h3>
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full mb-3">
+                    <div class="flex gap-1 text-amber-400">
+                        @for($i = 1; $i <= 5; $i++)
+                            <i class="fas fa-star {{ $i <= $existingReview->rating ? 'text-amber-400' : 'text-slate-200' }}"></i>
+                        @endfor
+                    </div>
+                    <span class="text-xs font-bold text-amber-800">{{ $existingReview->rating }}/5 – Évalué</span>
                 </div>
-                @if($serviceRequest->rating->comment)
-                <p class="text-slate-600 italic">"{{ $serviceRequest->rating->comment }}"</p>
+                @if($existingReview->feedback ?? $existingReview->comment ?? null)
+                <p class="text-slate-600 italic">"{{ $existingReview->feedback ?? $existingReview->comment }}"</p>
                 @endif
-                <p class="text-xs text-slate-400 mt-2">Evalue le {{ $serviceRequest->rating->created_at->format('d M Y') }}</p>
+                <p class="text-xs text-slate-400 mt-2">Évalué le {{ $existingReview->created_at->format('d/m/Y') }}</p>
             </div>
         @else
             {{-- Rating form --}}

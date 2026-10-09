@@ -48,7 +48,7 @@
                         <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-4">Photo <span class="text-red-500">*</span></label>
                         <div class="relative border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center hover:bg-slate-50 transition-colors group">
                             <input type="file" name="image" required accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                   @change="const f = $event.target.files[0]; filename = f ? f.name : ''; preview = f ? URL.createObjectURL(f) : null;">
+                                   @change="if($event.target.files[0]) openImageCropper({ input: $event.target, aspectRatio: 1, title: 'Recadrer votre réalisation', callback: (res) => { filename = res.file.name; preview = res.dataUrl; } })">
                             <template x-if="!preview">
                                 <div>
                                     <i class="fas fa-cloud-upload-alt text-rdc-blue text-2xl mb-2"></i>
@@ -121,4 +121,5 @@
     </div>
 
 </div>
+@include('partials.image-cropper-modal')
 @endsection

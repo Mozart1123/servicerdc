@@ -233,6 +233,9 @@ class DashboardController extends Controller
             $rules['intervention_zone']  = ['nullable', 'string', 'max:255'];
             $rules['home_service']       = ['nullable', 'in:0,1'];
             $rules['address']            = ['nullable', 'string', 'max:255'];
+            $rules['availability_days']   = ['nullable', 'array'];
+            $rules['availability_days.*'] = ['string', 'in:lun,mar,mer,jeu,ven,sam,dim'];
+            $rules['availability_note']   = ['nullable', 'string', 'max:255'];
         }
 
         $request->validate($rules);
@@ -253,6 +256,8 @@ class DashboardController extends Controller
             $fields['intervention_zone'] = $request->input('intervention_zone');
             $fields['home_service']      = $request->filled('home_service') ? (bool) $request->input('home_service') : null;
             $fields['address']           = $request->input('address');
+            $fields['availability_days'] = $request->input('availability_days', []);
+            $fields['availability_note'] = $request->input('availability_note');
         }
 
         $user->update($fields);
@@ -292,6 +297,92 @@ class DashboardController extends Controller
         Auth::user()->update($request->only(['city', 'province']));
 
         return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * 1-Click Toggle availability for artisans directly from the dashboard (Point 10).
+     */
+    public function toggleAvailability(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        if (!$user->isArtisan()) {
+            abort(403);
+        }
+
+        $user->is_available = !($user->is_available ?? true);
+        $user->save();
+
+        return response()->json([
+            'status'       => 'ok',
+            'is_available' => (bool) $user->is_available,
+            'message'      => $user->is_available ? 'Vous êtes maintenant visible et disponible pour de nouvelles missions.' : 'Vous êtes maintenant marqué comme indisponible.',
+        ]);
+    }
+
+    /**
+     * Update detailed availability settings (schedule, vacation date, intervention zone) (Point 10).
+     */
+    public function updateAvailability(Request $request): RedirectResponse|JsonResponse
+    {
+        $user = Auth::user();
+        if (!$user->isArtisan()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'is_available'         => ['nullable', 'in:0,1'],
+            'available_until'      => ['nullable', 'date'],
+            'working_hours_start'  => ['nullable', 'string', 'max:10'],
+            'working_hours_end'    => ['nullable', 'string', 'max:10'],
+            'availability_days'    => ['nullable', 'array'],
+            'availability_days.*'  => ['string', 'in:lun,mar,mer,jeu,ven,sam,dim'],
+            'availability_note'    => ['nullable', 'string', 'max:255'],
+            'intervention_zone'    => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($request->has('is_available')) {
+            $user->is_available = (bool) $request->input('is_available');
+        }
+        $user->available_until     = $request->filled('available_until') ? $request->input('available_until') : null;
+        $user->working_hours_start = $request->input('working_hours_start', '08:00');
+        $user->working_hours_end   = $request->input('working_hours_end', '18:00');
+        $user->availability_days   = $request->input('availability_days', []);
+        $user->availability_note   = $request->input('availability_note');
+        if ($request->has('intervention_zone')) {
+            $user->intervention_zone = $request->input('intervention_zone');
+        }
+        $user->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status'  => 'ok',
+                'message' => 'Paramètres de disponibilité enregistrés.',
+                'user'    => $user,
+            ]);
+        }
+
+        return back()->with('success', 'Vos paramètres de disponibilité ont été mis à jour.');
+    }
+
+    /**
+     * Opportunités ouvertes pour artisans (Point 11).
+     * Demandes publiées par des clients SANS artisan désigné.
+     */
+    public function opportunities(): View
+    {
+        $user = Auth::user();
+        if (!$user->isArtisan()) {
+            abort(403);
+        }
+
+        // Open requests with no artisan assigned (matching system pool)
+        $openRequests = ServiceRequest::whereNull('artisan_id')
+            ->where('status', 'pending')
+            ->with(['user', 'service'])
+            ->latest()
+            ->paginate(10);
+
+        return view('user.artisan.opportunities', compact('openRequests'));
     }
 
     // ==========================================
@@ -640,7 +731,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $reviews = Review::byClient($user->id)
-                        ->with('mission', 'artisan')
+                        ->with(['mission', 'artisan', 'serviceRequest.service'])
                         ->latest()
                         ->paginate(10);
 
@@ -652,7 +743,7 @@ class DashboardController extends Controller
             'avg_rating' => Review::byClient($user->id)->approved()->average('rating') ?? 0,
         ];
 
-        return view('user.reviews.index', compact('reviews', 'stats'));
+        return view('user.reviews', compact('reviews', 'stats'));
     }
 
     /**

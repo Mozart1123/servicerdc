@@ -280,7 +280,7 @@ class ServiceRequestController extends Controller
         $user = Auth::user();
         
         $query = $user->serviceRequests()
-            ->with('service.artisan')
+            ->with(['service.artisan', 'review', 'workSessions'])
             ->latest();
 
         $stats = [
@@ -308,7 +308,7 @@ class ServiceRequestController extends Controller
             abort(403, 'Vous n\'êtes pas autorisé à consulter cette demande.');
         }
 
-        $serviceRequest->load(['user', 'service.artisan', 'mission', 'workSessions']);
+        $serviceRequest->load(['user', 'service.artisan', 'mission', 'workSessions', 'review']);
 
         // Load conversation if one exists between client and artisan
         $conversation = null;
@@ -656,10 +656,10 @@ class ServiceRequestController extends Controller
             abort(403);
         }
         if ($serviceRequest->status !== 'completed') {
-            return back()->with('error', 'Vous ne pouvez evaluer qu\'un service termine.');
+            return back()->with('error', 'Vous ne pouvez évaluer qu\'un service terminé.');
         }
-        if ($serviceRequest->rating) {
-            return back()->with('error', 'Vous avez deja evaluet cet artisan.');
+        if ($serviceRequest->client_review || Review::where('service_request_id', $serviceRequest->id)->exists()) {
+            return back()->with('error', 'Vous avez déjà évalué cette prestation.');
         }
 
         $validated = $request->validate([

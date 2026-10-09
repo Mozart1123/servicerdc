@@ -95,10 +95,9 @@
                             <i class="fas {{ $isPausedList ? 'fa-pause' : 'fa-stopwatch' }} mr-1"></i>{{ sprintf('%02d:%02d:%02d', $wh, $wm, $ws) }}{{ $isPausedList ? ' (en pause)' : '' }}
                         </span>
                         @endif
-                        @if($req->status === 'completed' && $req->accepted_at && $req->completed_at)
-                        @php $d = $req->completed_at->diff($req->accepted_at); @endphp
+                        @if($req->status === 'completed' && $req->duration_formatted)
                         <span class="text-blue-600 font-bold">
-                            <i class="fas fa-clock mr-1"></i>{{ $d->h > 0 ? "{$d->h}h {$d->i}min" : "{$d->i}min" }}
+                            <i class="fas fa-clock mr-1"></i>{{ $req->duration_formatted }}
                         </span>
                         @endif
                     </div>

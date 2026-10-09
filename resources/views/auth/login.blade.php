@@ -110,7 +110,7 @@
     <!-- Footer Register Link -->
     <div class="mt-6 sm:mt-8 text-center text-[13px] sm:text-sm text-slate-500">
         Pas encore inscrit ? 
-        <a href="{{ route('register') }}" class="text-rdc-dark-blue font-bold hover:text-rdc-blue transition-colors ml-1 relative inline-block group">
+        <a href="{{ route('register.choose') }}" class="text-rdc-dark-blue font-bold hover:text-rdc-blue transition-colors ml-1 relative inline-block group">
             Créer un compte
             <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-rdc-yellow transition-all duration-300 group-hover:w-full"></span>
         </a>

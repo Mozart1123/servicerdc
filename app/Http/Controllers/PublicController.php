@@ -142,7 +142,10 @@ class PublicController extends Controller
      */
     public function artisans(Request $request): View
     {
-        $query = User::where('user_type', 'artisan')->where('status', 'active');
+        // Only show artisans with at least one active service (Point 5)
+        $query = User::where('user_type', 'artisan')
+            ->where('status', 'active')
+            ->whereHas('services', fn ($sq) => $sq->where('status', 'active'));
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -166,8 +169,8 @@ class PublicController extends Controller
             });
         }
 
-        $artisans = $query->with(['artisanLevel'])
-            ->withCount('services')
+        $artisans = $query->with(['artisanLevel', 'services', 'receivedReviews'])
+            ->withCount(['services' => fn ($sq) => $sq->where('status', 'active')])
             ->leftJoin('artisan_levels', 'users.id', '=', 'artisan_levels.user_id')
             ->when($request->filled('min_rating'), function ($q) use ($request) {
                 $q->where('artisan_levels.average_rating', '>=', (float) $request->min_rating);

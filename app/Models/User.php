@@ -64,6 +64,12 @@ class User extends Authenticatable
         'intervention_zone',
         'home_service',
         'address',
+        'availability_days',
+        'availability_note',
+        'is_available',
+        'available_until',
+        'working_hours_start',
+        'working_hours_end',
     ];
 
     protected $hidden = [
@@ -79,13 +85,16 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'terms_accepted_at' => 'datetime',
-            'password'          => 'hashed',
-            'skills'            => 'array',
-            'interests'         => 'array',
-            'languages'         => 'array',
-            'home_service'      => 'boolean',
+            'email_verified_at'  => 'datetime',
+            'terms_accepted_at'  => 'datetime',
+            'password'           => 'hashed',
+            'skills'             => 'array',
+            'interests'          => 'array',
+            'languages'          => 'array',
+            'home_service'       => 'boolean',
+            'availability_days'  => 'array',
+            'is_available'       => 'boolean',
+            'available_until'    => 'date',
         ];
     }
 
@@ -277,6 +286,157 @@ class User extends Authenticatable
     }
 
     /**
+     * Rating summary accessor (Point 5).
+     * Centralized computation of average rating, reviews count and "Nouveau" badge.
+     */
+    public function getRatingSummaryAttribute(): array
+    {
+        $count = 0;
+        $avg = 0.0;
+
+        if ($this->relationLoaded('receivedReviews')) {
+            $approved = $this->receivedReviews->where('status', 'approved');
+            $count = $approved->count();
+            if ($count > 0) {
+                $avg = (float) $approved->avg('rating');
+            }
+        } else {
+            $approved = $this->receivedReviews()->where('status', 'approved');
+            $count = $approved->count();
+            if ($count > 0) {
+                $avg = (float) $approved->avg('rating');
+            } elseif ($this->artisanLevel && (float) $this->artisanLevel->average_rating > 0) {
+                $avg = (float) $this->artisanLevel->average_rating;
+                $count = (int) ($this->artisanLevel->total_missions ?? 1);
+            }
+        }
+
+        $isNew = $count === 0;
+        $avgFormatted = number_format($avg, 1, ',', '');
+        $badge = $isNew ? 'Nouveau' : "{$avgFormatted} ({$count} " . ($count > 1 ? 'avis' : 'avis') . ')';
+
+        return [
+            'average'           => round($avg, 1),
+            'average_formatted' => $avgFormatted,
+            'count'             => $count,
+            'is_new'            => $isNew,
+            'badge'             => $badge,
+        ];
+    }
+
+    public function getRatingStatsAttribute(): array
+    {
+        return $this->getRatingSummaryAttribute();
+    }
+
+    /**
+     * Primary profession of the artisan from their services or skills (Point 5).
+     */
+    public function getMainProfessionAttribute(): string
+    {
+        $srv = $this->relationLoaded('services') ? $this->services->first() : $this->services()->first();
+
+        if ($srv && !empty($srv->profession)) {
+            return $srv->profession;
+        }
+
+        if ($srv && $srv->category) {
+            return $srv->category->name;
+        }
+
+        if (!empty($this->skills) && is_array($this->skills) && count($this->skills) > 0) {
+            return $this->skills[0];
+        }
+
+        return 'Artisan';
+    }
+
+    /**
+     * Artisan responsiveness level over the last 30 days (Point 9).
+     * Returns e.g. "Répond généralement en moins d'1 h" or null if not enough data.
+     */
+    public function getResponseTimeBadgeAttribute(): ?string
+    {
+        if (!$this->isArtisan()) {
+            return null;
+        }
+
+        $delaysInMinutes = [];
+
+        // 1. Service requests responsiveness
+        $requests = ServiceRequest::where('artisan_id', $this->id)
+            ->where('created_at', '>=', now()->subDays(30))
+            ->whereNotNull('responded_at')
+            ->get(['created_at', 'responded_at']);
+
+        foreach ($requests as $req) {
+            if ($req->responded_at && $req->created_at) {
+                $diff = $req->created_at->diffInMinutes($req->responded_at);
+                if ($diff >= 0 && $diff <= 10080) {
+                    $delaysInMinutes[] = $diff;
+                }
+            }
+        }
+
+        // 2. Messaging responsiveness
+        try {
+            $recentConvs = Conversation::where(function ($q) {
+                    $oneCol = \Schema::hasColumn('conversations', 'user_one_id') ? 'user_one_id' : 'user_one';
+                    $twoCol = \Schema::hasColumn('conversations', 'user_two_id') ? 'user_two_id' : 'user_two';
+                    $q->where($oneCol, $this->id)->orWhere($twoCol, $this->id);
+                })
+                ->where('updated_at', '>=', now()->subDays(30))
+                ->take(15)
+                ->get();
+
+            foreach ($recentConvs as $conv) {
+                $messages = $conv->messages()
+                    ->where('created_at', '>=', now()->subDays(30))
+                    ->orderBy('created_at')
+                    ->take(10)
+                    ->get(['sender_id', 'created_at']);
+
+                $pendingClientMsgTime = null;
+                foreach ($messages as $msg) {
+                    if ($msg->sender_id !== $this->id) {
+                        if (!$pendingClientMsgTime) {
+                            $pendingClientMsgTime = $msg->created_at;
+                        }
+                    } else {
+                        if ($pendingClientMsgTime) {
+                            $diff = $pendingClientMsgTime->diffInMinutes($msg->created_at);
+                            if ($diff >= 0 && $diff <= 10080) {
+                                $delaysInMinutes[] = $diff;
+                            }
+                            $pendingClientMsgTime = null;
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Graceful fallback if tables or columns vary
+        }
+
+        if (count($delaysInMinutes) === 0) {
+            return null; // Not enough data -> hide
+        }
+
+        $avgMinutes = array_sum($delaysInMinutes) / count($delaysInMinutes);
+
+        if ($avgMinutes <= 60) {
+            return "Répond généralement en moins d'1 h";
+        }
+        if ($avgMinutes <= 180) {
+            return "Répond généralement en moins de 3 h";
+        }
+        if ($avgMinutes <= 1440) {
+            return "Répond généralement en moins de 24 h";
+        }
+
+        return null;
+    }
+
+    /**
      * All conversations this user participates in.
      */
     public function conversations()
@@ -292,6 +452,23 @@ class User extends Authenticatable
     public function getUnreadNotificationsCountAttribute(): int
     {
         return $this->notifications()->where('is_read', false)->count();
+    }
+
+    /**
+     * Unread messages count for this user across all their conversations (Point 6).
+     */
+    public function getUnreadMessagesCountAttribute(): int
+    {
+        $unread = 0;
+        try {
+            foreach ($this->conversations()->get() as $conv) {
+                /** @var \App\Models\Conversation $conv */
+                $unread += $conv->unreadCountFor($this->id);
+            }
+        } catch (\Throwable $e) {
+            // Graceful fallback
+        }
+        return $unread;
     }
 
     /**

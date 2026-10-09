@@ -108,23 +108,27 @@
                             </span>
                         @endif
                     </div>
-                    <p class="text-xs text-[#29B6D1] font-semibold mt-0.5">{{ $artisan->profession ?? 'Artisan' }}</p>
+                    <p class="text-xs text-[#29B6D1] font-semibold mt-0.5">{{ $artisan->main_profession }}</p>
                     <p class="text-xs text-slate-400 font-medium mt-1">
                         <i class="fas fa-map-marker-alt mr-1"></i>{{ $artisan->city ?? 'RDC' }}
                     </p>
 
-                    {{-- Stats --}}
-                    <div class="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-slate-50">
-                        <div class="text-center">
-                            <div class="text-sm font-black text-slate-900">{{ $artisan->services_count ?? 0 }}</div>
-                            <div class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Services</div>
-                        </div>
-                        @if($artisan->bio)
-                        <div class="text-center">
-                            <div class="text-sm font-black text-slate-900">✓</div>
-                            <div class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">Profil</div>
-                        </div>
+                    {{-- Stats & Note moyenne (Point 5) --}}
+                    @php $ratingInfo = $artisan->rating_summary; @endphp
+                    <div class="flex items-center justify-center gap-2 mt-4 pt-3.5 border-t border-slate-100 flex-wrap">
+                        @if($ratingInfo['is_new'])
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
+                                <i class="fas fa-sparkles text-amber-500"></i> Nouveau
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200/80 rounded-full text-xs font-bold">
+                                <i class="fas fa-star text-amber-400 text-xs"></i> {{ $ratingInfo['badge'] }}
+                            </span>
                         @endif
+                        <span class="text-slate-300 text-xs">•</span>
+                        <span class="text-xs font-bold text-slate-500">
+                            {{ $artisan->services_count ?? 0 }} {{ Str::plural('service', $artisan->services_count ?? 0) }}
+                        </span>
                     </div>
 
                     <div class="mt-4 px-4 py-2 bg-[#29B6D1]/10 text-[#29B6D1] text-xs font-bold rounded-xl group-hover:bg-[#29B6D1] group-hover:text-white transition-all">

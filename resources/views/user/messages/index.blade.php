@@ -141,9 +141,15 @@
                     {{-- Nom + statut --}}
                     <div class="flex flex-col">
                         <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">{{ $other->name }}</h3>
-                        <div class="flex items-center gap-1.5 mt-0.5">
+                        <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <span id="online-status-header-{{ $other->id }}" class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-slate-300 rounded-full transition-colors duration-300"></span>
                             <p id="online-text-header-{{ $other->id }}" class="text-[11px] sm:text-xs text-slate-400 font-medium leading-none">Hors ligne</p>
+                            @if($other->isArtisan() && $other->response_time_badge)
+                                <span class="text-slate-300 text-[10px]">•</span>
+                                <span class="inline-flex items-center gap-1 text-[11px] text-blue-600 font-semibold">
+                                    <i class="fas fa-bolt text-[9px] text-amber-500"></i> {{ $other->response_time_badge }}
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>

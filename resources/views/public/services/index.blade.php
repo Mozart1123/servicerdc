@@ -86,13 +86,23 @@
 
                         {{-- Artisan --}}
                         @if($service->artisan)
-                        <div class="flex items-center gap-2 mb-3 pt-3 border-t border-slate-50">
-                            @if($service->artisan->profile_photo)
-                                <img src="{{ Storage::url($service->artisan->profile_photo) }}" class="w-6 h-6 rounded-full object-cover" alt="">
+                        @php $artisanRating = $service->artisan->rating_summary; @endphp
+                        <div class="flex items-center justify-between gap-2 mb-3 pt-3 border-t border-slate-50 flex-wrap">
+                            <div class="flex items-center gap-2 min-w-0">
+                                @if($service->artisan->profile_photo)
+                                    <img src="{{ Storage::url($service->artisan->profile_photo) }}" class="w-6 h-6 rounded-full object-cover shrink-0" alt="">
+                                @else
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($service->artisan->name) }}&background=29B6D1&color=fff&size=50" class="w-6 h-6 rounded-full object-cover shrink-0" alt="">
+                                @endif
+                                <span class="text-xs text-slate-700 font-medium truncate">{{ $service->artisan->name }}</span>
+                            </div>
+                            @if($artisanRating['is_new'])
+                                <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">Nouveau</span>
                             @else
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($service->artisan->name) }}&background=29B6D1&color=fff&size=50" class="w-6 h-6 rounded-full object-cover" alt="">
+                                <span class="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60 flex items-center gap-1 shrink-0">
+                                    <i class="fas fa-star text-[9px] text-amber-500"></i>{{ $artisanRating['badge'] }}
+                                </span>
                             @endif
-                            <span class="text-xs text-slate-500 font-medium">{{ $service->artisan->name }}</span>
                         </div>
                         @endif
 

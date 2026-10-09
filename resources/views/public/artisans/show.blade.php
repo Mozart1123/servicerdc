@@ -4,7 +4,70 @@
 @section('meta_description', Str::limit($artisan->bio ?? 'Profil artisan sur ProConnect RDC', 160))
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="{ tab: 'services' }">
+@php
+    $realisationsJson = $realisations->map(function ($r) {
+        return [
+            'id' => $r->id,
+            'image_url' => $r->image_url,
+            'caption' => $r->caption ?? '',
+        ];
+    })->values()->toJson();
+@endphp
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
+     x-data="{
+        tab: 'services',
+        lightboxOpen: false,
+        currentIndex: 0,
+        zoomLevel: 1,
+        realisations: {{ $realisationsJson }},
+        touchStartX: 0,
+        touchStartY: 0,
+        openLightbox(index) {
+            this.currentIndex = index;
+            this.zoomLevel = 1;
+            this.lightboxOpen = true;
+            document.body.style.overflow = 'hidden';
+        },
+        closeLightbox() {
+            this.lightboxOpen = false;
+            this.zoomLevel = 1;
+            document.body.style.overflow = '';
+        },
+        nextImage() {
+            if (this.realisations.length > 0) {
+                this.currentIndex = (this.currentIndex + 1) % this.realisations.length;
+                this.zoomLevel = 1;
+            }
+        },
+        prevImage() {
+            if (this.realisations.length > 0) {
+                this.currentIndex = (this.currentIndex - 1 + this.realisations.length) % this.realisations.length;
+                this.zoomLevel = 1;
+            }
+        },
+        toggleZoom() {
+            this.zoomLevel = this.zoomLevel === 1 ? 2 : 1;
+        },
+        handleTouchStart(e) {
+            this.touchStartX = e.touches[0].clientX;
+            this.touchStartY = e.touches[0].clientY;
+        },
+        handleTouchEnd(e) {
+            const diffX = e.changedTouches[0].clientX - this.touchStartX;
+            const diffY = e.changedTouches[0].clientY - this.touchStartY;
+            if (diffY > 80 && Math.abs(diffX) < 60) {
+                this.closeLightbox();
+                return;
+            }
+            if (Math.abs(diffX) > 40) {
+                if (diffX > 0) { this.prevImage(); }
+                else { this.nextImage(); }
+            }
+        }
+     }"
+     @keydown.window.escape="if(lightboxOpen) closeLightbox()"
+     @keydown.window.arrow-right="if(lightboxOpen) nextImage()"
+     @keydown.window.arrow-left="if(lightboxOpen) prevImage()">
 
     {{-- Breadcrumb --}}
     <nav class="text-xs font-bold text-slate-400 mb-8 flex items-center gap-2">
@@ -59,7 +122,24 @@
                                 </span>
                             @endif
                         </div>
-                        <p class="text-sm text-[#29B6D1] font-semibold mt-1">{{ $artisan->profession ?? 'Artisan' }}</p>
+                        <div class="flex items-center gap-2.5 flex-wrap mt-1.5">
+                            <span class="text-sm text-[#29B6D1] font-bold">{{ $artisan->main_profession }}</span>
+                            @php $ratingInfo = $artisan->rating_summary; @endphp
+                            @if($ratingInfo['is_new'])
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
+                                    <i class="fas fa-sparkles text-amber-500"></i> Nouveau
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200/80 rounded-full text-xs font-bold">
+                                    <i class="fas fa-star text-amber-400 text-xs"></i> {{ $ratingInfo['badge'] }}
+                                </span>
+                            @endif
+                            @if($artisan->response_time_badge)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/60 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-bolt text-blue-500 text-[10px]"></i> {{ $artisan->response_time_badge }}
+                                </span>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-2.5 flex-wrap w-full sm:w-auto pb-1.5">
@@ -332,13 +412,19 @@
             @else
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-5">
                     @foreach($realisations as $realisation)
-                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                            <div class="aspect-square bg-slate-100">
+                        <div class="group bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden cursor-pointer hover:shadow-lg transition-all"
+                             @click="openLightbox({{ $loop->index }})">
+                            <div class="aspect-square bg-slate-100 relative overflow-hidden">
                                 <img src="{{ $realisation->image_url }}" alt="{{ $realisation->caption ?? 'Réalisation de ' . $artisan->name }}"
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                    <span class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow">
+                                        <i class="fas fa-expand text-sm"></i>
+                                    </span>
+                                </div>
                             </div>
                             @if($realisation->caption)
-                                <p class="px-3 py-2 text-xs font-semibold text-slate-600 truncate">{{ $realisation->caption }}</p>
+                                <p class="px-3 py-2 text-xs font-semibold text-slate-600 truncate group-hover:text-rdc-blue transition-colors">{{ $realisation->caption }}</p>
                             @endif
                         </div>
                     @endforeach
@@ -386,6 +472,81 @@
             @endif
         </div>
 
+    </div>
+
+    {{-- Visionneuse plein écran pour réalisations (Point 7) --}}
+    <div x-show="lightboxOpen"
+         x-cloak
+         style="display: none;"
+         class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 select-none"
+         @touchstart="handleTouchStart($event)"
+         @touchend="handleTouchEnd($event)">
+
+        {{-- Top bar: counter + actions (zoom, close) --}}
+        <div class="w-full flex items-center justify-between text-white z-10">
+            <div class="text-xs sm:text-sm font-bold tracking-wider text-white/80">
+                <span x-text="currentIndex + 1"></span> / <span x-text="realisations.length"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                {{-- Zoom button --}}
+                <button type="button" @click.stop="toggleZoom()"
+                        title="Zoomer"
+                        class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+                    <i class="fas" :class="zoomLevel > 1 ? 'fa-search-minus' : 'fa-search-plus'"></i>
+                </button>
+                {{-- Close button (Croix visible) --}}
+                <button type="button" @click="closeLightbox()"
+                        title="Fermer (Échap ou glisser vers le bas)"
+                        class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        {{-- Center: Image with zoom and navigation arrows --}}
+        <div class="relative flex-1 w-full flex items-center justify-center overflow-hidden my-2"
+             @click.self="closeLightbox()">
+            
+            {{-- Previous button --}}
+            <button type="button"
+                    x-show="realisations.length > 1"
+                    @click.stop="prevImage()"
+                    class="absolute left-2 sm:left-4 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all border border-white/20 backdrop-blur-sm"
+                    title="Précédent">
+                <i class="fas fa-chevron-left text-base sm:text-lg"></i>
+            </button>
+
+            {{-- Main Image --}}
+            <template x-if="realisations.length > 0">
+                <img :src="realisations[currentIndex]?.image_url"
+                     :alt="realisations[currentIndex]?.caption || 'Réalisation'"
+                     class="max-h-[80vh] max-w-full object-contain transition-transform duration-200 cursor-zoom-in"
+                     :style="`transform: scale(${zoomLevel});`"
+                     @click.stop="toggleZoom()">
+            </template>
+
+            {{-- Next button --}}
+            <button type="button"
+                    x-show="realisations.length > 1"
+                    @click.stop="nextImage()"
+                    class="absolute right-2 sm:right-4 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all border border-white/20 backdrop-blur-sm"
+                    title="Suivant">
+                <i class="fas fa-chevron-right text-base sm:text-lg"></i>
+            </button>
+        </div>
+
+        {{-- Bottom bar: Caption + Swipe info --}}
+        <div class="w-full text-center text-white z-10 max-w-xl mx-auto">
+            <template x-if="realisations[currentIndex]?.caption">
+                <p class="text-sm font-medium text-white/90 drop-shadow mb-1" x-text="realisations[currentIndex]?.caption"></p>
+            </template>
+            <p class="text-[10px] text-white/40 uppercase tracking-widest hidden sm:block">
+                Flèches gauche/droite pour naviguer • Échap pour fermer
+            </p>
+            <p class="text-[10px] text-white/40 uppercase tracking-widest sm:hidden">
+                Glissez pour naviguer • Glissez vers le bas pour fermer
+            </p>
+        </div>
     </div>
 </div>
 

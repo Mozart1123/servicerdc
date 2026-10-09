@@ -97,6 +97,8 @@ Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'inde
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
+    // Écran de sélection du profil (Client / Artisan) — point d'entrée avant l'inscription
+    Route::get('/register/choose', fn () => view('auth.choose-profile'))->name('register.choose');
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('throttle:5,1');
     Route::get('/forgot-password', [PasswordResetController::class, 'create'])->name('password.request');
@@ -165,8 +167,11 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::post('/service-requests/{serviceRequest}/pause-work', [UserServiceRequestController::class, 'pauseWork'])->name('service-requests.pause-work');
             Route::post('/service-requests/{serviceRequest}/resume-work', [UserServiceRequestController::class, 'resumeWork'])->name('service-requests.resume-work');
             Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
+            Route::get('/artisan/opportunities', [UserDashboardController::class, 'opportunities'])->name('artisan.opportunities.index');
             Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
             Route::get('/artisan/level', [UserDashboardController::class, 'level'])->name('artisan.level');
+            Route::post('/artisan/availability/toggle', [UserDashboardController::class, 'toggleAvailability'])->name('artisan.availability.toggle');
+            Route::post('/artisan/availability', [UserDashboardController::class, 'updateAvailability'])->name('artisan.availability.update');
         });
 
         // Account Main Menu (Mobile)

@@ -137,11 +137,10 @@
                             <i class="fas fa-stopwatch"></i><span>00:00:00</span>
                         </span>
                         @endif
-                        @if($req->status === 'completed' && $req->accepted_at && $req->completed_at)
-                        @php $d = $req->completed_at->diff($req->accepted_at); @endphp
+                        @if($req->status === 'completed' && $req->duration_formatted)
                         <span class="flex items-center gap-1 text-blue-600 font-medium">
                             <i class="fas fa-clock"></i>
-                            {{ $d->h > 0 ? "{$d->h}h {$d->i}min" : "{$d->i}min" }}
+                            {{ $req->duration_formatted }}
                         </span>
                         @endif
                     </div>
@@ -161,10 +160,17 @@
                     @endif
 
                     @if($req->status === 'completed' && $req->user_id === auth()->id())
-                    <a href="{{ route('user.service-requests.show', $req->id) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600 transition-colors">
-                        <i class="fas fa-star"></i> {{ $req->rating ? 'Évaluation' : 'Évaluer' }}
+                    @php $existingReview = $req->client_review; @endphp
+                    @if($existingReview)
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold rounded-lg">
+                        <i class="fas fa-star text-amber-500"></i> {{ $existingReview->rating }}/5 – Évalué
+                    </span>
+                    @else
+                    <a href="{{ route('user.service-requests.show', $req->id) }}#review-section"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600 transition-colors shadow-sm">
+                        <i class="fas fa-star"></i> Évaluer
                     </a>
+                    @endif
                     @endif
 
                     @if($req->status === 'pending')

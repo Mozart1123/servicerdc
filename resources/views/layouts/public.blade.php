@@ -531,5 +531,7 @@
     </script>
 
     @stack('scripts')
+    {{-- Barre d'onglets fixe en bas (Mobile uniquement une fois connecté - Point 6) --}}
+    @include('partials.mobile-bottom-nav')
 </body>
 </html>

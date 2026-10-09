@@ -34,7 +34,7 @@
                         <i class="fas fa-camera"></i>
                     </label>
                     <input type="file" id="profile_photo_input" name="profile_photo" accept="image/*" class="hidden"
-                           onchange="previewPhoto(this)">
+                           onchange="if(this.files[0]) openImageCropper({ input: this, preview: '#photo-preview', aspectRatio: 1, title: 'Recadrer la photo de profil' })">
                 </div>
                 <div>
                     <h3 class="font-bold text-slate-900 flex items-center gap-2 flex-wrap">
@@ -71,7 +71,7 @@
                     <i class="fas fa-camera mr-2"></i> Changer la couverture
                 </label>
                 <input type="file" id="cover_photo_input" name="cover_photo" accept="image/*" class="hidden"
-                       onchange="previewCover(this)">
+                       onchange="if(this.files[0]) openImageCropper({ input: this, preview: '#cover-preview', aspectRatio: 16/9, title: 'Recadrer la photo de couverture', callback: () => { const ph = document.getElementById('cover-preview-placeholder'); if(ph) ph.classList.add('hidden'); document.getElementById('cover-preview').classList.remove('hidden'); } })">
             </div>
             @error('cover_photo') <p class="text-xs text-red-500 font-medium mt-2">{{ $message }}</p> @enderror
         </section>
@@ -220,6 +220,47 @@
                 </div>
             </div>
         </section>
+
+        <hr class="border-slate-100">
+
+        {{-- Point 10 : Disponibilité --}}
+        <section>
+            <h2 class="text-lg font-bold text-slate-900 mb-1">Disponibilité</h2>
+            <p class="text-sm text-slate-500 mb-6">Indiquez vos jours de disponibilité et ajoutez une note optionnelle (horaires, délai de réponse...).</p>
+            @php
+                $availDays = old('availability_days', auth()->user()->availability_days ?? []);
+                $days = [
+                    'lun' => 'Lundi',
+                    'mar' => 'Mardi',
+                    'mer' => 'Mercredi',
+                    'jeu' => 'Jeudi',
+                    'ven' => 'Vendredi',
+                    'sam' => 'Samedi',
+                    'dim' => 'Dimanche',
+                ];
+            @endphp
+            <div class="space-y-4">
+                <div class="flex flex-wrap gap-2">
+                    @foreach($days as $slug => $label)
+                    <label class="relative cursor-pointer">
+                        <input type="checkbox" name="availability_days[]" value="{{ $slug }}"
+                               class="peer sr-only" {{ in_array($slug, $availDays) ? 'checked' : '' }}>
+                        <span class="inline-flex items-center px-4 py-2 rounded-xl border-2 border-slate-200 bg-slate-50 text-sm font-semibold text-slate-500
+                                     peer-checked:border-rdc-blue peer-checked:bg-rdc-blue/10 peer-checked:text-rdc-blue transition-all select-none">
+                            {{ $label }}
+                        </span>
+                    </label>
+                    @endforeach
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Note sur les horaires (optionnel)</label>
+                    <input type="text" name="availability_note"
+                           value="{{ old('availability_note', auth()->user()->availability_note) }}"
+                           placeholder="Ex : Disponible après 17h en semaine, toute la journée le week-end"
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
+                </div>
+            </div>
+        </section>
         @endif
 
         <div class="flex flex-col sm:flex-row items-center justify-start gap-4 pt-4">
@@ -255,5 +296,5 @@ function previewCover(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
-</script>
+@include('partials.image-cropper-modal')
 @endsection
