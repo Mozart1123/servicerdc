@@ -492,6 +492,10 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
+        // Matching des demandes publiées : pondérations + aperçu du classement
+        Route::get('/matching', [\App\Http\Controllers\Admin\MatchingController::class, 'index'])->name('matching.index');
+        Route::put('/matching', [\App\Http\Controllers\Admin\MatchingController::class, 'update'])->name('matching.update');
+
         // Admin Missions & Reviews
         Route::prefix('missions')->name('missions.')->group(function (): void {
             Route::get('/', [AdminMissionController::class, 'index'])->name('index');

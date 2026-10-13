@@ -99,7 +99,10 @@ class ServiceRequestController extends Controller
 
         try {
             $serviceRequest->update([
-                'status'      => 'accepted',
+                'status'       => 'accepted',
+                // Mesure de réactivité (badge point 9 + score de matching).
+                'responded_at' => now(),
+                'responded_by' => Auth::id(),
             ]);
             $artisan = Auth::user();
 
@@ -191,7 +194,7 @@ class ServiceRequestController extends Controller
         }
 
         try {
-            $serviceRequest->update(['status' => 'rejected']);
+            $serviceRequest->update(['status' => 'rejected', 'responded_at' => now(), 'responded_by' => Auth::id()]);
             $artisan = Auth::user();
 
             Notification::create([

@@ -162,5 +162,10 @@ class ServiceController extends Controller
         if ($sr->service?->artisan_id !== $artisanId) {
             abort(403, 'Vous n\'êtes pas autorisé à gérer cette demande.');
         }
+
+        // Une demande annulée, refusée ou déjà traitée ne peut plus changer de statut.
+        if ($sr->status !== ServiceRequest::STATUS_PENDING) {
+            abort(422, 'Cette demande n\'est plus en attente.');
+        }
     }
 }

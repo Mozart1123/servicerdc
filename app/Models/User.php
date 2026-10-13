@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -189,6 +190,12 @@ class User extends Authenticatable
     public function commune()
     {
         return $this->belongsTo(Commune::class);
+    }
+
+    /** Demandes dont l'utilisateur est l'artisan désigné. */
+    public function assignedServiceRequests()
+    {
+        return $this->hasMany(ServiceRequest::class, 'artisan_id');
     }
 
     /** Communes où l'artisan accepte d'intervenir (filtre du matching). */
@@ -384,10 +391,40 @@ class User extends Authenticatable
      */
     public function getResponseTimeBadgeAttribute(): ?string
     {
+        $avgMinutes = $this->averageResponseMinutes();
+        if ($avgMinutes === null) {
+            return null; // Not enough data -> hide
+        }
+
+        if ($avgMinutes <= 60) {
+            return "Répond généralement en moins d'1 h";
+        }
+        if ($avgMinutes <= 180) {
+            return "Répond généralement en moins de 3 h";
+        }
+        if ($avgMinutes <= 1440) {
+            return "Répond généralement en moins de 24 h";
+        }
+
+        return null;
+    }
+
+    /**
+     * Délai moyen (minutes) de première réponse de l'artisan sur 30 jours, aux
+     * demandes reçues et aux messages. Partagé par le badge (point 9) et le score
+     * de matching. Null sans donnée. Mis en cache 10 min.
+     */
+    public function averageResponseMinutes(): ?float
+    {
         if (!$this->isArtisan()) {
             return null;
         }
 
+        return Cache::remember("artisan:{$this->id}:avg_response_minutes", 600, fn () => $this->computeAverageResponseMinutes());
+    }
+
+    private function computeAverageResponseMinutes(): ?float
+    {
         $delaysInMinutes = [];
 
         // 1. Service requests responsiveness
@@ -445,22 +482,11 @@ class User extends Authenticatable
         }
 
         if (count($delaysInMinutes) === 0) {
-            return null; // Not enough data -> hide
+            return null;
         }
 
-        $avgMinutes = array_sum($delaysInMinutes) / count($delaysInMinutes);
-
-        if ($avgMinutes <= 60) {
-            return "Répond généralement en moins d'1 h";
-        }
-        if ($avgMinutes <= 180) {
-            return "Répond généralement en moins de 3 h";
-        }
-        if ($avgMinutes <= 1440) {
-            return "Répond généralement en moins de 24 h";
-        }
-
-        return null;
+        // Cache JSON : on renvoie une valeur scalaire sérialisable.
+        return (float) (array_sum($delaysInMinutes) / count($delaysInMinutes));
     }
 
     /**

@@ -202,9 +202,10 @@
                 </x-admin-dropdown-nav>
 
                 <!-- [CONFIGURATION TECHNIQUE] -->
-                <x-admin-dropdown-nav icon="fas fa-gears" label="Configuration Core" :activePrefixes="['admin.settings', 'admin.settings-hq', 'admin.tools']">
+                <x-admin-dropdown-nav icon="fas fa-gears" label="Configuration Core" :activePrefixes="['admin.settings', 'admin.settings-hq', 'admin.tools', 'admin.matching']">
                     <x-admin-dropdown-item route="admin.settings.index" label="Paramètres généraux" />
                     <x-admin-dropdown-item route="admin.settings-hq.geo" label="Zones de service" />
+                    <x-admin-dropdown-item route="admin.matching.index" label="Matching artisans" />
                     <x-admin-dropdown-item route="admin.settings-hq.api" label="Intégrations (API)" />
                     <div class="h-px bg-slate-200 my-1 mx-2"></div>
                     <x-admin-dropdown-item route="admin.tools.maintenance" label="Mode maintenance" badge="OFF" badgeColor="bg-slate-400" />
