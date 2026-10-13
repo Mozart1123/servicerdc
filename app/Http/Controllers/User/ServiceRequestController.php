@@ -358,7 +358,18 @@ class ServiceRequestController extends Controller
             : null;
         $serviceRequest->loadMissing('acceptedProposal');
 
-        return view('user.service-requests.show', compact('serviceRequest', 'conversation', 'amountToPay', 'existingDispute', 'comparison'));
+        // Cas limites (§2.6) : modifier, relancer.
+        $needActions = null;
+        if ($isClient && $serviceRequest->isOpenNeed()) {
+            $lifecycle = app(\App\Services\Matching\NeedLifecycle::class);
+            $needActions = [
+                'canEdit'     => $lifecycle->canEdit($serviceRequest),
+                'isStale'     => $lifecycle->isStale($serviceRequest),
+                'canRelaunch' => $lifecycle->canRelaunch($serviceRequest),
+            ];
+        }
+
+        return view('user.service-requests.show', compact('serviceRequest', 'conversation', 'amountToPay', 'existingDispute', 'comparison', 'needActions'));
     }
 
     /**

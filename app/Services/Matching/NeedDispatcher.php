@@ -120,10 +120,30 @@ class NeedDispatcher
         }
     }
 
-    /** Annulation par le client : les artisans en attente ne sont pas pénalisés. */
+    /**
+     * Annulation par le client : les artisans en attente ne sont pas pénalisés,
+     * les propositions encore en lice sont closes et leurs auteurs prévenus.
+     */
     public function closeDispatches(ServiceRequest $need): void
     {
         $need->dispatches()->awaitingResponse()->update(['status' => NeedDispatch::STATUS_CLOSED, 'updated_at' => now()]);
+
+        $active = $need->proposals()->whereIn('status', NeedProposal::ACTIVE_STATUSES)->get();
+        $need->proposals()->whereIn('status', NeedProposal::ACTIVE_STATUSES)
+            ->update(['status' => NeedProposal::STATUS_REJECTED, 'updated_at' => now()]);
+        foreach ($active as $proposal) {
+            Notification::create([
+                'user_id'      => $proposal->artisan_id,
+                'type'         => 'need_cancelled',
+                'related_type' => 'request',
+                'related_id'   => $need->id,
+                'title'        => 'Demande annulée',
+                'message'      => 'Le client a annulé sa demande « ' . $need->requested_service_name . ' ».',
+                'action_url'   => route('user.artisan.opportunities.index'),
+                'is_read'      => false,
+            ]);
+        }
+
         $need->update(['wave_deadline_at' => null]);
     }
 

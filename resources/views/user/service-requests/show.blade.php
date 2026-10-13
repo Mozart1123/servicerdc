@@ -121,6 +121,50 @@
     </div>
     @endif
 
+    {{-- Cas limites : sans proposition, expirée, modification (§2.6) --}}
+    @if($needActions)
+        @if($serviceRequest->status === 'expired')
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3" data-aos="fade-up">
+                <p class="text-sm text-slate-700"><i class="fas fa-clock-rotate-left text-slate-400 mr-1"></i>
+                    Cette demande s'est fermée après {{ \App\Models\ServiceRequest::OPEN_DAYS }} jours sans suite.</p>
+                @if($needActions['canRelaunch'])
+                    <form method="POST" action="{{ route('user.needs.relaunch', $serviceRequest) }}">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-bold">
+                            <i class="fas fa-rotate-right mr-1"></i> Relancer ma demande
+                        </button>
+                    </form>
+                @endif
+            </div>
+        @elseif($needActions['isStale'])
+            <div class="bg-amber-50 rounded-2xl border border-amber-200 p-5 space-y-3" data-aos="fade-up">
+                <p class="text-sm text-amber-900 font-semibold"><i class="fas fa-lightbulb mr-1"></i> Pas encore de proposition.</p>
+                <p class="text-sm text-amber-800">Un budget un peu plus élevé ou une date plus souple attire souvent plus d'artisans. Vous pouvez aussi relancer la recherche.</p>
+                <div class="flex flex-wrap gap-2">
+                    @if($needActions['canEdit'])
+                        <a href="{{ route('user.needs.edit', $serviceRequest) }}" class="px-5 py-2.5 rounded-xl bg-white border border-amber-300 text-amber-900 text-sm font-bold">
+                            <i class="fas fa-pen mr-1"></i> Modifier budget ou date
+                        </a>
+                    @endif
+                    @if($needActions['canRelaunch'])
+                        <form method="POST" action="{{ route('user.needs.relaunch', $serviceRequest) }}">
+                            @csrf
+                            <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold">
+                                <i class="fas fa-rotate-right mr-1"></i> Relancer
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        @elseif($needActions['canEdit'])
+            <div class="text-right">
+                <a href="{{ route('user.needs.edit', $serviceRequest) }}" class="text-sm font-semibold text-rdc-blue hover:underline">
+                    <i class="fas fa-pen mr-1"></i> Modifier ma demande
+                </a>
+            </div>
+        @endif
+    @endif
+
     {{-- Propositions reçues (demande publiée encore ouverte) --}}
     @if($comparison)
         @include('user.needs.partials.proposals', ['need' => $serviceRequest, 'comparison' => $comparison])

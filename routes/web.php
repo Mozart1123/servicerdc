@@ -214,7 +214,10 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::middleware('throttle:20,1')->group(function (): void {
             Route::post('/propositions/{proposal}/accepter', [\App\Http\Controllers\User\ClientProposalController::class, 'accept'])->name('needs.proposals.accept');
             Route::post('/propositions/{proposal}/accepter-visite', [\App\Http\Controllers\User\ClientProposalController::class, 'acceptVisit'])->name('needs.proposals.accept-visit');
-            Route::post('/besoin/{serviceRequest}/tout-refuser', [\App\Http\Controllers\User\ClientProposalController::class, 'rejectAll'])->name('needs.reject-all');
+            Route::get('/besoin/{serviceRequest}/modifier', [UserNeedController::class, 'edit'])->name('needs.edit');
+            Route::put('/besoin/{serviceRequest}', [UserNeedController::class, 'update'])->name('needs.update');
+            Route::post('/besoin/{serviceRequest}/relancer', [UserNeedController::class, 'relaunch'])->name('needs.relaunch');
+            Route::post('/besoin/{serviceRequest}/tout-refuser',[\App\Http\Controllers\User\ClientProposalController::class, 'rejectAll'])->name('needs.reject-all');
         });
 
         // Client: Service Requests

@@ -29,6 +29,8 @@ class ServiceRequest extends Model
         'wave_deadline_at',
         'matching_widened_at',
         'matching_exhausted_at',
+        'stale_notified_at',
+        'relaunched_at',
         'phone',
         'email',
         'requested_service_name',
@@ -62,6 +64,8 @@ class ServiceRequest extends Model
         'wave_deadline_at'      => 'datetime',
         'matching_widened_at'   => 'datetime',
         'matching_exhausted_at' => 'datetime',
+        'stale_notified_at'     => 'datetime',
+        'relaunched_at'         => 'datetime',
         'current_wave'          => 'integer',
         'preferred_date' => 'date',
         'photos'        => 'array',
@@ -88,6 +92,7 @@ class ServiceRequest extends Model
     const STATUS_REJECTED            = 'rejected';
     const STATUS_COMPLETED           = 'completed';
     const STATUS_CANCELLED           = 'cancelled';
+    const STATUS_EXPIRED             = 'expired'; // demande publiée sans suite après 7 jours
 
     // Origine de la demande
     const MODE_DIRECT = 'direct'; // adressée à un artisan depuis le catalogue
@@ -316,6 +321,7 @@ class ServiceRequest extends Model
             'rejected'            => 'Refusée',
             'completed'           => 'Terminée',
             'cancelled'           => 'Annulée',
+            'expired'             => 'Expirée',
             'addressed'           => 'Traitée',
             default               => $this->status,
         };
@@ -331,6 +337,7 @@ class ServiceRequest extends Model
             'rejected'            => 'red',
             'completed'           => 'blue',
             'cancelled'           => 'slate',
+            'expired'             => 'slate',
             default               => 'slate',
         };
     }
