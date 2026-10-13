@@ -10,7 +10,8 @@
     $requestsRoute = $isArtisan ? route('user.artisan.service-requests.index') : route('user.service-requests.index');
     $requestsActive = request()->routeIs('user.service-requests.*') || request()->routeIs('user.artisan.service-requests.*');
 
-    $centerRoute = $isArtisan ? route('user.services.create') : route('user.services.index');
+    // Client : le "+" ouvre directement "Décrire mon besoin" (point 6).
+    $centerRoute = $isArtisan ? route('user.services.create') : ($user->isClient() ? route('user.needs.create') : route('user.services.index'));
     $centerLabel = $isArtisan ? 'Ajouter' : 'Besoin';
 
     $messagesRoute = route('user.messages.index');

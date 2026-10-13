@@ -731,6 +731,18 @@
                             <span class="font-semibold text-yellow-200">prestataires de services</span>.
                         </p>
 
+                        {{-- Publier une demande : visiteurs (passent par la connexion) et clients --}}
+                        @if(!auth()->check() || auth()->user()->isClient())
+                        <div class="mb-6 flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
+                            <a href="{{ route('user.needs.create') }}"
+                               class="inline-flex items-center gap-2 px-7 py-4 bg-gradient-to-r from-rdc-yellow to-yellow-500 text-gray-900 font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+                                <i class="fas fa-pen-to-square"></i>
+                                <span>Décrire mon besoin</span>
+                            </a>
+                            <span class="text-sm text-blue-100">Gratuit · Les artisans vous font une proposition</span>
+                        </div>
+                        @endif
+
                         <!-- Barre de recherche améliorée -->
                         <div class="bg-white/10 backdrop-blur-md rounded-2xl p-2 sm:p-3 shadow-2xl border border-white/20
                                     animate-fade-in-up" data-aos="fade-up" data-aos-delay="200">

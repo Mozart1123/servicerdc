@@ -261,6 +261,30 @@
     </div>
 
     @stack('scripts')
+
+    <script>
+        // Afficher / masquer le mot de passe (inscription, connexion, réinitialisation).
+        // Le champ est cherché dans le même bloc : l'ordre input/label/bouton peut varier.
+        document.addEventListener('click', function (event) {
+            const toggle = event.target.closest('.toggle-password');
+            if (!toggle) return;
+            const group = toggle.closest('.premium-input-group') || toggle.parentElement;
+            const input = group.querySelector('input[type="password"], input[data-password-visible]');
+            if (!input) return;
+
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            input.toggleAttribute('data-password-visible', show);
+            toggle.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+            toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+            const icon = toggle.querySelector('i, svg');
+            if (icon) {
+                icon.classList.toggle('fa-eye', !show);
+                icon.classList.toggle('fa-eye-slash', show);
+                icon.classList.toggle('text-rdc-blue', show);
+            }
+        });
+    </script>
     
     <script>
         AOS.init({

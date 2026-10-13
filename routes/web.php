@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\NotificationController as AdminNotificationContro
 use App\Http\Controllers\User\ServiceController as UserServiceController;
 use App\Http\Controllers\User\JobController as UserJobController;
 use App\Http\Controllers\User\ServiceRequestController as UserServiceRequestController;
+use App\Http\Controllers\User\NeedController as UserNeedController;
 use App\Http\Controllers\User\SubscriptionController as UserSubscriptionController;
 use App\Http\Controllers\User\CvController as UserCvController;
 use App\Http\Controllers\User\MessageController as UserMessageController;
@@ -201,8 +202,12 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::delete('/applications/{applicationId}', [UserJobController::class, 'withdrawApplication'])->name('applications.withdraw');
         });
 
+        // Client : "Décrire mon besoin" (demande publiée, envoyée par le matching)
+        Route::get('/besoin/nouveau', [UserNeedController::class, 'create'])->name('needs.create');
+        Route::post('/besoin', [UserNeedController::class, 'store'])->middleware('throttle:10,60')->name('needs.store');
+
         // Client: Service Requests
-        Route::get('/service-requests', [UserServiceRequestController::class, 'index'])->name('service-requests.index');
+        Route::get('/service-requests',[UserServiceRequestController::class, 'index'])->name('service-requests.index');
         Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
         Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
         Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class ServiceRequest extends Model
 {
@@ -13,6 +14,16 @@ class ServiceRequest extends Model
         'user_id',
         'service_id',
         'artisan_id',
+        'mode',
+        'category_id',
+        'service_type_id',
+        'commune_id',
+        'quartier',
+        'timing',
+        'preferred_date',
+        'budget_type',
+        'photos',
+        'expires_at',
         'phone',
         'email',
         'requested_service_name',
@@ -42,6 +53,9 @@ class ServiceRequest extends Model
         'accepted_at'   => 'datetime',
         'completed_at'  => 'datetime',
         'cancelled_at'  => 'datetime',
+        'expires_at'    => 'datetime',
+        'preferred_date' => 'date',
+        'photos'        => 'array',
         'paid_at'       => 'datetime',
         'created_at'    => 'datetime',
         'updated_at'    => 'datetime',
@@ -65,6 +79,24 @@ class ServiceRequest extends Model
     const STATUS_REJECTED            = 'rejected';
     const STATUS_COMPLETED           = 'completed';
     const STATUS_CANCELLED           = 'cancelled';
+
+    // Origine de la demande
+    const MODE_DIRECT = 'direct'; // adressée à un artisan depuis le catalogue
+    const MODE_OPEN   = 'open';   // besoin publié, envoyé par le matching
+
+    const MAX_PHOTOS = 5;
+    const OPEN_DAYS  = 7; // une demande publiée sans suite se ferme après 7 jours
+
+    public const TIMINGS = [
+        'urgent'    => 'Dès que possible (urgent)',
+        'this_week' => 'Cette semaine',
+        'date'      => 'À une date précise',
+    ];
+
+    public function isOpenNeed(): bool
+    {
+        return $this->mode === self::MODE_OPEN;
+    }
 
     // ==========================================
     // Relationships
@@ -93,6 +125,21 @@ class ServiceRequest extends Model
     public function artisan()
     {
         return $this->belongsTo(User::class, 'artisan_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function serviceType()
+    {
+        return $this->belongsTo(ServiceType::class);
+    }
+
+    public function commune()
+    {
+        return $this->belongsTo(Commune::class);
     }
 
     public function respondedByUser()
@@ -230,6 +277,10 @@ class ServiceRequest extends Model
 
     public function getStatusLabelAttribute(): string
     {
+        if ($this->isOpenNeed() && $this->status === self::STATUS_PENDING) {
+            return 'Publiée';
+        }
+
         return match($this->status) {
             'pending'             => 'En attente',
             'accepted'            => 'Acceptée',
@@ -270,10 +321,37 @@ class ServiceRequest extends Model
 
     public function getBudgetRangeAttribute(): string
     {
-        if (!$this->budget_min && !$this->budget_max) return 'Non spécifié';
-        $min = $this->budget_min ? number_format($this->budget_min, 0, ',', ' ') . ' FC' : 'Néant';
-        $max = $this->budget_max ? number_format($this->budget_max, 0, ',', ' ') . ' FC' : 'Illimité';
+        // Montants en dollars, comme les prix des services (comparés par le matching).
+        if (!$this->budget_min && !$this->budget_max) {
+            return $this->budget_type === 'none' ? 'Pas d\'idée du prix' : 'Non spécifié';
+        }
+        $fmt = fn ($v) => '$' . number_format((float) $v, 0, ',', ' ');
+        if ((float) $this->budget_min === (float) $this->budget_max) {
+            return $fmt($this->budget_max);
+        }
+        $min = $this->budget_min ? $fmt($this->budget_min) : 'Néant';
+        $max = $this->budget_max ? $fmt($this->budget_max) : 'Illimité';
         return "{$min} - {$max}";
+    }
+
+    public function getTimingLabelAttribute(): ?string
+    {
+        if ($this->timing === 'date' && $this->preferred_date) {
+            return 'Le ' . $this->preferred_date->translatedFormat('d F Y');
+        }
+        return self::TIMINGS[$this->timing] ?? null;
+    }
+
+    public function getLocationLabelAttribute(): ?string
+    {
+        $parts = array_filter([$this->quartier, $this->commune?->name]);
+        return $parts ? implode(', ', $parts) : $this->city;
+    }
+
+    /** @return string[] URLs publiques des photos jointes. */
+    public function getPhotoUrlsAttribute(): array
+    {
+        return array_map(fn ($path) => Storage::disk('public')->url($path), $this->photos ?? []);
     }
 
     public function canBeCancelledBy(int $userId): bool

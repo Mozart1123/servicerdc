@@ -52,6 +52,7 @@
             </div>
             <h3 class="text-base font-black text-slate-400 uppercase tracking-widest">Aucune prestation</h3>
             <p class="text-xs text-slate-300 font-bold uppercase mt-2">Aucun sous-service n'a été configuré pour ce domaine pour le moment.</p>
+            @include('partials.need-cta', ['categoryId' => $category->id])
         </div>
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -72,6 +73,12 @@
                 </a>
             @endforeach
         </div>
+
+        @if($serviceTypes->sum('services_count') === 0)
+            <div class="text-center mt-8">
+                @include('partials.need-cta', ['categoryId' => $category->id])
+            </div>
+        @endif
     @endif
 </div>
 @endsection

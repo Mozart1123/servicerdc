@@ -59,7 +59,7 @@
             <label for="password" class="premium-label">
                 Mot de passe
             </label>
-            <button type="button" class="toggle-password absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rdc-blue transition-colors cursor-pointer z-10">
+            <button type="button" aria-label="Afficher le mot de passe" class="toggle-password absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rdc-blue transition-colors cursor-pointer z-10">
                 <i class="fas fa-eye"></i>
             </button>
         </div>
@@ -117,24 +117,3 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-    document.querySelectorAll('.toggle-password').forEach(toggle => {
-        toggle.addEventListener('click', function () {
-            const input = this.previousElementSibling.previousElementSibling; // Input is 2 siblings back because of label
-            const icon = this.querySelector('i');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.add('text-rdc-blue');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.remove('text-rdc-blue');
-            }
-        });
-    });
-</script>
-@endpush

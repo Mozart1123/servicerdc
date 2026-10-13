@@ -122,10 +122,10 @@
                             <i class="fas fa-calendar text-slate-400"></i>
                             {{ $req->created_at->format('d M Y') }}
                         </span>
-                        @if($req->city)
+                        @if($req->location_label)
                         <span class="flex items-center gap-1">
                             <i class="fas fa-map-marker-alt text-slate-400"></i>
-                            {{ $req->city }}
+                            {{ $req->location_label }}
                         </span>
                         @endif
                         <span class="flex items-center gap-1">

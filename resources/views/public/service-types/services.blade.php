@@ -40,6 +40,7 @@
             </div>
             <h3 class="text-base font-black text-slate-400 uppercase tracking-widest">Aucun artisan disponible</h3>
             <p class="text-xs text-slate-300 font-bold uppercase mt-2">Aucune offre active ne correspond actuellement à ce service en RDC.</p>
+            @include('partials.need-cta', ['categoryId' => $serviceType->category_id])
         </div>
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

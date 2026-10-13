@@ -7,6 +7,19 @@
 @section($contentSection)
 <div class="space-y-8">
 
+    {{-- Publier une demande --}}
+    <a href="{{ route('user.needs.create') }}"
+       class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white shadow-md hover:shadow-lg transition-all">
+        <span class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
+            <i class="fas fa-pen-to-square"></i>
+        </span>
+        <span class="flex-1 min-w-0">
+            <span class="block font-bold">Décrire mon besoin</span>
+            <span class="block text-xs text-white/80">Publiez votre demande, les artisans près de chez vous vous font une proposition.</span>
+        </span>
+        <i class="fas fa-arrow-right"></i>
+    </a>
+
     {{-- QUICK ACTIONS --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <a href="{{ route('public.artisans.index') }}" class="p-4 rounded-xl bg-cyan-50 hover:bg-cyan-100 transition text-center block">

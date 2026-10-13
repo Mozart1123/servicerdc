@@ -4,6 +4,9 @@
    PROCONNECT – Custom Theme (Tailwind v4 CSS-first config)
    ============================================================ */
 
+/* Masque les éléments Alpine tant qu'Alpine n'a pas démarré */
+[x-cloak] { display: none !important; }
+
 /* Class-based dark mode strategy */
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -39,6 +39,59 @@
         </div>
     </div>
 
+    {{-- Demande publiée ("Décrire mon besoin") --}}
+    @if($serviceRequest->isOpenNeed())
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5" data-aos="fade-up">
+        @if($serviceRequest->status === 'pending')
+        <div class="flex items-start gap-3 p-4 rounded-xl bg-rdc-blue/5 border border-rdc-blue/20">
+            <i class="fas fa-magnifying-glass-location text-rdc-blue text-lg mt-0.5"></i>
+            <div class="text-sm">
+                <p class="font-bold text-slate-900">Recherche d'artisans en cours</p>
+                <p class="text-slate-600">Votre demande est transmise aux artisans les plus adaptés. Vous serez notifié dès qu'une proposition arrive.
+                    @if($serviceRequest->expires_at)
+                        Elle reste ouverte jusqu'au {{ $serviceRequest->expires_at->translatedFormat('d F Y') }}.
+                    @endif
+                </p>
+            </div>
+        </div>
+        @endif
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            @foreach([
+                ['Catégorie', $serviceRequest->category?->name . ($serviceRequest->serviceType ? ' · ' . $serviceRequest->serviceType->title : ''), 'fa-layer-group'],
+                ['Lieu', $serviceRequest->location_label, 'fa-location-dot'],
+                ['Date souhaitée', $serviceRequest->timing_label, 'fa-calendar-day'],
+                ['Budget', $serviceRequest->budget_range, 'fa-money-bill-wave'],
+            ] as [$label, $value, $icon])
+                @if(trim((string) $value) !== '')
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">{{ $label }}</p>
+                    <p class="font-semibold text-slate-800 flex items-center gap-2"><i class="fas {{ $icon }} text-rdc-blue w-4"></i>{{ $value }}</p>
+                </div>
+                @endif
+            @endforeach
+        </div>
+
+        <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Description</p>
+            <p class="text-sm text-slate-700 whitespace-pre-line">{{ $serviceRequest->description }}</p>
+        </div>
+
+        @if($serviceRequest->photo_urls)
+        <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Photos</p>
+            <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                @foreach($serviceRequest->photo_urls as $url)
+                    <a href="{{ $url }}" target="_blank" rel="noopener" class="block aspect-square rounded-xl overflow-hidden border border-slate-200">
+                        <img src="{{ $url }}" alt="Photo de la demande" class="w-full h-full object-cover" loading="lazy">
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
+
     {{-- Cumulative Work-Time Card (in_progress) --}}
     @if($serviceRequest->status === 'in_progress')
     @php
@@ -324,9 +377,10 @@
         @foreach([
             ['label' => 'Service lié', 'value' => $serviceRequest->service?->title, 'icon' => 'fa-tools'],
             ['label' => 'Artisan', 'value' => $serviceRequest->artisan?->name ?? $serviceRequest->service?->artisan?->name, 'icon' => 'fa-user-hard-hat'],
-            ['label' => 'Ville', 'value' => $serviceRequest->city, 'icon' => 'fa-map-marker-alt'],
-            ['label' => 'Urgence', 'value' => $serviceRequest->urgency_label, 'icon' => 'fa-exclamation-triangle'],
-            ['label' => 'Budget', 'value' => $serviceRequest->budget_range, 'icon' => 'fa-money-bill-wave'],
+            // Lieu, date et budget d'une demande publiée sont déjà affichés plus haut.
+            ['label' => 'Ville', 'value' => $serviceRequest->isOpenNeed() ? null : $serviceRequest->city, 'icon' => 'fa-map-marker-alt'],
+            ['label' => 'Urgence', 'value' => $serviceRequest->isOpenNeed() ? null : $serviceRequest->urgency_label, 'icon' => 'fa-exclamation-triangle'],
+            ['label' => 'Budget', 'value' => $serviceRequest->isOpenNeed() ? null : $serviceRequest->budget_range, 'icon' => 'fa-money-bill-wave'],
             ['label' => 'Téléphone', 'value' => $serviceRequest->phone, 'icon' => 'fa-phone'],
         ] as $detail)
         @if($detail['value'])

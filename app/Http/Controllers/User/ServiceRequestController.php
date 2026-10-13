@@ -287,7 +287,7 @@ class ServiceRequestController extends Controller
         $user = Auth::user();
         
         $query = $user->serviceRequests()
-            ->with(['service.artisan', 'review', 'workSessions'])
+            ->with(['service.artisan', 'review', 'workSessions', 'commune'])
             ->latest();
 
         $stats = [
@@ -315,7 +315,7 @@ class ServiceRequestController extends Controller
             abort(403, 'Vous n\'êtes pas autorisé à consulter cette demande.');
         }
 
-        $serviceRequest->load(['user', 'service.artisan', 'mission', 'workSessions', 'review']);
+        $serviceRequest->load(['user', 'service.artisan', 'mission', 'workSessions', 'review', 'category', 'serviceType', 'commune']);
 
         // Load conversation if one exists between client and artisan
         $conversation = null;
