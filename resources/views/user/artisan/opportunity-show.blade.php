@@ -64,9 +64,6 @@
         @endif
     </div>
 
-    <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 text-sm text-slate-600">
-        <i class="fas fa-circle-info text-rdc-blue mr-1"></i>
-        L'envoi d'une proposition (prix, date, message), d'une visite sur devis ou d'un refus sera disponible ici très prochainement.
-    </div>
+    @include('user.artisan.partials.proposal-panel')
 </div>
 @endsection

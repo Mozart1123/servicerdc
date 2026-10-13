@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\NeedDispatch;
+use App\Models\NeedProposal;
 use App\Models\ServiceRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -52,6 +53,14 @@ class OpportunityController extends Controller
 
         $serviceRequest->load(['category:id,name', 'serviceType:id,title', 'commune:id,name', 'user:id,name']);
 
-        return view('user.artisan.opportunity-show', ['need' => $serviceRequest, 'dispatch' => $dispatch]);
+        $proposal = NeedProposal::where('service_request_id', $serviceRequest->id)->where('artisan_id', $artisan->id)->first();
+
+        return view('user.artisan.opportunity-show', [
+            'need'           => $serviceRequest,
+            'dispatch'       => $dispatch,
+            'proposal'       => $proposal,
+            'canRespond'     => $dispatch->isAwaitingResponse() && $dispatch->deadline_at->isFuture(),
+            'declineReasons' => ProposalController::DECLINE_REASONS,
+        ]);
     }
 }

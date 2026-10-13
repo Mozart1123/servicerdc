@@ -150,6 +150,12 @@ class ServiceRequest extends Model
         return $this->belongsTo(Commune::class);
     }
 
+    /** Propositions des artisans contactés. */
+    public function proposals()
+    {
+        return $this->hasMany(NeedProposal::class, 'service_request_id');
+    }
+
     /** Envois de la demande publiée aux artisans (vagues du matching). */
     public function dispatches()
     {

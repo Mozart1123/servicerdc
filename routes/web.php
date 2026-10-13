@@ -170,6 +170,11 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
             Route::get('/artisan/opportunities', [\App\Http\Controllers\User\OpportunityController::class, 'index'])->name('artisan.opportunities.index');
             Route::get('/artisan/opportunities/{serviceRequest}', [\App\Http\Controllers\User\OpportunityController::class, 'show'])->name('artisan.opportunities.show');
+            Route::middleware('throttle:20,1')->group(function (): void {
+                Route::post('/artisan/opportunities/{serviceRequest}/proposal', [\App\Http\Controllers\User\ProposalController::class, 'store'])->name('artisan.opportunities.propose');
+                Route::post('/artisan/opportunities/{serviceRequest}/decline', [\App\Http\Controllers\User\ProposalController::class, 'decline'])->name('artisan.opportunities.decline');
+                Route::post('/artisan/opportunities/{serviceRequest}/quote', [\App\Http\Controllers\User\ProposalController::class, 'sendQuote'])->name('artisan.opportunities.quote');
+            });
             Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
             Route::get('/artisan/level', [UserDashboardController::class, 'level'])->name('artisan.level');
             Route::post('/artisan/availability/toggle', [UserDashboardController::class, 'toggleAvailability'])->name('artisan.availability.toggle');

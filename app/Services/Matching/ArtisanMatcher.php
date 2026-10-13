@@ -4,6 +4,7 @@ namespace App\Services\Matching;
 
 use App\Models\Commune;
 use App\Models\NeedDispatch;
+use App\Models\NeedProposal;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
@@ -281,6 +282,22 @@ class ArtisanMatcher
             ->where('pricing_type', '!=', 'quote')
             ->where('price', '>', 0)
             ->groupBy('artisan_id')->selectRaw('artisan_id, AVG(price) as avg_price')->pluck('avg_price', 'artisan_id');
+
+        // Sinon (service "sur devis") : moyenne de ses propositions acceptées dans la catégorie.
+        $withoutPrice = array_values(array_diff($ids, $prices->keys()->all()));
+        if ($withoutPrice) {
+            $acceptedPrices = NeedProposal::whereIn('need_proposals.artisan_id', $withoutPrice)
+                ->where('need_proposals.status', NeedProposal::STATUS_ACCEPTED)
+                ->where('need_proposals.price', '>', 0)
+                ->join('service_requests', 'service_requests.id', '=', 'need_proposals.service_request_id')
+                ->where('service_requests.category_id', $need->category_id)
+                ->groupBy('need_proposals.artisan_id')
+                ->selectRaw('need_proposals.artisan_id as artisan_id, AVG(need_proposals.price) as avg_price')
+                ->pluck('avg_price', 'artisan_id');
+            foreach ($acceptedPrices as $artisanId => $avg) {
+                $prices[$artisanId] = $avg;
+            }
+        }
 
         $communes = DB::table('artisan_communes')->whereIn('user_id', $ids)->get(['user_id', 'commune_id'])
             ->groupBy('user_id')->map(fn ($rows) => $rows->pluck('commune_id')->map(fn ($v) => (int) $v)->all());

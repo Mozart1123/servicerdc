@@ -110,6 +110,14 @@ class NeedDispatcher
         return $need->dispatches()->where('status', NeedDispatch::STATUS_PROPOSED)->count();
     }
 
+    /** Appelé à chaque proposition : à 5 propositions, on arrête les envois (§2.3). */
+    public function stopIfEnoughProposals(ServiceRequest $need): void
+    {
+        if ($this->proposalsCount($need) >= (int) config('matching.waves.max_proposals')) {
+            ServiceRequest::whereKey($need->id)->update(['wave_deadline_at' => null]);
+        }
+    }
+
     /** Annulation par le client : les artisans en attente ne sont pas pénalisés. */
     public function closeDispatches(ServiceRequest $need): void
     {
