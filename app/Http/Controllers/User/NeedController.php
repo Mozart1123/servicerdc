@@ -10,6 +10,7 @@ use App\Models\ServiceRequest;
 use App\Models\ServiceType;
 use App\Services\Matching\NeedDispatcher;
 use App\Services\Matching\NeedLifecycle;
+use App\Support\ContactMasker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -74,6 +75,7 @@ class NeedController extends Controller
             'photos.*'        => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'commune_id'      => ['required', 'integer', Rule::exists('communes', 'id')->where('is_active', true)],
         ], self::editableRules()), self::MESSAGES);
+        $validated = self::maskContacts($validated);
 
         $category = Category::findOrFail($validated['category_id']);
         $serviceType = isset($validated['service_type_id']) ? ServiceType::find($validated['service_type_id']) : null;
@@ -182,7 +184,7 @@ class NeedController extends Controller
     public function update(Request $request, ServiceRequest $serviceRequest, NeedLifecycle $lifecycle): RedirectResponse
     {
         $this->authorizeOwner($serviceRequest);
-        $validated = $request->validate(self::editableRules(), self::MESSAGES);
+        $validated = self::maskContacts($request->validate(self::editableRules(), self::MESSAGES));
 
         $wasStale = false;
         DB::transaction(function () use ($serviceRequest, $validated, $lifecycle, &$wasStale) {
@@ -301,6 +303,21 @@ class NeedController extends Controller
             'range'  => [$validated['budget_min'], $validated['budget_max']],
             default  => [null, null],
         };
+    }
+
+    /**
+     * La demande est lue par des artisans que le client n'a pas encore choisis :
+     * aucun numéro de téléphone en clair dans les champs libres.
+     */
+    private static function maskContacts(array $validated): array
+    {
+        foreach (['precision', 'description', 'quartier'] as $field) {
+            if (isset($validated[$field])) {
+                $validated[$field] = ContactMasker::mask($validated[$field]);
+            }
+        }
+
+        return $validated;
     }
 
     private static function urgencyFor(string $timing): string

@@ -7,6 +7,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Notification;
 use App\Models\User;
+use App\Support\ContactMasker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -107,12 +108,16 @@ class MessageController extends Controller
             $attachmentPath = $request->file('attachment')->store('messages/attachments', 'public');
         }
 
+        // Numéros masqués entre client et artisan tant qu'aucune proposition n'est acceptée.
+        $receiver = User::find($receiverId);
+        $content = $receiver ? ContactMasker::maskBetween($request->input('content'), $user, $receiver) : $request->input('content');
+
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id'       => $user->id,
             'receiver_id'     => $receiverId,
-            'content'         => $request->input('content'),
-            'message'         => $request->input('content'),
+            'content'         => $content,
+            'message'         => $content,
             'attachment'      => $attachmentPath,
             'is_read'         => false,
         ]);
@@ -124,7 +129,7 @@ class MessageController extends Controller
             'user_id' => $receiverId,
             'type'    => 'message',
             'title'   => 'Nouveau message de ' . $user->name,
-            'message' => \Str::limit($request->input('content') ?? 'Fichier joint', 80),
+            'message' => \Str::limit($content ?? 'Fichier joint', 80),
             'data'    => [
                 'conversation_id' => $conversation->id,
                 'sender_id'       => $user->id,

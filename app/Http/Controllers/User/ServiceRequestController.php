@@ -10,6 +10,7 @@ use App\Models\Notification;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\User;
+use App\Support\ContactMasker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,15 @@ class ServiceRequestController extends Controller
                 $validated['artisan_id'] = $artisanId;
             }
 
+            // L'artisan lit la demande avant de l'accepter : pas de numéro en clair.
+            $artisan = $artisanId ? \App\Models\User::find($artisanId) : null;
+            $maskContacts = $artisan && ContactMasker::shouldMaskBetween($user, $artisan);
+            if ($maskContacts) {
+                foreach (['description', 'requested_service_name', 'city'] as $field) {
+                    $validated[$field] = ContactMasker::mask($validated[$field] ?? null);
+                }
+            }
+
             $serviceRequest = ServiceRequest::create($validated);
 
             if ($artisanId) {
@@ -63,9 +73,12 @@ class ServiceRequestController extends Controller
                 // Send the automated first message from the client
                 $automatedMessage = "Bonjour,\nJe souhaiterais faire appel à vos services pour : " . ($serviceRequest->requested_service_name ?? 'un service') . ".\n\n" .
                                     "📍 Lieu : " . ($serviceRequest->city ?? 'Non précisé') . "\n" .
-                                    "💰 Budget estimé : " . ($request->budget_range ?? 'Non précisé') . "\n" .
-                                    "⏳ Urgence : " . ($request->urgency ?? 'Standard') . "\n\n" .
+                                    "💰 Budget estimé : " . \Str::limit((string) ($request->budget_range ?: 'Non précisé'), 60) . "\n" .
+                                    "⏳ Urgence : " . \Str::limit((string) ($request->urgency ?: 'Standard'), 30) . "\n\n" .
                                     "📝 Description :\n" . $serviceRequest->description;
+                if ($maskContacts) {
+                    $automatedMessage = ContactMasker::mask($automatedMessage);
+                }
 
                 \App\Models\Message::create([
                     'conversation_id' => $conversation->id,

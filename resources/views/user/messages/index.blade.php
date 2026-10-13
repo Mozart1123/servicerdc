@@ -238,6 +238,12 @@
 
             {{-- ─── BARRE DE SAISIE FIXE EN BAS ─── --}}
             <div class="shrink-0 bg-slate-50/50 border-t border-slate-100 px-3 py-3 sm:px-4 sm:py-4">
+                @if($other && \App\Support\ContactMasker::shouldMaskBetween(auth()->user(), $other))
+                    <p class="text-[11px] text-slate-400 mb-2">
+                        <i class="fas fa-shield-halved mr-1"></i>
+                        Pour votre sécurité, les numéros de téléphone sont masqués tant qu'aucune proposition n'est acceptée.
+                    </p>
+                @endif
                 <form action="{{ route('user.messages.send', $activeConversation->id) }}"
                       method="POST" enctype="multipart/form-data" id="message-form">
                     @csrf

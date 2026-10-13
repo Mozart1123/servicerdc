@@ -8,6 +8,7 @@ use App\Models\NeedProposal;
 use App\Models\Notification;
 use App\Models\ServiceRequest;
 use App\Services\Matching\NeedDispatcher;
+use App\Support\ContactMasker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -74,7 +75,8 @@ class ProposalController extends Controller
                 'intervention_date'  => $isPrice ? $validated['intervention_date'] : null,
                 'visit_at'           => $isPrice ? null : $validated['visit_at'],
                 'study_fee'          => $isPrice ? null : $validated['study_fee'],
-                'message'            => $validated['message'] ?? null,
+                // Pas de numéro en clair tant que le client n'a pas retenu l'artisan.
+                'message'            => ContactMasker::mask($validated['message'] ?? null),
             ]);
 
             $dispatch->update(['status' => NeedDispatch::STATUS_PROPOSED, 'responded_at' => now()]);
@@ -160,7 +162,7 @@ class ProposalController extends Controller
                 'quote_materials'     => $validated['quote_materials'],
                 'quote_duration'      => $validated['quote_duration'],
                 'quote_payment_steps' => $steps,
-                'quote_message'       => $validated['quote_message'] ?? null,
+                'quote_message'       => ContactMasker::mask($validated['quote_message'] ?? null),
                 'quote_sent_at'       => now(),
                 'price'               => (float) $validated['quote_labor'] + (float) $validated['quote_materials'],
             ]);
