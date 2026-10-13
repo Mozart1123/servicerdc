@@ -253,7 +253,8 @@
             </div>
 
             <!-- Form Container -->
-            <div class="w-full max-w-md" data-aos="zoom-in-up" data-aos-duration="600">
+            {{-- Largeur par défaut d'un formulaire ; une page peut l'élargir avec @section('auth_width', '...') --}}
+            <div class="w-full @yield('auth_width', 'max-w-md')" data-aos="zoom-in-up" data-aos-duration="600">
                 @yield('content')
             </div>
         </div>

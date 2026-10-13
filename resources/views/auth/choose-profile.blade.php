@@ -1,6 +1,8 @@
 @extends('layouts.auth')
 
 @section('title', 'Créer un compte — Choisissez votre profil')
+{{-- Deux cartes côte à côte : plus large que les formulaires de connexion --}}
+@section('auth_width', 'max-w-3xl')
 
 @section('content')
 <div class="glass-panel p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl relative overflow-hidden backdrop-blur-3xl shadow-2xl border border-white/60">
@@ -19,7 +21,7 @@
     </div>
 
     <!-- Profile Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-5 mb-8">
 
         <!-- Client Card -->
         <div class="group relative flex flex-col justify-between p-6 rounded-2xl border-2 border-slate-200/80 bg-white/80 hover:border-rdc-blue hover:shadow-xl hover:shadow-rdc-blue/10 transition-all duration-300">
