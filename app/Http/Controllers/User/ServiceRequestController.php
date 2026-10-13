@@ -646,6 +646,10 @@ class ServiceRequestController extends Controller
             'cancelled_at' => now(),
         ]);
 
+        if ($serviceRequest->isOpenNeed()) {
+            app(\App\Services\Matching\NeedDispatcher::class)->closeDispatches($serviceRequest);
+        }
+
         $mission = $serviceRequest->mission;
 
         if ($mission && !in_array($mission->status, ['completed', 'cancelled'])) {

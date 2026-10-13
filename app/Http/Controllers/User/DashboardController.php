@@ -374,25 +374,6 @@ class DashboardController extends Controller
         return back()->with('success', 'Vos paramètres de disponibilité ont été mis à jour.');
     }
 
-    /**
-     * Opportunités ouvertes pour artisans (Point 11).
-     * Demandes publiées par des clients SANS artisan désigné.
-     */
-    public function opportunities(): View
-    {
-        $user = Auth::user();
-        if (!$user->isArtisan()) {
-            abort(403);
-        }
-
-        // Un artisan ne voit que les demandes qui lui ont été envoyées par le
-        // matching, jamais la liste publique des demandes ouvertes (cahier des
-        // charges §2.3). Tant que l'envoi par vagues n'existe pas, la liste est vide.
-        $openRequests = ServiceRequest::query()->whereRaw('1 = 0')->paginate(10);
-
-        return view('user.artisan.opportunities', compact('openRequests'));
-    }
-
     // ==========================================
     // SERVICES SECTION
     // ==========================================

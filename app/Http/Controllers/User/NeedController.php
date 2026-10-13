@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\Commune;
 use App\Models\ServiceRequest;
 use App\Models\ServiceType;
+use App\Services\Matching\NeedDispatcher;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +48,7 @@ class NeedController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, NeedDispatcher $dispatcher): RedirectResponse
     {
         if ($redirect = $this->denyIfNotClient()) {
             return $redirect;
@@ -156,8 +158,41 @@ class NeedController extends Controller
             $user->forceFill(['commune_id' => $commune->id, 'quartier' => $user->quartier ?: ($validated['quartier'] ?? null)])->save();
         }
 
+        // Première vague d'artisans. En cas d'échec, la demande reste publiée :
+        // la tâche planifiée (proconnect:advance-need-waves) la reprendra.
+        try {
+            $dispatcher->start($need);
+        } catch (\Throwable $e) {
+            \Log::error("Matching : premier envoi de la demande #{$need->id} échoué : " . $e->getMessage());
+        }
+
         return redirect()->route('user.service-requests.show', $need)
             ->with('success', 'Votre demande est publiée ! Nous la transmettons aux artisans les plus adaptés près de chez vous.');
+    }
+
+    /** Suivi en direct de la demande publiée (rafraîchi par la page de détail). */
+    public function status(ServiceRequest $serviceRequest): JsonResponse
+    {
+        abort_unless($serviceRequest->user_id === Auth::id() && $serviceRequest->isOpenNeed(), 403);
+
+        return response()->json(self::progress($serviceRequest));
+    }
+
+    /** @return array{contacted:int, proposals:int, widened:bool, searching:bool, exhausted:bool, status:string} */
+    public static function progress(ServiceRequest $need): array
+    {
+        $counts = $need->dispatches()
+            ->selectRaw("COUNT(*) as contacted, SUM(CASE WHEN status = 'proposed' THEN 1 ELSE 0 END) as proposals")
+            ->first();
+
+        return [
+            'contacted' => (int) ($counts->contacted ?? 0),
+            'proposals' => (int) ($counts->proposals ?? 0),
+            'widened'   => $need->matching_widened_at !== null,
+            'searching' => $need->status === ServiceRequest::STATUS_PENDING && $need->wave_deadline_at !== null,
+            'exhausted' => $need->matching_exhausted_at !== null,
+            'status'    => $need->status,
+        ];
     }
 
     /** Seuls les comptes client publient un besoin. */

@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('kpay:reconcile')->everyFifteenMinutes();
 \Illuminate\Support\Facades\Schedule::command('app:process-subscription-reminders')->dailyAt('00:05');
 \Illuminate\Support\Facades\Schedule::command('proconnect:update-artisan-levels')->dailyAt('02:00');
+
+// Matching : vague suivante des demandes publiées dès que le délai de réponse est écoulé.
+\Illuminate\Support\Facades\Schedule::command('proconnect:advance-need-waves')->everyMinute()->withoutOverlapping(10);

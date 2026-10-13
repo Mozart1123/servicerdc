@@ -36,4 +36,18 @@ return [
     // Heure locale pour "disponible tout de suite" (horaires de travail).
     'timezone' => 'Africa/Kinshasa',
 
+    // Interrupteur général de l'envoi aux artisans. Désactivé tant que les artisans
+    // ne peuvent pas encore répondre (proposition / refus) : sinon ils seraient
+    // pénalisés en réactivité sans pouvoir agir. Activer via MATCHING_DISPATCH_ENABLED=true.
+    'dispatch_enabled' => (bool) env('MATCHING_DISPATCH_ENABLED', false),
+
+    // Envoi par vagues (§2.3).
+    'waves' => [
+        'size'               => 5,   // artisans contactés par vague
+        'deadline_minutes'   => 120, // délai de réponse en temps normal
+        'urgent_minutes'     => 30,  // délai de réponse pour une demande urgente
+        'min_proposals'      => 3,   // en dessous, vague suivante à la fin du délai
+        'max_proposals'      => 5,   // au-delà, on arrête les envois
+    ],
+
 ];

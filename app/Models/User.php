@@ -442,6 +442,18 @@ class User extends Authenticatable
             }
         }
 
+        // 1 bis. Demandes publiées envoyées par le matching (proposition ou refus).
+        $dispatches = NeedDispatch::where('artisan_id', $this->id)
+            ->where('sent_at', '>=', now()->subDays(30))
+            ->whereNotNull('responded_at')
+            ->get(['sent_at', 'responded_at']);
+        foreach ($dispatches as $dispatch) {
+            $diff = $dispatch->sent_at->diffInMinutes($dispatch->responded_at);
+            if ($diff >= 0 && $diff <= 10080) {
+                $delaysInMinutes[] = $diff;
+            }
+        }
+
         // 2. Messaging responsiveness
         try {
             $recentConvs = Conversation::where(function ($q) {

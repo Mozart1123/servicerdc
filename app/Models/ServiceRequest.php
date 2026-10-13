@@ -24,6 +24,10 @@ class ServiceRequest extends Model
         'budget_type',
         'photos',
         'expires_at',
+        'current_wave',
+        'wave_deadline_at',
+        'matching_widened_at',
+        'matching_exhausted_at',
         'phone',
         'email',
         'requested_service_name',
@@ -54,6 +58,10 @@ class ServiceRequest extends Model
         'completed_at'  => 'datetime',
         'cancelled_at'  => 'datetime',
         'expires_at'    => 'datetime',
+        'wave_deadline_at'      => 'datetime',
+        'matching_widened_at'   => 'datetime',
+        'matching_exhausted_at' => 'datetime',
+        'current_wave'          => 'integer',
         'preferred_date' => 'date',
         'photos'        => 'array',
         'paid_at'       => 'datetime',
@@ -140,6 +148,12 @@ class ServiceRequest extends Model
     public function commune()
     {
         return $this->belongsTo(Commune::class);
+    }
+
+    /** Envois de la demande publiée aux artisans (vagues du matching). */
+    public function dispatches()
+    {
+        return $this->hasMany(NeedDispatch::class, 'service_request_id');
     }
 
     public function respondedByUser()

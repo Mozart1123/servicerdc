@@ -3,6 +3,7 @@
 namespace App\Services\Matching;
 
 use App\Models\Commune;
+use App\Models\NeedDispatch;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
@@ -259,6 +260,19 @@ class ArtisanMatcher
             ->where(fn ($q) => $q->whereNotNull('responded_at')
                 ->orWhereIn('status', ['accepted', 'in_progress', 'awaiting_validation', 'completed', 'rejected']))
             ->groupBy('artisan_id')->selectRaw('artisan_id, COUNT(*) as n')->pluck('n', 'artisan_id');
+
+        // Demandes publiées envoyées par le matching : comptent une fois répondues ou
+        // le délai écoulé (en cours ou annulées par le client : ignorées).
+        $dispatchStats = NeedDispatch::whereIn('artisan_id', $ids)
+            ->where('sent_at', '>=', $since)
+            ->whereIn('status', [NeedDispatch::STATUS_PROPOSED, NeedDispatch::STATUS_DECLINED, NeedDispatch::STATUS_EXPIRED])
+            ->groupBy('artisan_id')
+            ->selectRaw("artisan_id, COUNT(*) as received, SUM(CASE WHEN status IN ('proposed', 'declined') THEN 1 ELSE 0 END) as responded")
+            ->get()->keyBy('artisan_id');
+        foreach ($dispatchStats as $artisanId => $row) {
+            $received[$artisanId] = (int) ($received[$artisanId] ?? 0) + (int) $row->received;
+            $responded[$artisanId] = (int) ($responded[$artisanId] ?? 0) + (int) $row->responded;
+        }
 
         // Prix habituel : moyenne des prix affichés de ses services actifs dans la catégorie.
         $prices = Service::whereIn('artisan_id', $ids)

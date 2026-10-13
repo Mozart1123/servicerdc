@@ -42,17 +42,46 @@
     {{-- Demande publiée ("Décrire mon besoin") --}}
     @if($serviceRequest->isOpenNeed())
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5" data-aos="fade-up">
-        @if($serviceRequest->status === 'pending')
-        <div class="flex items-start gap-3 p-4 rounded-xl bg-rdc-blue/5 border border-rdc-blue/20">
-            <i class="fas fa-magnifying-glass-location text-rdc-blue text-lg mt-0.5"></i>
-            <div class="text-sm">
-                <p class="font-bold text-slate-900">Recherche d'artisans en cours</p>
-                <p class="text-slate-600">Votre demande est transmise aux artisans les plus adaptés. Vous serez notifié dès qu'une proposition arrive.
-                    @if($serviceRequest->expires_at)
-                        Elle reste ouverte jusqu'au {{ $serviceRequest->expires_at->translatedFormat('d F Y') }}.
-                    @endif
-                </p>
+        @if($serviceRequest->status === 'pending' && $serviceRequest->user_id === auth()->id())
+        @php $progress = \App\Http\Controllers\User\NeedController::progress($serviceRequest); @endphp
+        {{-- Suivi en direct : rafraîchi toutes les 30 s tant que la demande est ouverte --}}
+        <div class="p-4 rounded-xl bg-rdc-blue/5 border border-rdc-blue/20 space-y-3"
+             x-data="{ p: @js($progress), timer: null,
+                       async refresh() {
+                           try {
+                               const r = await fetch(@js(route('user.needs.status', $serviceRequest)), { headers: { 'Accept': 'application/json' } });
+                               if (r.ok) this.p = await r.json();
+                               if (this.p.status !== 'pending') clearInterval(this.timer);
+                           } catch (e) {}
+                       } }"
+             x-init="timer = setInterval(() => refresh(), 30000)">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-magnifying-glass-location text-rdc-blue text-lg mt-0.5"></i>
+                <div class="text-sm">
+                    <p class="font-bold text-slate-900">Recherche d'artisans en cours</p>
+                    <p class="text-slate-600">Votre demande est transmise aux artisans les plus adaptés. Vous serez notifié dès qu'une proposition arrive.
+                        @if($serviceRequest->expires_at)
+                            Elle reste ouverte jusqu'au {{ $serviceRequest->expires_at->translatedFormat('d F Y') }}.
+                        @endif
+                    </p>
+                </div>
             </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white rounded-xl p-3 text-center border border-slate-100">
+                    <p class="text-2xl font-black text-slate-900" x-text="p.contacted">{{ $progress['contacted'] }}</p>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Artisans contactés</p>
+                </div>
+                <div class="bg-white rounded-xl p-3 text-center border border-slate-100">
+                    <p class="text-2xl font-black text-rdc-blue" x-text="p.proposals">{{ $progress['proposals'] }}</p>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Propositions reçues</p>
+                </div>
+            </div>
+            <p x-show="p.widened" @if(!$progress['widened']) x-cloak @endif class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                <i class="fas fa-route mr-1"></i> Peu d'artisans dans votre commune : la recherche a été élargie aux communes plus éloignées.
+            </p>
+            <p x-show="p.exhausted" @if(!$progress['exhausted']) x-cloak @endif class="text-xs text-slate-600 bg-white rounded-lg px-3 py-2 border border-slate-100">
+                <i class="fas fa-clock mr-1"></i> Aucun autre artisan n'est disponible pour l'instant. Nous réessayons automatiquement.
+            </p>
         </div>
         @endif
 

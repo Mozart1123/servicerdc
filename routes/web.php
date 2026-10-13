@@ -168,7 +168,8 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::post('/service-requests/{serviceRequest}/pause-work', [UserServiceRequestController::class, 'pauseWork'])->name('service-requests.pause-work');
             Route::post('/service-requests/{serviceRequest}/resume-work', [UserServiceRequestController::class, 'resumeWork'])->name('service-requests.resume-work');
             Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
-            Route::get('/artisan/opportunities', [UserDashboardController::class, 'opportunities'])->name('artisan.opportunities.index');
+            Route::get('/artisan/opportunities', [\App\Http\Controllers\User\OpportunityController::class, 'index'])->name('artisan.opportunities.index');
+            Route::get('/artisan/opportunities/{serviceRequest}', [\App\Http\Controllers\User\OpportunityController::class, 'show'])->name('artisan.opportunities.show');
             Route::get('/artisan/reviews', [UserServiceRequestController::class, 'artisanReviews'])->name('artisan.reviews.index');
             Route::get('/artisan/level', [UserDashboardController::class, 'level'])->name('artisan.level');
             Route::post('/artisan/availability/toggle', [UserDashboardController::class, 'toggleAvailability'])->name('artisan.availability.toggle');
@@ -205,6 +206,7 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         // Client : "Décrire mon besoin" (demande publiée, envoyée par le matching)
         Route::get('/besoin/nouveau', [UserNeedController::class, 'create'])->name('needs.create');
         Route::post('/besoin', [UserNeedController::class, 'store'])->middleware('throttle:10,60')->name('needs.store');
+        Route::get('/besoin/{serviceRequest}/statut', [UserNeedController::class, 'status'])->middleware('throttle:60,1')->name('needs.status');
 
         // Client: Service Requests
         Route::get('/service-requests',[UserServiceRequestController::class, 'index'])->name('service-requests.index');
