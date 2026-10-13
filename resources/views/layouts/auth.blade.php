@@ -198,9 +198,10 @@
                 <!-- Decorative Bar -->
                 <div class="absolute -left-12 top-1/2 -translate-y-1/2 w-2 h-40 bg-gradient-to-b from-rdc-blue via-rdc-yellow to-rdc-red rounded-r-full shadow-lg"></div>
                 
-                <h2 class="text-5xl font-bold leading-tight mb-6 text-slate-900" data-aos="fade-right" data-aos-delay="100">
+                <h2 class="text-4xl xl:text-5xl font-bold leading-tight mb-6 text-slate-900" data-aos="fade-right" data-aos-delay="100">
                     L'excellence <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-rdc-blue to-rdc-dark-blue animate-pulse-slow">Professionnelle</span>
+                    {{-- Dégradé cyan → bleu, sans animation d'opacité (qui le rendait terne) --}}
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#20B8D0] to-[#1D6FD8]">Professionnelle</span>
                     <br> à votre service.
                 </h2>
                 
@@ -210,7 +211,7 @@
 
                 <!-- Stats Visual -->
                 <div class="flex items-center gap-6" data-aos="fade-up" data-aos-delay="300">
-                    <div class="bg-white/80 backdrop-blur-md border border-white/50 shadow-xl shadow-blue-900/5 px-5 py-3 rounded-2xl flex items-center gap-3 hover:scale-105 transition-transform cursor-default">
+                    <div class="bg-cyan-50/80 backdrop-blur-md border border-cyan-100/80 shadow-xl shadow-blue-900/5 px-5 py-3 rounded-2xl flex items-center gap-3 hover:scale-105 transition-transform cursor-default">
                         <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-rdc-blue">
                             <i class="fas fa-users"></i>
                         </div>
@@ -220,7 +221,7 @@
                         </div>
                     </div>
                     
-                    <div class="bg-white/80 backdrop-blur-md border border-white/50 shadow-xl shadow-yellow-900/5 px-5 py-3 rounded-2xl flex items-center gap-3 hover:scale-105 transition-transform cursor-default">
+                    <div class="bg-amber-50/80 backdrop-blur-md border border-amber-100/80 shadow-xl shadow-yellow-900/5 px-5 py-3 rounded-2xl flex items-center gap-3 hover:scale-105 transition-transform cursor-default">
                         <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-rdc-yellow">
                             <i class="fas fa-briefcase"></i>
                         </div>
