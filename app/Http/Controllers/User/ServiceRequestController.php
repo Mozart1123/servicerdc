@@ -92,6 +92,10 @@ class ServiceRequestController extends Controller
         if ($artisanId !== Auth::id()) {
             abort(403, 'Cette demande ne vous a pas été adressée.');
         }
+        // Empêche de "ressusciter" une demande annulée, refusée ou déjà traitée.
+        if ($serviceRequest->status !== 'pending') {
+            return back()->with('error', 'Cette demande n\'est plus en attente.');
+        }
 
         try {
             $serviceRequest->update([
@@ -181,6 +185,9 @@ class ServiceRequestController extends Controller
         $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
         if ($artisanId !== Auth::id()) {
             abort(403, 'Cette demande ne vous a pas été adressée.');
+        }
+        if ($serviceRequest->status !== 'pending') {
+            return back()->with('error', 'Cette demande n\'est plus en attente.');
         }
 
         try {
@@ -618,11 +625,23 @@ class ServiceRequestController extends Controller
     public function cancel(ServiceRequest $serviceRequest): RedirectResponse
     {
         $artisanId = $serviceRequest->artisan_id ?? $serviceRequest->service?->artisan_id;
-        if ($serviceRequest->user_id !== Auth::id() && $artisanId !== Auth::id()) {
+        $isClient = $serviceRequest->user_id === Auth::id();
+        if (!$isClient && $artisanId !== Auth::id()) {
             abort(403);
         }
 
-        $serviceRequest->update(['status' => 'cancelled']);
+        // Le client annule avant le démarrage ; l'artisan peut aussi abandonner
+        // une mission en cours. Une demande terminée ou close ne s'annule plus.
+        $cancellable = $isClient ? ['pending', 'accepted'] : ['pending', 'accepted', 'in_progress'];
+        if (!in_array($serviceRequest->status, $cancellable, true)) {
+            return back()->with('error', 'Cette demande ne peut plus être annulée.');
+        }
+
+        $serviceRequest->update([
+            'status'       => 'cancelled',
+            'cancelled_by' => Auth::id(),
+            'cancelled_at' => now(),
+        ]);
 
         $mission = $serviceRequest->mission;
 
@@ -633,14 +652,18 @@ class ServiceRequestController extends Controller
             ]);
         }
 
-        Notification::create([
-            'user_id'    => $serviceRequest->user_id,
-            'type'       => 'mission_cancelled',
-            'title'      => 'Mission annulée',
-            'message'    => "La mission a été annulée.",
-            'action_url' => route('user.service-requests.index'),
-            'is_read'    => false,
-        ]);
+        // On prévient l'autre partie, pas celle qui vient d'annuler.
+        $recipientId = $isClient ? $artisanId : $serviceRequest->user_id;
+        if ($recipientId) {
+            Notification::create([
+                'user_id'    => $recipientId,
+                'type'       => 'mission_cancelled',
+                'title'      => 'Mission annulée',
+                'message'    => ($isClient ? 'Le client' : "L'artisan") . ' a annulé la demande : ' . ($serviceRequest->requested_service_name ?? 'service'),
+                'action_url' => $isClient ? route('user.artisan.service-requests.index') : route('user.service-requests.index'),
+                'is_read'    => false,
+            ]);
+        }
 
         return back()->with('info', 'Mission annulée.');
     }

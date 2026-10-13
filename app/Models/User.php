@@ -47,6 +47,8 @@ class User extends Authenticatable
         'phone',
         'province',
         'city',
+        'commune_id',
+        'quartier',
         'password',
         'user_type',
         'terms_accepted_at',
@@ -71,6 +73,8 @@ class User extends Authenticatable
         'working_hours_start',
         'working_hours_end',
     ];
+
+    private ?int $unreadMessagesCountCache = null;
 
     protected $hidden = [
         'password',
@@ -180,6 +184,29 @@ class User extends Authenticatable
     // ==========================================
     // Relationships
     // ==========================================
+
+    /** Commune de résidence (pré-remplit le lieu des demandes clients). */
+    public function commune()
+    {
+        return $this->belongsTo(Commune::class);
+    }
+
+    /** Communes où l'artisan accepte d'intervenir (filtre du matching). */
+    public function interventionCommunes()
+    {
+        return $this->belongsToMany(Commune::class, 'artisan_communes', 'user_id', 'commune_id');
+    }
+
+    /**
+     * Remplace les communes d'intervention et garde intervention_zone (texte
+     * affiché sur la fiche publique) synchronisé avec la liste structurée.
+     */
+    public function syncInterventionCommunes(array $communeIds): void
+    {
+        $this->interventionCommunes()->sync(array_map('intval', $communeIds));
+        $this->intervention_zone = $this->interventionCommunes()->orderBy('name')->pluck('name')->implode(', ') ?: null;
+        $this->save();
+    }
 
     public function artisanLevel()
     {
@@ -459,16 +486,12 @@ class User extends Authenticatable
      */
     public function getUnreadMessagesCountAttribute(): int
     {
-        $unread = 0;
-        try {
-            foreach ($this->conversations()->get() as $conv) {
-                /** @var \App\Models\Conversation $conv */
-                $unread += $conv->unreadCountFor($this->id);
-            }
-        } catch (\Throwable $e) {
-            // Graceful fallback
-        }
-        return $unread;
+        // Une seule requête (affiché sur chaque page via la barre d'onglets),
+        // mémorisée pour la durée de la requête HTTP.
+        return $this->unreadMessagesCountCache ??= Message::whereIn('conversation_id', $this->conversations()->select('id'))
+            ->where('sender_id', '!=', $this->id)
+            ->where('is_read', false)
+            ->count();
     }
 
     /**

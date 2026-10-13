@@ -206,10 +206,9 @@
 
                     <!-- 4. Communes d'intervention -->
                     <div class="lg:col-span-3 space-y-2">
-                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest block">Communes & Zones d'intervention</label>
-                        <input type="text" name="intervention_zone" value="{{ old('intervention_zone', $artisan->intervention_zone) }}"
-                               placeholder="Ex: Gombe, Kintambo, Ngaliema, Limete (séparées par des virgules)"
-                               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-rdc-blue outline-none">
+                        <label class="text-[10px] font-black text-slate-900 uppercase tracking-widest block">Communes où j'interviens</label>
+                        <p class="text-[11px] text-slate-500">Vous recevrez les demandes publiées dans ces communes.</p>
+                        @include('partials.commune-picker', ['selected' => $artisan->interventionCommunes()->pluck('communes.id')->all()])
                     </div>
 
                     <!-- 5. Bouton Enregistrer -->

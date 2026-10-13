@@ -109,6 +109,26 @@
                     <input type="text" name="city" value="{{ old('city', auth()->user()->city) }}" placeholder="Kinshasa, Gombe..."
                            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
                 </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Commune (Kinshasa)</label>
+                    <select name="commune_id"
+                            class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
+                        <option value="">— Choisir —</option>
+                        @foreach(\App\Models\Commune::active()->get(['id', 'name']) as $commune)
+                            <option value="{{ $commune->id }}" @selected((int) old('commune_id', auth()->user()->commune_id) === $commune->id)>{{ $commune->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('commune_id') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Quartier</label>
+                    <input type="text" name="quartier" maxlength="120" value="{{ old('quartier', auth()->user()->quartier) }}" placeholder="Ex : Matonge, Righini..."
+                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
+                    <p class="text-xs text-slate-400">Pré-remplit le lieu de vos demandes.</p>
+                    @error('quartier') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                </div>
                 
                 <div class="sm:col-span-2 space-y-2">
                     <label class="block text-sm font-medium text-slate-700">Bio / Résumé</label>
@@ -178,13 +198,10 @@
                     @error('languages') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-slate-700">Zone d'intervention</label>
-                    <input type="text" name="intervention_zone"
-                           value="{{ old('intervention_zone', auth()->user()->intervention_zone) }}"
-                           placeholder="Ex : Kinshasa et environs"
-                           class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue outline-none transition-all text-sm">
-                    @error('intervention_zone') <p class="text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                <div class="sm:col-span-2 space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">Communes où j'interviens</label>
+                    <p class="text-xs text-slate-400">Vous recevrez les demandes publiées dans ces communes.</p>
+                    @include('partials.commune-picker', ['selected' => auth()->user()->interventionCommunes()->pluck('communes.id')->all()])
                 </div>
 
                 @php

@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -106,8 +107,9 @@ class DashboardController extends Controller
                 ->take(3)
                 ->get();
 
-            $recentDemands = \App\Models\ServiceRequest::whereIn('service_id', $serviceIds)
-                ->orWhere('artisan_id', $user->id)
+            $recentDemands = \App\Models\ServiceRequest::where(function ($q) use ($serviceIds, $user) {
+                    $q->whereIn('service_id', $serviceIds)->orWhere('artisan_id', $user->id);
+                })
                 ->where('status', 'pending')
                 ->with('user', 'service')
                 ->latest()
@@ -197,6 +199,8 @@ class DashboardController extends Controller
             'name'          => ['required', 'string', 'max:255'],
             'phone'         => ['nullable', 'string', 'max:20'],
             'city'          => ['nullable', 'string', 'max:255'],
+            'commune_id'    => ['nullable', 'integer', Rule::exists('communes', 'id')->where('is_active', true)],
+            'quartier'      => ['nullable', 'string', 'max:120'],
             'bio'           => ['nullable', 'string', 'max:500'],
             'profile_photo' => ['nullable', 'image', 'max:5120'],
             'cover_photo'   => ['nullable', 'image', 'max:5120'],
@@ -230,7 +234,8 @@ class DashboardController extends Controller
             $rules['years_experience']   = ['nullable', 'integer', 'min:0', 'max:80'];
             $rules['languages']          = ['nullable', 'array'];
             $rules['languages.*']        = ['string', 'max:50'];
-            $rules['intervention_zone']  = ['nullable', 'string', 'max:255'];
+            $rules['commune_ids']        = ['nullable', 'array', 'max:24'];
+            $rules['commune_ids.*']      = ['integer', Rule::exists('communes', 'id')->where('is_active', true)];
             $rules['home_service']       = ['nullable', 'in:0,1'];
             $rules['address']            = ['nullable', 'string', 'max:255'];
             $rules['availability_days']   = ['nullable', 'array'];
@@ -240,7 +245,7 @@ class DashboardController extends Controller
 
         $request->validate($rules);
 
-        $fields = $request->only(['name', 'phone', 'city', 'bio']);
+        $fields = $request->only(['name', 'phone', 'city', 'commune_id', 'quartier', 'bio']);
 
         // Only persist company_description when the user is actually a recruiter
         if ($user->isRecruiter()) {
@@ -253,7 +258,6 @@ class DashboardController extends Controller
                 $request->input('languages', []),
                 fn ($lang) => trim((string) $lang) !== ''
             ));
-            $fields['intervention_zone'] = $request->input('intervention_zone');
             $fields['home_service']      = $request->filled('home_service') ? (bool) $request->input('home_service') : null;
             $fields['address']           = $request->input('address');
             $fields['availability_days'] = $request->input('availability_days', []);
@@ -261,6 +265,10 @@ class DashboardController extends Controller
         }
 
         $user->update($fields);
+
+        if ($user->isArtisan() && $request->boolean('commune_ids_submitted')) {
+            $user->syncInterventionCommunes($request->input('commune_ids', []));
+        }
 
         if ($request->hasFile('profile_photo')) {
             if ($user->profile_photo) {
@@ -337,7 +345,8 @@ class DashboardController extends Controller
             'availability_days'    => ['nullable', 'array'],
             'availability_days.*'  => ['string', 'in:lun,mar,mer,jeu,ven,sam,dim'],
             'availability_note'    => ['nullable', 'string', 'max:255'],
-            'intervention_zone'    => ['nullable', 'string', 'max:255'],
+            'commune_ids'          => ['nullable', 'array', 'max:24'],
+            'commune_ids.*'        => ['integer', Rule::exists('communes', 'id')->where('is_active', true)],
         ]);
 
         if ($request->has('is_available')) {
@@ -348,10 +357,11 @@ class DashboardController extends Controller
         $user->working_hours_end   = $request->input('working_hours_end', '18:00');
         $user->availability_days   = $request->input('availability_days', []);
         $user->availability_note   = $request->input('availability_note');
-        if ($request->has('intervention_zone')) {
-            $user->intervention_zone = $request->input('intervention_zone');
-        }
         $user->save();
+
+        if ($request->boolean('commune_ids_submitted')) {
+            $user->syncInterventionCommunes($request->input('commune_ids', []));
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -375,12 +385,10 @@ class DashboardController extends Controller
             abort(403);
         }
 
-        // Open requests with no artisan assigned (matching system pool)
-        $openRequests = ServiceRequest::whereNull('artisan_id')
-            ->where('status', 'pending')
-            ->with(['user', 'service'])
-            ->latest()
-            ->paginate(10);
+        // Un artisan ne voit que les demandes qui lui ont été envoyées par le
+        // matching, jamais la liste publique des demandes ouvertes (cahier des
+        // charges §2.3). Tant que l'envoi par vagues n'existe pas, la liste est vide.
+        $openRequests = ServiceRequest::query()->whereRaw('1 = 0')->paginate(10);
 
         return view('user.artisan.opportunities', compact('openRequests'));
     }

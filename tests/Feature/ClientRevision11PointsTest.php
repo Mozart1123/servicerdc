@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Commune;
 use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceRequest;
@@ -89,13 +90,17 @@ class ClientRevision11PointsTest extends TestCase
         $toggleRes->assertJson(['status' => 'ok', 'is_available' => false]);
         $this->assertFalse($artisan->fresh()->is_available);
 
+        $gombe = Commune::where('slug', 'gombe')->firstOrFail();
+        $kintambo = Commune::where('slug', 'kintambo')->firstOrFail();
+
         // Update schedule
         $updateRes = $this->actingAs($artisan)->post(route('user.artisan.availability.update'), [
             'is_available'        => 1,
             'working_hours_start' => '07:30',
             'working_hours_end'   => '19:00',
             'availability_days'   => ['lun', 'mar', 'mer', 'jeu', 'ven'],
-            'intervention_zone'   => 'Gombe, Kintambo',
+            'commune_ids_submitted' => 1,
+            'commune_ids'         => [$kintambo->id, $gombe->id],
         ]);
         $updateRes->assertRedirect();
 
@@ -104,6 +109,23 @@ class ClientRevision11PointsTest extends TestCase
         $this->assertEquals('07:30', $fresh->working_hours_start);
         $this->assertEquals('19:00', $fresh->working_hours_end);
         $this->assertEquals('Gombe, Kintambo', $fresh->intervention_zone);
+        $this->assertEqualsCanonicalizing([$gombe->id, $kintambo->id], $fresh->interventionCommunes->pluck('id')->all());
+
+        $this->actingAs($fresh)->get(route('user.dashboard'))
+            ->assertOk()
+            ->assertSee("Communes où j'interviens", false)
+            ->assertSeeInOrder(['value="' . $gombe->id . '"', 'checked', 'Gombe'], false);
+    }
+
+    public function test_communes_reference_is_seeded_with_symmetric_neighbors(): void
+    {
+        $this->assertSame(24, Commune::count());
+
+        $gombe = Commune::where('slug', 'gombe')->firstOrFail();
+        $lingwala = Commune::where('slug', 'lingwala')->firstOrFail();
+        $this->assertTrue($gombe->isNeighborOf($lingwala->id));
+        $this->assertTrue($lingwala->isNeighborOf($gombe->id));
+        $this->assertFalse($gombe->isNeighborOf(Commune::where('slug', 'maluku')->value('id')));
     }
 
     /**

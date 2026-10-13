@@ -499,7 +499,7 @@
             </div>
 
             {{-- Retour en haut --}}
-            <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 bg-gradient-to-r from-rdc-blue
+            <button id="back-to-top" class="fixed {{ auth()->check() ? 'bottom-24 md:bottom-8' : 'bottom-8' }} right-8 w-12 h-12 bg-gradient-to-r from-rdc-blue
                            to-rdc-blue-dark text-white rounded-full shadow-2xl
                            hover:shadow-rdc-blue/30 hover:scale-110 transition-all
                            duration-300 flex items-center justify-center z-40 hidden">
@@ -532,6 +532,10 @@
 
     @stack('scripts')
     {{-- Barre d'onglets fixe en bas (Mobile uniquement une fois connecté - Point 6) --}}
+    @auth
+        {{-- Réserve la hauteur de la barre fixe pour ne pas masquer le bas du footer --}}
+        <div class="md:hidden h-20" aria-hidden="true"></div>
+    @endauth
     @include('partials.mobile-bottom-nav')
 </body>
 </html>

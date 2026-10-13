@@ -157,13 +157,6 @@
             {{-- CONTENT AREA --}}
             <div class="flex-1 min-w-0 {{ $isAccountPage ? 'hidden lg:block' : 'block' }}">
                 
-                {{-- Mobile Back Button --}}
-                <div class="lg:hidden mb-4">
-                    <a href="{{ route('user.account') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors shadow-sm">
-                        <i class="fas fa-arrow-left"></i> Retour au menu
-                    </a>
-                </div>
-
                 {{-- Header Title area --}}
                 <div class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
