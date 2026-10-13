@@ -344,14 +344,14 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::prefix('users')->name('users.')->group(function (): void {
             Route::get('/', [AdminUserController::class, 'index'])->name('index');
             Route::get('/api', [AdminUserController::class, 'apiIndex'])->name('api.index');
-            Route::get('/{id}', [AdminUserController::class, 'show'])->name('show');
-            Route::get('/{id}/edit', [AdminUserController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [AdminUserController::class, 'update'])->name('update');
-            Route::post('/{id}/promote', [AdminUserController::class, 'promoteToAdmin'])->name('promote');
-            Route::post('/{id}/promote-api', [AdminUserController::class, 'promoteToAdminApi'])->name('promote-api');
-            Route::post('/{id}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('toggle-status');
-            Route::post('/{id}/toggle-status-api', [AdminUserController::class, 'toggleStatusApi'])->name('toggle-status-api');
-            Route::delete('/{id}', [AdminUserController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}', [AdminUserController::class, 'show'])->name('show')->whereNumber('id');
+            Route::get('/{id}/edit', [AdminUserController::class, 'edit'])->name('edit')->whereNumber('id');
+            Route::put('/{id}', [AdminUserController::class, 'update'])->name('update')->whereNumber('id');
+            Route::post('/{id}/promote', [AdminUserController::class, 'promoteToAdmin'])->name('promote')->whereNumber('id');
+            Route::post('/{id}/promote-api', [AdminUserController::class, 'promoteToAdminApi'])->name('promote-api')->whereNumber('id');
+            Route::post('/{id}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('toggle-status')->whereNumber('id');
+            Route::post('/{id}/toggle-status-api', [AdminUserController::class, 'toggleStatusApi'])->name('toggle-status-api')->whereNumber('id');
+            Route::delete('/{id}', [AdminUserController::class, 'destroy'])->name('destroy')->whereNumber('id');
         });
 
         // Administrative Resources

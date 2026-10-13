@@ -108,7 +108,7 @@ function flaggedManager(initialUsers = [], initialPagination = {}) {
 
         fetchUsers() {
             this.loading = true;
-            fetch(`/admin/users/flagged?page=${this.page}`, {
+            fetch(`{{ route('admin.users-mgmt.flagged') }}?page=${this.page}`, {
                 headers: { 'Accept': 'application/json' }
             })
             .then(res => res.json())

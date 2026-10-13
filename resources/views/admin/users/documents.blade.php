@@ -217,7 +217,7 @@ function kycManager(initialDocs = [], initialPagination = {}, initialStats = {})
 
         fetchDocuments() {
             this.loading = true;
-            let url = `/admin/users/documents?page=${this.page}`;
+            let url = `{{ route('admin.users-mgmt.docs') }}?page=${this.page}`;
             if (this.type) url += `&type=${this.type}`;
 
             fetch(url, {
@@ -244,7 +244,7 @@ function kycManager(initialDocs = [], initialPagination = {}, initialStats = {})
 
         verify() {
             if (!confirm('Valider ce document ?')) return;
-            fetch(`/admin/users/documents/${this.activeDoc.id}/verify`, {
+            fetch(`{{ route('admin.users-mgmt.docs.verify', ':id') }}`.replace(':id', this.activeDoc.id), {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -266,7 +266,7 @@ function kycManager(initialDocs = [], initialPagination = {}, initialStats = {})
             const reason = prompt('Veuillez indiquer la raison du rejet :');
             if (!reason) return;
             
-            fetch(`/admin/users/documents/${this.activeDoc.id}/reject`, {
+            fetch(`{{ route('admin.users-mgmt.docs.reject', ':id') }}`.replace(':id', this.activeDoc.id), {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
