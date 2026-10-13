@@ -121,6 +121,23 @@
     </div>
     @endif
 
+    {{-- Propositions reçues (demande publiée encore ouverte) --}}
+    @if($comparison)
+        @include('user.needs.partials.proposals', ['need' => $serviceRequest, 'comparison' => $comparison])
+    @endif
+
+    {{-- Proposition retenue : rappel du prix verrouillé --}}
+    @if($serviceRequest->isOpenNeed() && $serviceRequest->acceptedProposal && $serviceRequest->user_id === auth()->id())
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-sm text-emerald-800 flex items-start gap-3" data-aos="fade-up">
+        <i class="fas fa-lock text-lg mt-0.5"></i>
+        <p>
+            Vous avez retenu la proposition de <strong>{{ $serviceRequest->artisan?->name }}</strong> :
+            <strong>${{ number_format((float) $serviceRequest->acceptedProposal->total, 0, ',', ' ') }}</strong>, prix verrouillé.
+            La mission suit désormais le parcours habituel (paiement, démarrage, fin, confirmation et avis).
+        </p>
+    </div>
+    @endif
+
     {{-- Cumulative Work-Time Card (in_progress) --}}
     @if($serviceRequest->status === 'in_progress')
     @php

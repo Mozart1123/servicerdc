@@ -352,7 +352,13 @@ class ServiceRequestController extends Controller
                 ->first();
         }
 
-        return view('user.service-requests.show', compact('serviceRequest', 'conversation', 'amountToPay', 'existingDispute'));
+        // Demande publiée encore ouverte : propositions des artisans à comparer (client uniquement).
+        $comparison = ($isClient && $serviceRequest->isOpenNeed() && $serviceRequest->status === ServiceRequest::STATUS_PENDING)
+            ? app(\App\Services\Matching\ProposalComparator::class)->compare($serviceRequest)
+            : null;
+        $serviceRequest->loadMissing('acceptedProposal');
+
+        return view('user.service-requests.show', compact('serviceRequest', 'conversation', 'amountToPay', 'existingDispute', 'comparison'));
     }
 
     /**

@@ -181,13 +181,9 @@ class NeedController extends Controller
     /** @return array{contacted:int, proposals:int, widened:bool, searching:bool, exhausted:bool, status:string} */
     public static function progress(ServiceRequest $need): array
     {
-        $counts = $need->dispatches()
-            ->selectRaw("COUNT(*) as contacted, SUM(CASE WHEN status = 'proposed' THEN 1 ELSE 0 END) as proposals")
-            ->first();
-
         return [
-            'contacted' => (int) ($counts->contacted ?? 0),
-            'proposals' => (int) ($counts->proposals ?? 0),
+            'contacted' => $need->dispatches()->count(),
+            'proposals' => $need->proposals()->whereIn('status', \App\Models\NeedProposal::ACTIVE_STATUSES)->count(),
             'widened'   => $need->matching_widened_at !== null,
             'searching' => $need->status === ServiceRequest::STATUS_PENDING && $need->wave_deadline_at !== null,
             'exhausted' => $need->matching_exhausted_at !== null,

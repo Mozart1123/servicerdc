@@ -79,8 +79,13 @@ class NeedDispatchTest extends TestCase
 
     private function propose(ServiceRequest $need, int $count): void
     {
-        $need->dispatches()->where('status', 'sent')->take($count)->get()
-            ->each(fn ($d) => $d->update(['status' => NeedDispatch::STATUS_PROPOSED, 'responded_at' => now()]));
+        $need->dispatches()->where('status', 'sent')->take($count)->get()->each(function ($d) use ($need) {
+            $d->update(['status' => NeedDispatch::STATUS_PROPOSED, 'responded_at' => now()]);
+            \App\Models\NeedProposal::create([
+                'service_request_id' => $need->id, 'artisan_id' => $d->artisan_id, 'need_dispatch_id' => $d->id,
+                'type' => 'price', 'status' => 'pending', 'price' => 100, 'intervention_date' => now()->addDays(2),
+            ]);
+        });
     }
 
     public function test_nothing_is_sent_while_the_feature_is_disabled(): void

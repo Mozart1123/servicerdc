@@ -14,6 +14,7 @@ class ServiceRequest extends Model
         'user_id',
         'service_id',
         'artisan_id',
+        'accepted_proposal_id',
         'mode',
         'category_id',
         'service_type_id',
@@ -148,6 +149,12 @@ class ServiceRequest extends Model
     public function commune()
     {
         return $this->belongsTo(Commune::class);
+    }
+
+    /** Proposition retenue par le client (prix verrouillé). */
+    public function acceptedProposal()
+    {
+        return $this->belongsTo(NeedProposal::class, 'accepted_proposal_id');
     }
 
     /** Propositions des artisans contactés. */

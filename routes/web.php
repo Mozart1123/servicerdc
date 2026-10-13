@@ -164,7 +164,6 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
             Route::post('/service-requests/{serviceRequest}/reject', [UserServiceRequestController::class, 'reject'])->name('service-requests.reject');
             Route::post('/service-requests/{serviceRequest}/complete', [UserServiceRequestController::class, 'complete'])->name('service-requests.complete');
             Route::post('/service-requests/{serviceRequest}/start', [UserServiceRequestController::class, 'startMission'])->name('service-requests.start');
-            Route::post('/service-requests/{serviceRequest}/pay-cash', [UserServiceRequestController::class, 'payCash'])->name('service-requests.pay-cash');
             Route::post('/service-requests/{serviceRequest}/pause-work', [UserServiceRequestController::class, 'pauseWork'])->name('service-requests.pause-work');
             Route::post('/service-requests/{serviceRequest}/resume-work', [UserServiceRequestController::class, 'resumeWork'])->name('service-requests.resume-work');
             Route::get('/artisan/service-requests', [UserServiceRequestController::class, 'artisanRequests'])->name('artisan.service-requests.index');
@@ -212,12 +211,20 @@ Route::middleware(['auth', 'role:user,admin,super_admin'])
         Route::get('/besoin/nouveau', [UserNeedController::class, 'create'])->name('needs.create');
         Route::post('/besoin', [UserNeedController::class, 'store'])->middleware('throttle:10,60')->name('needs.store');
         Route::get('/besoin/{serviceRequest}/statut', [UserNeedController::class, 'status'])->middleware('throttle:60,1')->name('needs.status');
+        Route::middleware('throttle:20,1')->group(function (): void {
+            Route::post('/propositions/{proposal}/accepter', [\App\Http\Controllers\User\ClientProposalController::class, 'accept'])->name('needs.proposals.accept');
+            Route::post('/propositions/{proposal}/accepter-visite', [\App\Http\Controllers\User\ClientProposalController::class, 'acceptVisit'])->name('needs.proposals.accept-visit');
+            Route::post('/besoin/{serviceRequest}/tout-refuser', [\App\Http\Controllers\User\ClientProposalController::class, 'rejectAll'])->name('needs.reject-all');
+        });
 
         // Client: Service Requests
         Route::get('/service-requests',[UserServiceRequestController::class, 'index'])->name('service-requests.index');
         Route::get('/service-requests/{serviceRequest}', [UserServiceRequestController::class, 'show'])->name('service-requests.show');
         Route::post('/service-requests', [UserServiceRequestController::class, 'store'])->name('service-requests.store');
-        Route::post('/service-requests/{serviceRequest}/cancel', [UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
+        // Action du client (le contrôleur vérifie qu'il est l'auteur de la demande) :
+        // elle était à tort derrière PreventClientDashboardAccess, qui bloque les clients.
+        Route::post('/service-requests/{serviceRequest}/pay-cash', [UserServiceRequestController::class, 'payCash'])->name('service-requests.pay-cash');
+        Route::post('/service-requests/{serviceRequest}/cancel',[UserServiceRequestController::class, 'cancel'])->name('service-requests.cancel');
         Route::post('/service-requests/{serviceRequest}/rate', [UserServiceRequestController::class, 'rate'])->name('service-requests.rate');
         Route::post('/service-requests/{serviceRequest}/validate-completion', [UserServiceRequestController::class, 'validateCompletion'])->name('service-requests.validate-completion');
         Route::get('/service-requests/{serviceRequest}/report', [UserServiceRequestController::class, 'report'])->name('service-requests.report');

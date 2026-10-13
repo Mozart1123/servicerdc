@@ -16,6 +16,9 @@ class NeedProposal extends Model
     public const STATUS_ACCEPTED       = 'accepted';
     public const STATUS_REJECTED       = 'rejected';
 
+    /** Propositions encore en lice, que le client peut retenir. */
+    public const ACTIVE_STATUSES = [self::STATUS_PENDING, self::STATUS_VISIT_ACCEPTED];
+
     protected $fillable = [
         'service_request_id', 'artisan_id', 'need_dispatch_id', 'type', 'status',
         'price', 'intervention_date', 'message', 'visit_at', 'study_fee',

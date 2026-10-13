@@ -3,6 +3,7 @@
 namespace App\Services\Matching;
 
 use App\Models\NeedDispatch;
+use App\Models\NeedProposal;
 use App\Models\Notification;
 use App\Models\ServiceRequest;
 use Illuminate\Support\Facades\DB;
@@ -105,9 +106,10 @@ class NeedDispatcher
         });
     }
 
+    /** Propositions encore en lice (une proposition refusée par le client ne compte plus). */
     public function proposalsCount(ServiceRequest $need): int
     {
-        return $need->dispatches()->where('status', NeedDispatch::STATUS_PROPOSED)->count();
+        return $need->proposals()->whereIn('status', NeedProposal::ACTIVE_STATUSES)->count();
     }
 
     /** Appelé à chaque proposition : à 5 propositions, on arrête les envois (§2.3). */
