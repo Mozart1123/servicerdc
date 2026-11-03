@@ -19,9 +19,9 @@
                 </div>
             </div>
             <div class="shrink-0">
-                <span class="inline-flex items-center gap-2 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Connecté
+                <span class="inline-flex items-center gap-2 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest {{ ($wallet['connected'] ?? false) ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20' }}">
+                    <span class="w-2 h-2 rounded-full {{ ($wallet['connected'] ?? false) ? 'bg-emerald-400 animate-pulse' : 'bg-red-400' }}"></span>
+                    {{ ($wallet['connected'] ?? false) ? 'Connecté' : 'Erreur' }}
                 </span>
             </div>
         </div>

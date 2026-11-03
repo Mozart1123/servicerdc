@@ -12,6 +12,7 @@ use App\Models\Withdrawal;
 use App\Services\KpayService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinancialController extends Controller
@@ -37,9 +38,21 @@ class FinancialController extends Controller
                 'balance' => collect($wallets)->sum('balance'),
                 'available' => collect($wallets)->sum('availableBalance'),
                 'currency' => 'MULTI',
+                'connected' => true,
             ];
         } catch (\Exception $e) {
-            $wallet = ['wallets' => [], 'balance' => 0, 'available' => 0, 'currency' => 'N/A', 'error' => $e->getMessage()];
+            Log::channel('single')->warning('K-PAY wallet balance unavailable', [
+                'status' => $e->getCode() ?: null,
+            ]);
+
+            $wallet = [
+                'wallets' => [],
+                'balance' => 0,
+                'available' => 0,
+                'currency' => 'N/A',
+                'connected' => false,
+                'error' => 'Le portefeuille K-PAY est temporairement indisponible.',
+            ];
         }
 
         // 2. Revenue Statistics

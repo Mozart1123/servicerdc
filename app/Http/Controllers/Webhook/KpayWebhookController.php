@@ -14,6 +14,7 @@ use App\Models\ServiceRequest;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class KpayWebhookController extends Controller
@@ -72,8 +73,7 @@ class KpayWebhookController extends Controller
 
         if (!$this->kpayService->validateWebhookSignature($payload, $signature)) {
             Log::warning('K-PAY Webhook: invalid signature rejected', [
-                'ip'        => $request->ip(),
-                'signature' => $signature,
+                'ip' => $request->ip(),
             ]);
             return response()->json(['error' => 'Invalid signature'], 401);
         }
@@ -83,11 +83,24 @@ class KpayWebhookController extends Controller
         $kpayRef     = $data['paymentId']  ?? null;      // K-PAY internal ID
         $externalId  = $data['externalId'] ?? null;      // our reference_id
         $status      = $data['status']     ?? null;
+        $eventKey    = hash('sha256', implode('|', [
+            $kpayRef ?? $externalId ?? 'unknown',
+            $event,
+        ]));
 
         Log::info("K-PAY Webhook received: {$event}", ['externalId' => $externalId, 'status' => $status]);
 
         if (!$externalId) {
             return response()->json(['message' => 'No externalId provided'], 200);
+        }
+
+        if (Cache::has("kpay:webhook:processed:{$eventKey}")) {
+            Log::info('K-PAY Webhook: duplicate event ignored', [
+                'externalId' => $externalId,
+                'event'      => $event,
+            ]);
+
+            return response()->json(['message' => 'Webhook already processed'], 200);
         }
 
         try {
@@ -135,7 +148,15 @@ class KpayWebhookController extends Controller
                     return;
                 }
 
-                // ── 4a. IDEMPOTENCY — check kpay_transactions audit table ──────
+                // ── 4a. REFUND EVENTS ───────────────────────────────────────
+                // Refunds are separate events and must still be handled after
+                // the original payment reaches a terminal state.
+                if (str_starts_with($event, 'refund.')) {
+                    $this->handleTransactionRefund($transaction, $status, $kpayRef, $data);
+                    return;
+                }
+
+                // ── 4b. IDEMPOTENCY — check kpay_transactions audit table ──────
                 // If a KpayTransaction for this ref already reached terminal state, silently ignore.
                 $kpayTx = KpayTransaction::where('transaction_ref', $externalId)->lockForUpdate()->first();
 
@@ -147,17 +168,7 @@ class KpayWebhookController extends Controller
                     return; // Silently ignore — idempotent
                 }
 
-                // ── 4a-bis. REFUND EVENTS ───────────────────────────────────────
-                // Handled separately from the generic COMPLETED/FAILED/CANCELLED
-                // mapping below: a refund event arrives for a transaction that is
-                // already 'succeeded' and needs its own state transition + wallet
-                // reversal, not a re-run of the normal payment-fulfillment logic.
-                if (str_starts_with($event, 'refund.')) {
-                    $this->handleTransactionRefund($transaction, $status, $kpayRef, $data);
-                    return;
-                }
-
-                // ── 4b. Update the generic Transaction record ──────────────────
+                // ── 4c. Update the generic Transaction record ──────────────────
                 if ($kpayRef && !$transaction->kpay_reference) {
                     $transaction->kpay_reference = $kpayRef;
                 }
@@ -193,7 +204,7 @@ class KpayWebhookController extends Controller
                 $transaction->status = $newStatus;
                 $transaction->save();
 
-                // ── 4c. Update or create KpayTransaction audit record ──────────
+                // ── 4d. Update or create KpayTransaction audit record ──────────
                 $auditStatus = match ($newStatus) {
                     'succeeded' => 'success',
                     'failed'    => 'failed',
@@ -216,7 +227,7 @@ class KpayWebhookController extends Controller
                     ]);
                 }
 
-                // ── 4d. FULFILLMENT LOGIC ──────────────────────────────────────
+                // ── 4e. FULFILLMENT LOGIC ──────────────────────────────────────
                 if ($newStatus === 'succeeded') {
 
                     if ($transaction->type === 'subscription') {
@@ -232,10 +243,10 @@ class KpayWebhookController extends Controller
                 }
             });
 
+            Cache::put("kpay:webhook:processed:{$eventKey}", true, now()->addDays(7));
         } catch (\Exception $e) {
             Log::error('K-PAY Webhook processing error: ' . $e->getMessage(), [
                 'externalId' => $externalId,
-                'trace'      => $e->getTraceAsString(),
             ]);
             return response()->json(['error' => 'Internal server error'], 500);
         }

@@ -15,7 +15,7 @@ class KpayService
 
     public function __construct()
     {
-        $this->baseUrl = 'https://admin.kpay.site/api/v1';
+        $this->baseUrl = config('services.kpay.base_url');
         // IMPORTANT: read credentials via config(), never env() directly here.
         // Once `php artisan config:cache` has run (part of our deploy routine via
         // `php artisan optimize`), Laravel stops reading the .env file at runtime —
@@ -26,8 +26,8 @@ class KpayService
         // when it's built.
         $this->apiKey = config('services.kpay.api_key');
         $this->secretKey = config('services.kpay.secret_key');
-        // If no explicit webhook secret is provided, try falling back to secret key
-        $this->webhookSecret = config('services.kpay.webhook_secret') ?: $this->secretKey;
+        // K-PAY requires the application webhook secret for callback validation.
+        $this->webhookSecret = config('services.kpay.webhook_secret');
     }
 
     /**
@@ -41,6 +41,7 @@ class KpayService
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ])
+        ->timeout((int) config('services.kpay.timeout', 15))
         ->baseUrl($this->baseUrl);
 
         // SSL verification is only bypassed on local dev machines with a broken
@@ -72,7 +73,7 @@ class KpayService
         if ($response->failed()) {
             Log::error('K-PAY Payment Init Failed', [
                 'status' => $response->status(),
-                'body' => $response->json()
+                'message' => $response->json('message'),
             ]);
             throw new Exception($response->json('message', 'Unknown error'), $response->status());
         }
@@ -96,7 +97,7 @@ class KpayService
         if ($response->failed()) {
             Log::error('K-PAY Payout Init Failed', [
                 'status' => $response->status(),
-                'body' => $response->json()
+                'message' => $response->json('message'),
             ]);
             throw new Exception('Failed to initiate payout: ' . $response->json('message', 'Unknown error'));
         }
@@ -115,7 +116,7 @@ class KpayService
             Log::error('K-PAY Transaction Status Check Failed', [
                 'id' => $id,
                 'status' => $response->status(),
-                'body' => $response->json()
+                'message' => $response->json('message'),
             ]);
             throw new Exception('Failed to fetch transaction status: ' . $response->json('message', 'Unknown error'));
         }
@@ -133,7 +134,7 @@ class KpayService
         if ($response->failed()) {
             Log::error('K-PAY Balance Check Failed', [
                 'status' => $response->status(),
-                'body' => $response->json()
+                'message' => $response->json('message'),
             ]);
             throw new Exception('Failed to fetch wallet balance: ' . $response->json('message', 'Unknown error'));
         }
@@ -291,7 +292,7 @@ class KpayService
             Log::error('K-PAY Refund Failed', [
                 'paymentId' => $paymentId,
                 'status'    => $response->status(),
-                'body'      => $response->json(),
+                'message'   => $response->json('message'),
             ]);
             throw new Exception($response->json('message', 'Unknown error'), $response->status());
         }
