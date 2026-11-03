@@ -26,11 +26,6 @@
     </div>
 
     {{-- Messages --}}
-    @if(session('success'))
-        <div class="px-5 py-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 font-medium text-sm flex items-center gap-3">
-            <i class="fas fa-check-circle text-emerald-500"></i>{{ session('success') }}
-        </div>
-    @endif
     @if(session('error'))
         <div class="px-5 py-4 bg-red-50 border border-red-100 rounded-xl text-red-700 font-medium text-sm flex items-center gap-3">
             <i class="fas fa-exclamation-circle text-red-500"></i>{{ session('error') }}

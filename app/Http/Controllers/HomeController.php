@@ -105,6 +105,6 @@ class HomeController extends Controller
             'email' => $validated['email'],
         ]);
 
-        return back()->with('success', 'Merci ! Votre mail a bien été enregistré pour recevoir notre newsletter.');
+        return back()->with('newsletter_success', 'Merci ! Votre mail a bien été enregistré pour recevoir notre newsletter.');
     }
 }

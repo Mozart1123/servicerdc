@@ -7,12 +7,6 @@
 <div class="space-y-8 pb-20">
 
     {{-- Success/Error Alerts --}}
-    @if(session('success'))
-        <div class="relative bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 flex items-center gap-4">
-            <i class="fas fa-check-circle text-emerald-500 text-xl"></i>
-            <p class="font-bold text-emerald-700">{{ session('success') }}</p>
-        </div>
-    @endif
     @if(session('error'))
         <div class="relative bg-red-50 border border-red-200 rounded-2xl px-6 py-4 flex items-center gap-4">
             <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>

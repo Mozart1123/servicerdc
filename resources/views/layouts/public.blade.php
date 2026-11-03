@@ -292,11 +292,12 @@
     {{-- Main Content (pt-24 clears the fixed header; flash messages, when present,
          sit inside it so the header-clearing offset is never applied twice) --}}
     <main class="min-h-screen pt-24">
-        @if(session('success') || session('error'))
+        @php($successFlash = session('success'))
+        @if($successFlash || session('error'))
         <div class="container mx-auto px-4 pb-4">
-            @if(session('success'))
+            @if($successFlash)
                 <div class="px-5 py-3 bg-green-50 border border-green-100 rounded-xl text-green-700 font-semibold text-sm">
-                    <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+                    <i class="fas fa-check-circle mr-2"></i>{{ $successFlash }}
                 </div>
             @endif
             @if(session('error'))
@@ -435,9 +436,9 @@
                         Inscrivez-vous à notre newsletter pour recevoir les dernières
                         offres et actualités ProConnect.
                     </p>
-                    @if(session('success'))
+                    @if(session('newsletter_success'))
                         <div class="mb-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-900">
-                            {{ session('success') }}
+                            {{ session('newsletter_success') }}
                         </div>
                     @endif
                     <form action="{{ route('newsletter.subscribe') }}" method="POST" class="mb-6">

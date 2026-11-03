@@ -8,12 +8,6 @@
 <div class="space-y-6">
 
     {{-- Flash Messages --}}
-    @if(session('success'))
-    <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-xl text-sm font-medium">
-        <i class="fas fa-check-circle shrink-0"></i>
-        <p>{{ session('success') }}</p>
-    </div>
-    @endif
     @if(session('error'))
     <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl text-sm font-medium">
         <i class="fas fa-times-circle shrink-0"></i>

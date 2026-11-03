@@ -7,7 +7,7 @@
 <div class="max-w-3xl mx-auto space-y-6 pb-10">
 
     {{-- Flash Messages --}}
-    @foreach(['success' => 'emerald', 'error' => 'red', 'info' => 'blue'] as $type => $color)
+    @foreach(['error' => 'red', 'info' => 'blue'] as $type => $color)
     @if(session($type))
     <div class="flex items-center gap-3 bg-{{ $color }}-50 border border-{{ $color }}-200 text-{{ $color }}-700 px-5 py-4 rounded-2xl">
         <i class="fas fa-circle-info text-xl shrink-0"></i>
@@ -59,7 +59,7 @@
                 <i class="fas fa-magnifying-glass-location text-rdc-blue text-lg mt-0.5"></i>
                 <div class="text-sm">
                     <p class="font-bold text-slate-900">Recherche d'artisans en cours</p>
-                    <p class="text-slate-600">Votre demande est transmise aux artisans les plus adaptés. Vous serez notifié dès qu'une proposition arrive.
+                    <p class="text-slate-600">En attente de propositions des artisans près de chez vous. Vous serez notifié dès qu'une proposition arrive.
                         @if($serviceRequest->expires_at)
                             Elle reste ouverte jusqu'au {{ $serviceRequest->expires_at->translatedFormat('d F Y') }}.
                         @endif

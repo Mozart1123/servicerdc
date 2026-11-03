@@ -10,16 +10,7 @@
 @section($contentSection)
 <div class="space-y-10">
 
-    {{-- Espace Client affiche déjà les messages flash globalement dans son
-         layout ; on ne les répète ici que pour artisan/recruteur (layouts.user
-         ne les affiche pas). --}}
     @unless ($isClient)
-        @if (session('success'))
-            <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-sm">
-                {{ session('success') }}
-            </div>
-        @endif
-
         @if (session('error'))
             <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                 {{ session('error') }}

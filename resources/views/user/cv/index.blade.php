@@ -4,13 +4,6 @@
 
 @section($contentSection)
 <div class="max-w-6xl mx-auto pb-20 space-y-8">
-    @if(session('success'))
-        <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-5 rounded-2xl shadow-sm flex items-center gap-4">
-            <i class="fas fa-check-circle text-2xl"></i>
-            <p class="font-bold">{{ session('success') }}</p>
-        </div>
-    @endif
-
     @if(session('error'))
         <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-5 rounded-2xl shadow-sm flex items-center gap-4">
             <i class="fas fa-exclamation-circle text-2xl"></i>
